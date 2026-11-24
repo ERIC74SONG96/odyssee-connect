@@ -1,0 +1,16 @@
+# Systèmes et éditeurs
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Python (tests)
+__pycache__/
+*.pyc
+.venv/
+
+# Fichiers locaux à ne jamais publier
+*.local.js
+.env
+.env.*
+captures/
