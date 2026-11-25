@@ -246,6 +246,8 @@
         const deja = d.inscriptions.find((i) => i.cle_envoi === f.cle_envoi);
         if (deja) {
           if (chiffres(deja.telephone) !== chiffres(f.telephone)) throw erreur('Envoi refusé. Rechargez la page et recommencez.');
+          if (norm(deja.nom) !== norm(f.nom) || norm(deja.prenom) !== norm(f.prenom) || deja.date_naissance !== f.date_naissance || deja.distance !== f.distance || deja.categorie !== f.categorie)
+            throw erreur(`Une inscription a déjà été enregistrée depuis ce formulaire (référence ${deja.reference}), avec d'autres informations. Pour la corriger, contactez l'organisation avec cette référence.`);
           return attendre({ reference: deja.reference, montant: deja.montant, don: deja.don });
         }
         if (!d.reglages.ouvertes) throw erreur((d.reglages.message || '').trim() || 'Les inscriptions ne sont pas ouvertes pour le moment.');

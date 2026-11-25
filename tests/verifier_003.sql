@@ -38,10 +38,11 @@ begin
 end $t$;
 reset role;
 
--- 2. Un compte connecté non-staff ne peut pas régler
+-- 2. Un compte connecté non-staff ne peut ni régler ni lire les réglages
 set local role authenticated;
 set local request.jwt.uid = '00000000-0000-0000-0000-0000000000bb';
 do $t$ begin
+  if (select count(*) from public.reglages_inscriptions) <> 0 then raise exception 'ÉCHEC : un compte non-staff lit les réglages'; end if;
   begin
     perform public.regler_inscriptions(true, 10, null);
     raise exception 'ÉCHEC : un compte non-staff a pu ouvrir les inscriptions';
@@ -82,6 +83,14 @@ begin
   select reference into r1 from public.creer_inscription(base || jsonb_build_object('cle_envoi', k));
   select reference into r2 from public.creer_inscription(base || jsonb_build_object('cle_envoi', k));
   if r1 is null or r1 <> r2 then raise exception 'ÉCHEC : envoi répété → deux références (% / %)', r1, r2; end if;
+  -- Même clé et même téléphone mais données modifiées : pas de référence renvoyée en silence
+  begin
+    perform public.creer_inscription(base || jsonb_build_object('cle_envoi', k, 'prenom', 'Mariette'));
+    raise exception 'ÉCHEC : même clé avec un autre prénom acceptée';
+  exception when others then
+    if sqlerrm like 'ÉCHEC%' then raise; end if;
+    if sqlerrm not like 'Une inscription a déjà été enregistrée depuis ce formulaire%' then raise exception 'ÉCHEC : message inattendu (clé, données modifiées) : %', sqlerrm; end if;
+  end;
   -- Même clé avec un autre téléphone : refus
   begin
     perform public.creer_inscription(base || jsonb_build_object('cle_envoi', k, 'telephone', '+237699100099'));
@@ -125,7 +134,8 @@ begin
 end $t$;
 reset role;
 
--- 8. Fermeture avec message : le message est celui affiché
+-- 8. Fermeture avec message : le message est celui affiché ; un inscrit peut encore déclarer son paiement
+select set_config('test.rose', (select reference from public.inscriptions where prenom = 'Rose'), true);
 set local role authenticated;
 set local request.jwt.uid = '00000000-0000-0000-0000-0000000000cc';
 select public.regler_inscriptions(false, 3000, 'Inscriptions suspendues : reprise demain à 8 h.');
@@ -140,6 +150,9 @@ do $t$ begin
     if sqlerrm <> 'Inscriptions suspendues : reprise demain à 8 h.' then raise exception 'ÉCHEC : message de suspension non repris : %', sqlerrm; end if;
   end;
   if public.etat_public() -> 'inscriptions' ->> 'message' <> 'Inscriptions suspendues : reprise demain à 8 h.' then raise exception 'ÉCHEC : message absent de etat_public'; end if;
+  if public.declarer_paiement(current_setting('test.rose'), '+237699100004', 'orange', 'OM2611250077') <> 'paiement_declare' then
+    raise exception 'ÉCHEC : paiement impossible après la fermeture des inscriptions';
+  end if;
 end $t$;
 reset role;
 
@@ -148,6 +161,10 @@ do $t$ begin
   if has_function_privilege('anon', 'public.regler_inscriptions(boolean, integer, text)', 'execute') then raise exception 'ÉCHEC : anon peut exécuter regler_inscriptions'; end if;
   if has_function_privilege('anon', 'public._transaction_deja_utilisee(text, text, text)', 'execute') then raise exception 'ÉCHEC : anon peut exécuter la fonction interne'; end if;
   if has_table_privilege('anon', 'public.reglages_inscriptions', 'select') then raise exception 'ÉCHEC : anon peut lire les réglages'; end if;
+  if has_function_privilege('authenticated', 'public._transaction_deja_utilisee(text, text, text)', 'execute') then raise exception 'ÉCHEC : authenticated peut exécuter _transaction_deja_utilisee'; end if;
+  if has_function_privilege('authenticated', 'public._etat_inscriptions()', 'execute') then raise exception 'ÉCHEC : authenticated peut exécuter _etat_inscriptions'; end if;
+  if has_function_privilege('anon', 'public._etat_inscriptions()', 'execute') then raise exception 'ÉCHEC : anon peut exécuter _etat_inscriptions'; end if;
+  if has_function_privilege('authenticated', 'public._effacer_coordonnees_inscriptions()', 'execute') then raise exception 'ÉCHEC : la fonction d''effacement redevient exécutable'; end if;
   if not has_function_privilege('anon', 'public.etat_public()', 'execute') then raise exception 'ÉCHEC : anon ne peut plus lire etat_public'; end if;
 end $t$;
 rollback;

@@ -78,14 +78,18 @@ def main():
           const apres = JSON.parse(localStorage.getItem('odc_demo_v1')).inscriptions.length;
           let doublon = '';
           try { await E.creerInscription({ ...f, nom: ' NGO ', distance: '10', cle_envoi: crypto.randomUUID() }); } catch (e) { doublon = e.message; }
+          let modifie = '';
+          try { await E.creerInscription({ ...f, prenom: 'Alicia' }); } catch (e) { modifie = e.message; }
           let sansCle = '';
           try { const g = { ...f, prenom: 'Bea' }; delete g.cle_envoi; await E.creerInscription(g); } catch (e) { sansCle = e.message; }
-          return { meme: r1.reference === r2.reference, cree: apres - avant, doublon, sansCle };
+          return { meme: r1.reference === r2.reference, cree: apres - avant, doublon, sansCle, modifie };
         }""")
         if not res["meme"] or res["cree"] != 1:
             echecs.append(f"anti-doublons : envoi répété mal géré ({res})")
         elif not res["doublon"].startswith("Cette personne est déjà inscrite"):
             echecs.append(f"anti-doublons : même personne acceptée ({res['doublon']!r})")
+        elif not res["modifie"].startswith("Une inscription a déjà été enregistrée depuis ce formulaire"):
+            echecs.append(f"anti-doublons : même clé avec des données modifiées acceptée ({res['modifie']!r})")
         elif not res["sansCle"].startswith("Version de l'appli"):
             echecs.append(f"anti-doublons : envoi sans clé accepté ({res['sansCle']!r})")
         else:

@@ -14,7 +14,9 @@ Ce qui est fusionné dans `develop` mais pas encore en production. Chaque Pull R
 - Clé d'envoi tirée par l'appli pour chaque formulaire : un double clic ou un nouvel essai après une coupure réseau renvoie la même référence au lieu de créer une seconde inscription.
 - Même personne (nom, prénom, date de naissance, sans tenir compte de la casse ni des espaces) refusée si elle a déjà une inscription non annulée.
 - Un identifiant de transaction Mobile Money ne peut être déclaré qu'une fois (inscriptions et dons confondus, par opérateur) ; index uniques en dernier recours.
-- Tests SQL `tests/verifier_003.sql` et scénarios de démonstration ajoutés à `tests/verifier_demo.py`.
+- Même clé d'envoi avec des données modifiées : refus avec la référence déjà créée (seul l'appareil qui a rempli le formulaire la connaît) ; clé gardée pour la session de l'onglet ; effacée avec les coordonnées après la course.
+- Avertissement dans l'espace organisateurs si le quota est inférieur aux inscriptions déjà faites.
+- Tests SQL `tests/verifier_003.sql`, test de concurrence réel `tests/verifier_concurrence.sh` (20 envois simultanés pour 5 places ; même transaction déclarée en parallèle pour une inscription et un don), scénarios de démonstration ajoutés à `tests/verifier_demo.py`.
 - Migration `003_ouverture_et_doublons.sql`.
 
 ### Données personnelles (loi n° 2024/017) — #6

@@ -144,7 +144,19 @@
     const peu = e.restantes != null && e.restantes <= 300 ? `<p class="note" style="margin:6px 0 0;text-align:center">Plus que ${e.restantes.toLocaleString('fr-FR')} place${e.restantes > 1 ? 's' : ''} dans cette vague.</p>` : '';
     return `<a class="btn ${classe}" href="#inscription" data-action="ins-debut">S'inscrire au ${esc(d.km)}${classe === 'vert-fonce' ? ' ' + I.fleche : ''}</a>${peu}`;
   }
-  // Clé d'envoi : la même pour toutes les tentatives d'un même formulaire (évite les doubles inscriptions)
+  // Clé d'envoi : la même pour toutes les tentatives d'un même formulaire (évite les doubles inscriptions).
+  // Gardée pour la session de l'onglet : après un rechargement, les mêmes informations renvoient la même référence.
+  const CLE_ENVOI = 'odc_cle_envoi';
+  const cleSession = {
+    lire() { try { return sessionStorage.getItem(CLE_ENVOI); } catch (e) { return null; } },
+    ecrire(v) { try { sessionStorage.setItem(CLE_ENVOI, v); } catch (e) { /* stockage indisponible : mémoire seule */ } },
+    effacer() { try { sessionStorage.removeItem(CLE_ENVOI); } catch (e) { /* idem */ } }
+  };
+  function cleEnvoi() {
+    if (!S.cleEnvoi) S.cleEnvoi = cleSession.lire() || nouvelleCle();
+    cleSession.ecrire(S.cleEnvoi);
+    return S.cleEnvoi;
+  }
   function nouvelleCle() {
     if (crypto.randomUUID) return crypto.randomUUID();
     const b = crypto.getRandomValues(new Uint8Array(16)); b[6] = (b[6] & 15) | 64; b[8] = (b[8] & 63) | 128;
@@ -1512,7 +1524,8 @@
       const reglages = ei ? `
         <form data-form="reglages" class="carte pile" novalidate style="gap:6px;margin-bottom:12px">
           <b>Ouverture des inscriptions</b>
-          <span class="note">${ei.ouvertes ? '<b style="color:var(--vert)">Ouvertes</b>' : '<b style="color:var(--rouge)">Fermées</b>'} · ${(ei.quota - ei.restantes).toLocaleString('fr-FR')} inscriptions sur ${ei.quota.toLocaleString('fr-FR')} places (hors annulées) · ${ei.restantes.toLocaleString('fr-FR')} restantes.</span>
+          <span class="note">${ei.ouvertes ? '<b style="color:var(--vert)">Ouvertes</b>' : '<b style="color:var(--rouge)">Fermées</b>'} · ${actifs.length.toLocaleString('fr-FR')} inscriptions (hors annulées) pour ${ei.quota.toLocaleString('fr-FR')} places · ${ei.restantes.toLocaleString('fr-FR')} restantes.</span>
+          ${actifs.length > ei.quota ? `<div class="info r">${I.info}<span>Le quota est inférieur au nombre d'inscriptions déjà faites (${actifs.length.toLocaleString('fr-FR')}) : aucune nouvelle inscription ne passera, celles déjà faites sont conservées.</span></div>` : ''}
           <span class="radios" role="radiogroup" aria-label="Inscriptions">
             <label><input type="radio" name="ouvertes" value="oui" ${ei.ouvertes ? 'checked' : ''}> Ouvertes</label>
             <label><input type="radio" name="ouvertes" value="non" ${ei.ouvertes ? '' : 'checked'}> Fermées</label></span>
@@ -2192,7 +2205,7 @@
       if (type === 'ins1') {
         if (!window.ODC_DATA.telValide(v.telephone) || !window.ODC_DATA.telValide(v.urgence_tel)) return echec('Vérifiez les numéros de téléphone (8 à 15 chiffres).');
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email || '')) return echec("L'adresse e-mail n'est pas valide.");
-        S.insData = v; S.insEtape = 2; if (!S.cleEnvoi) S.cleEnvoi = nouvelleCle(); rendre(true); return;
+        S.insData = v; S.insEtape = 2; cleEnvoi(); rendre(true); return;
       }
       if (type === 'inscription') {
         const don = v.don_autre !== undefined ? Math.max(0, parseInt(v.don_autre, 10) || 0) : S.choix.don;
@@ -2202,9 +2215,9 @@
           nom: P.nom, prenom: P.prenom, telephone: P.telephone, email: P.email, date_naissance: P.date_naissance, sexe: P.sexe,
           distance: S.choix.distance, categorie: S.choix.categorie, urgence_nom: P.urgence_nom, urgence_tel: P.urgence_tel, consentement: true,
           consentement_parental: v.consentement_parental === 'on', consentement_version: CONSENTEMENT_VERSION, don,
-          taille_tshirt: S.choix.taille, cle_envoi: S.cleEnvoi || (S.cleEnvoi = nouvelleCle())
+          taille_tshirt: S.choix.taille, cle_envoi: cleEnvoi()
         });
-        S.cleEnvoi = null;
+        S.cleEnvoi = null; cleSession.effacer();
         ajouterMoi({ reference: r.reference, telephone: P.telephone, prenom: P.prenom });
         S.insData = null; S.insEtape = 1;
         S.choix.don = 0;

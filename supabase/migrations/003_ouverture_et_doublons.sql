@@ -129,11 +129,17 @@ begin
   -- Verrou : une création à la fois, pour que le quota et la clé d'envoi soient exacts
   select * into v_reg from public.reglages_inscriptions where id = 1 for update;
 
-  -- Même envoi répété : on renvoie l'inscription déjà créée, sans en créer une seconde
+  -- Même envoi répété : on renvoie l'inscription déjà créée, sans en créer une seconde,
+  -- à condition que ce soit bien le même formulaire (mêmes données essentielles).
   select * into v_deja from public.inscriptions i where i.cle_envoi = v_cle;
   if v_deja.id is not null then
     if public._chiffres(v_deja.telephone) <> public._chiffres(v_tel) then
       raise exception 'Envoi refusé. Rechargez la page et recommencez.';
+    end if;
+    if lower(btrim(v_deja.nom)) <> lower(v_nom) or lower(btrim(v_deja.prenom)) <> lower(v_prenom)
+       or v_deja.date_naissance <> v_ddn or v_deja.distance <> v_dist or v_deja.categorie <> v_cat then
+      -- Seul l'appareil qui a tiré cette clé peut arriver ici : il peut connaître sa propre référence.
+      raise exception 'Une inscription a déjà été enregistrée depuis ce formulaire (référence %), avec d''autres informations. Pour la corriger, contactez l''organisation avec cette référence.', v_deja.reference;
     end if;
     return query select v_deja.reference, v_deja.montant, v_deja.don;
     return;
@@ -194,13 +200,17 @@ begin
   if public._transaction_deja_utilisee(p_operateur, p_transaction, p_reference) then
     raise exception 'Cet identifiant de transaction est déjà déclaré pour un autre paiement. Vérifiez-le ou contactez l''organisation.';
   end if;
-  update public.inscriptions i
-     set statut = 'paiement_declare', operateur = p_operateur,
-         transaction_id = btrim(p_transaction), paiement_declare_at = now()
-   where i.reference = upper(btrim(p_reference))
-     and public._chiffres(i.telephone) = public._chiffres(p_telephone)
-     and i.statut in ('en_attente','paiement_declare')
-  returning i.statut into v_statut;
+  begin
+    update public.inscriptions i
+       set statut = 'paiement_declare', operateur = p_operateur,
+           transaction_id = btrim(p_transaction), paiement_declare_at = now()
+     where i.reference = upper(btrim(p_reference))
+       and public._chiffres(i.telephone) = public._chiffres(p_telephone)
+       and i.statut in ('en_attente','paiement_declare')
+    returning i.statut into v_statut;
+  exception when unique_violation then
+    raise exception 'Cet identifiant de transaction est déjà déclaré pour un autre paiement. Vérifiez-le ou contactez l''organisation.';
+  end;
   if v_statut is null then raise exception 'Inscription introuvable ou déjà traitée'; end if;
   return v_statut;
 end $$;
@@ -218,13 +228,17 @@ begin
   if public._transaction_deja_utilisee(p_operateur, p_transaction, p_reference) then
     raise exception 'Cet identifiant de transaction est déjà déclaré pour un autre paiement. Vérifiez-le ou contactez l''organisation.';
   end if;
-  update public.dons d
-     set statut = 'paiement_declare', operateur = p_operateur,
-         transaction_id = btrim(p_transaction), paiement_declare_at = now()
-   where d.reference = upper(btrim(p_reference))
-     and public._chiffres(d.telephone) = public._chiffres(p_telephone)
-     and d.statut in ('en_attente','paiement_declare')
-  returning d.statut into v_statut;
+  begin
+    update public.dons d
+       set statut = 'paiement_declare', operateur = p_operateur,
+           transaction_id = btrim(p_transaction), paiement_declare_at = now()
+     where d.reference = upper(btrim(p_reference))
+       and public._chiffres(d.telephone) = public._chiffres(p_telephone)
+       and d.statut in ('en_attente','paiement_declare')
+    returning d.statut into v_statut;
+  exception when unique_violation then
+    raise exception 'Cet identifiant de transaction est déjà déclaré pour un autre paiement. Vérifiez-le ou contactez l''organisation.';
+  end;
   if v_statut is null then raise exception 'Don introuvable ou déjà traité'; end if;
   return v_statut;
 end $$;
@@ -272,7 +286,36 @@ returns jsonb language sql stable security definer set search_path = public, pg_
 $$;
 
 -- ---------------------------------------------------------------------
--- 6. Droits d'exécution explicites
+-- 6. Effacement des coordonnées : la clé d'envoi est effacée aussi
+--    (remplace la version de la migration 002, le reste est inchangé)
+-- ---------------------------------------------------------------------
+create or replace function public._effacer_coordonnees_inscriptions()
+returns integer
+language plpgsql volatile security definer set search_path = public, pg_temp as $$
+declare n integer;
+begin
+  if current_date <= public._date_course() then
+    raise exception 'L''effacement n''est possible qu''après la course';
+  end if;
+  update public.inscriptions set
+    nom = left(nom, 1) || '.',
+    telephone = 'efface-' || left(id::text, 8),
+    email = null,
+    date_naissance = make_date(extract(year from date_naissance)::integer, 1, 1),
+    ville = null,
+    urgence_nom = '',
+    urgence_tel = '',
+    transaction_id = null,
+    cle_envoi = null,
+    anonymise_at = now()
+  where anonymise_at is null;
+  get diagnostics n = row_count;
+  return n;
+end $$;
+revoke all on function public._effacer_coordonnees_inscriptions() from public, anon, authenticated;
+
+-- ---------------------------------------------------------------------
+-- 7. Droits d'exécution explicites
 -- ---------------------------------------------------------------------
 revoke all on function public._transaction_deja_utilisee(text, text, text) from public, anon, authenticated;
 revoke all on function public._etat_inscriptions() from public, anon, authenticated;
