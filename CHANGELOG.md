@@ -8,6 +8,15 @@ Numérotation : `vMAJEUR.MINEUR.CORRECTIF` (par exemple v1.1.2 = deuxième corre
 
 Ce qui est fusionné dans `develop` mais pas encore en production. Chaque Pull Request ajoute sa ligne ici.
 
+### Ouverture des inscriptions et anti-doublons — #29, #28
+- Interrupteur d'ouverture dans l'espace organisateurs (tableau de bord) : ouvertes / fermées, quota de la vague, message affiché quand c'est fermé. **Fermées par défaut** à l'installation. Sert aussi à suspendre en cas d'incident.
+- Quota exact même sous forte affluence (créations sérialisées par un verrou) ; « Complet » affiché quand il est atteint ; « Plus que N places » sous 300 places.
+- Clé d'envoi tirée par l'appli pour chaque formulaire : un double clic ou un nouvel essai après une coupure réseau renvoie la même référence au lieu de créer une seconde inscription.
+- Même personne (nom, prénom, date de naissance, sans tenir compte de la casse ni des espaces) refusée si elle a déjà une inscription non annulée.
+- Un identifiant de transaction Mobile Money ne peut être déclaré qu'une fois (inscriptions et dons confondus, par opérateur) ; index uniques en dernier recours.
+- Tests SQL `tests/verifier_003.sql` et scénarios de démonstration ajoutés à `tests/verifier_demo.py`.
+- Migration `003_ouverture_et_doublons.sql`.
+
 ### Données personnelles (loi n° 2024/017) — #6
 - Inscription : e-mail obligatoire, ville plus demandée.
 - Texte de consentement complet (finalités, hébergement en Europe, prestataires, effacement des coordonnées au plus tard trois mois après la course, données gardées pour les résultats, contact) ; chaque version conservée (`consentements_textes`), version et horodatage enregistrés avec l'inscription ; version inconnue refusée.

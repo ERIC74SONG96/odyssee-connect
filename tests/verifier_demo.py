@@ -67,6 +67,50 @@ def main():
                     echecs.append("inscription d'un mineur : accord parental, horodatage ou ville mal enregistrés")
                 else:
                     print("ok  inscription d'un mineur avec accord parental")
+        # Anti-doublons (#28) : un même envoi répété ne crée qu'une inscription ; même personne refusée
+        res = page.evaluate("""async () => {
+          const E = window.ODC_DATA.creer();
+          const f = { nom: 'Ngo', prenom: 'Alice', telephone: '+237699000021', email: 'a@exemple.cm', date_naissance: '1990-02-02',
+                      sexe: 'F', distance: '5', categorie: 'travailleur', urgence_nom: 'U', urgence_tel: '+237699000022',
+                      consentement: true, consentement_version: '2026-11-25', don: 0, cle_envoi: crypto.randomUUID() };
+          const avant = JSON.parse(localStorage.getItem('odc_demo_v1')).inscriptions.length;
+          const r1 = await E.creerInscription(f); const r2 = await E.creerInscription(f);
+          const apres = JSON.parse(localStorage.getItem('odc_demo_v1')).inscriptions.length;
+          let doublon = '';
+          try { await E.creerInscription({ ...f, nom: ' NGO ', distance: '10', cle_envoi: crypto.randomUUID() }); } catch (e) { doublon = e.message; }
+          let sansCle = '';
+          try { const g = { ...f, prenom: 'Bea' }; delete g.cle_envoi; await E.creerInscription(g); } catch (e) { sansCle = e.message; }
+          return { meme: r1.reference === r2.reference, cree: apres - avant, doublon, sansCle };
+        }""")
+        if not res["meme"] or res["cree"] != 1:
+            echecs.append(f"anti-doublons : envoi répété mal géré ({res})")
+        elif not res["doublon"].startswith("Cette personne est déjà inscrite"):
+            echecs.append(f"anti-doublons : même personne acceptée ({res['doublon']!r})")
+        elif not res["sansCle"].startswith("Version de l'appli"):
+            echecs.append(f"anti-doublons : envoi sans clé accepté ({res['sansCle']!r})")
+        else:
+            print("ok  envoi répété, même personne et clé manquante")
+        # Interrupteur (#29) : l'équipe ferme, l'appli l'affiche, puis l'équipe rouvre depuis l'espace organisateurs
+        page.evaluate("""async () => { const E = window.ODC_DATA.creer(); await E.connexion('equipe@exemple.cm', 'odyssee2027');
+                          await E.reglerInscriptions(false, 3000, 'Inscriptions suspendues pour le test.'); }""")
+        page.goto(URL + "#course"); page.reload(); page.wait_for_timeout(900)
+        corps = page.inner_text("body")
+        if "Inscriptions fermées" not in corps or "suspendues pour le test" not in corps:
+            echecs.append("interrupteur : la fermeture n'apparaît pas sur l'écran de la course")
+        else:
+            page.goto(URL + "#inscription"); page.wait_for_timeout(500)
+            if page.locator('form[data-form="ins1"]').count():
+                echecs.append("interrupteur : le formulaire reste accessible quand c'est fermé")
+            else:
+                page.goto(URL + "#admin"); page.wait_for_timeout(1500)
+                page.check('form[data-form="reglages"] input[name="ouvertes"][value="oui"]')
+                page.fill('form[data-form="reglages"] input[name="quota"]', "3000")
+                page.click('form[data-form="reglages"] button[type="submit"]'); page.wait_for_timeout(1200)
+                page.goto(URL + "#course"); page.wait_for_timeout(600)
+                if not page.locator('.barre-bas a[data-action="ins-debut"]').count():
+                    echecs.append("interrupteur : réouverture depuis l'espace organisateurs sans effet")
+                else:
+                    print("ok  fermeture affichée, formulaire bloqué, réouverture par l'équipe")
         nav.close()
     if echecs:
         print("\n".join(["", "ÉCHECS :"] + echecs))

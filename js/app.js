@@ -129,6 +129,29 @@
     S.moi = S.mes[0] || null; S.consult = null; stockage.ecrire('odc_mes', S.mes);
   }
 
+  // Ouverture des inscriptions (réglée par l'équipe). Sans réponse du serveur, on laisse essayer :
+  // c'est le serveur qui refuse avec un message clair.
+  function etatInscriptions() {
+    const e = S.etat && S.etat.inscriptions;
+    if (!e) return { ouvert: true, complet: false, restantes: null, message: '' };
+    return { ouvert: !!e.ouvertes, complet: e.ouvertes && e.restantes <= 0, restantes: e.restantes, quota: e.quota,
+             message: (e.message || '').trim() || "Les inscriptions ne sont pas encore ouvertes. Suivez nos annonces." };
+  }
+  function boutonInscription(d, classe) {
+    const e = etatInscriptions();
+    if (!e.ouvert) return `<button class="btn ${classe}" disabled>Inscriptions fermées</button><p class="note" style="margin:6px 0 0;text-align:center">${esc(e.message)}</p>`;
+    if (e.complet) return `<button class="btn ${classe}" disabled>Complet</button><p class="note" style="margin:6px 0 0;text-align:center">Toutes les places de cette vague sont prises. Suivez nos annonces pour la prochaine ouverture.</p>`;
+    const peu = e.restantes != null && e.restantes <= 300 ? `<p class="note" style="margin:6px 0 0;text-align:center">Plus que ${e.restantes.toLocaleString('fr-FR')} place${e.restantes > 1 ? 's' : ''} dans cette vague.</p>` : '';
+    return `<a class="btn ${classe}" href="#inscription" data-action="ins-debut">S'inscrire au ${esc(d.km)}${classe === 'vert-fonce' ? ' ' + I.fleche : ''}</a>${peu}`;
+  }
+  // Clé d'envoi : la même pour toutes les tentatives d'un même formulaire (évite les doubles inscriptions)
+  function nouvelleCle() {
+    if (crypto.randomUUID) return crypto.randomUUID();
+    const b = crypto.getRandomValues(new Uint8Array(16)); b[6] = (b[6] & 15) | 64; b[8] = (b[8] & 63) | 128;
+    const h = [...b].map((x) => x.toString(16).padStart(2, '0')).join('');
+    return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+  }
+
   async function chargerEtat() {
     try {
       const [etat, ann, evs] = await Promise.all([D.etatPublic(), D.annonces().catch(() => S.annonces), D.evenements().catch(() => S.evs || [])]);
@@ -352,10 +375,16 @@
         <div class="carte pile" style="gap:4px"><b>Tarif ${esc(d.km)}</b><span class="note">${d.tarifs.etudiant === d.tarifs.travailleur ? `${fcfa(d.tarifs.etudiant)} pour tous` : `Étudiants ${fcfa(d.tarifs.etudiant)} · Travailleurs ${fcfa(d.tarifs.travailleur)}`}. Tarifs provisoires jusqu'à la validation de la course.</span></div>
         <a class="carte lien-carte" href="#parcours"><b>Voir le parcours</b><span>Voir</span></a>
       </div>
-      <div class="barre-bas"><a class="btn vert-fonce" href="#inscription" data-action="ins-debut">S'inscrire au ${esc(d.km)} ${I.fleche}</a></div>`;
+      <div class="barre-bas">${boutonInscription(d, 'vert-fonce')}</div>`;
   };
 
   V.inscription = () => {
+    const ei = etatInscriptions();
+    if (!ei.ouvert || ei.complet) {
+      return `${entete('Inscription', 'course')}<div class="pad pile">
+        <div class="info r">${I.info}<span>${esc(!ei.ouvert ? ei.message : 'Complet : toutes les places de cette vague sont prises. Suivez nos annonces pour la prochaine ouverture.')}</span></div>
+        <a class="btn contour" href="#dossard">Retrouver mon inscription</a><a class="btn contour" href="#actualites">Voir les annonces</a></div>`;
+    }
     const D0 = S.insData || {};
     const pf = S.profil || {};
     const val = (k, def) => esc(D0[k] != null ? D0[k] : (pf[k] != null ? pf[k] : (def || '')));
@@ -1052,7 +1081,7 @@
         <a class="btn contour" href="#carte">${I.lieu} Voir sur la carte</a>
         <a class="btn contour" href="parcours/parcours-${esc(d.id)}km.gpx" download>Télécharger le tracé (GPX)</a>` : `
         <button class="btn vert-fonce" ${infos.detail ? `data-action="lien" data-url="${esc(infos.detail)}"` : 'disabled'}>Voir le détail du parcours</button>`}
-        <a class="btn j" href="#inscription" data-action="ins-debut">S'inscrire au ${esc(d.km)}</a>
+        ${boutonInscription(d, 'j')}
       </div>`;
   };
 
@@ -1479,7 +1508,21 @@
       const payes = ins.filter((i) => i.statut === 'paye');
       const par = (k) => `${payes.filter((i) => i.distance === k).length} / ${actifs.filter((i) => i.distance === k).length}`;
       const stat = (v, t) => `<div class="stat"><b>${v}</b><span>${t}</span></div>`;
-      return `
+      const ei = (S.etat && S.etat.inscriptions) || null;
+      const reglages = ei ? `
+        <form data-form="reglages" class="carte pile" novalidate style="gap:6px;margin-bottom:12px">
+          <b>Ouverture des inscriptions</b>
+          <span class="note">${ei.ouvertes ? '<b style="color:var(--vert)">Ouvertes</b>' : '<b style="color:var(--rouge)">Fermées</b>'} · ${(ei.quota - ei.restantes).toLocaleString('fr-FR')} inscriptions sur ${ei.quota.toLocaleString('fr-FR')} places (hors annulées) · ${ei.restantes.toLocaleString('fr-FR')} restantes.</span>
+          <span class="radios" role="radiogroup" aria-label="Inscriptions">
+            <label><input type="radio" name="ouvertes" value="oui" ${ei.ouvertes ? 'checked' : ''}> Ouvertes</label>
+            <label><input type="radio" name="ouvertes" value="non" ${ei.ouvertes ? '' : 'checked'}> Fermées</label></span>
+          <label class="champ">Quota de la vague (places, annulées non comptées)<input name="quota" type="number" min="0" max="100000" step="1" inputmode="numeric" required value="${esc(ei.quota)}"></label>
+          <label class="champ">Message affiché quand c'est fermé <span class="note">facultatif</span><textarea name="message" maxlength="300" rows="2" placeholder="Ex. : Inscriptions suspendues pour maintenance, reprise à 18 h.">${esc(ei.message || '')}</textarea></label>
+          <p class="note">En cas d'incident (paiements anormaux, panne), fermer ici suspend aussitôt les nouvelles inscriptions ; celles déjà faites restent consultables et payables.</p>
+          <p class="erreur" role="alert"></p>
+          <button class="btn petit" type="submit">Enregistrer</button>
+        </form>` : '';
+      return `${reglages}
         <div class="stats">
           ${stat(actifs.length, 'inscriptions (hors annulées)')}
           ${stat(payes.length, 'validées, dossard attribué')}
@@ -2149,7 +2192,7 @@
       if (type === 'ins1') {
         if (!window.ODC_DATA.telValide(v.telephone) || !window.ODC_DATA.telValide(v.urgence_tel)) return echec('Vérifiez les numéros de téléphone (8 à 15 chiffres).');
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email || '')) return echec("L'adresse e-mail n'est pas valide.");
-        S.insData = v; S.insEtape = 2; rendre(true); return;
+        S.insData = v; S.insEtape = 2; if (!S.cleEnvoi) S.cleEnvoi = nouvelleCle(); rendre(true); return;
       }
       if (type === 'inscription') {
         const don = v.don_autre !== undefined ? Math.max(0, parseInt(v.don_autre, 10) || 0) : S.choix.don;
@@ -2159,8 +2202,9 @@
           nom: P.nom, prenom: P.prenom, telephone: P.telephone, email: P.email, date_naissance: P.date_naissance, sexe: P.sexe,
           distance: S.choix.distance, categorie: S.choix.categorie, urgence_nom: P.urgence_nom, urgence_tel: P.urgence_tel, consentement: true,
           consentement_parental: v.consentement_parental === 'on', consentement_version: CONSENTEMENT_VERSION, don,
-          taille_tshirt: S.choix.taille
+          taille_tshirt: S.choix.taille, cle_envoi: S.cleEnvoi || (S.cleEnvoi = nouvelleCle())
         });
+        S.cleEnvoi = null;
         ajouterMoi({ reference: r.reference, telephone: P.telephone, prenom: P.prenom });
         S.insData = null; S.insEtape = 1;
         S.choix.don = 0;
@@ -2259,11 +2303,22 @@
         await D.enregistrerContenu(p); S.adm.ctEdit = null; S.contenus = null; toast('Enregistré'); await admCharger();
       } else if (type === 'connexion') {
         await D.connexion(v.email, v.mdp); S.staff = true; rendre(true); admCharger();
+      } else if (type === 'reglages') {
+        const quota = parseInt(v.quota, 10);
+        if (!Number.isInteger(quota) || quota < 0 || quota > 100000) return echec('Le quota doit être un nombre entre 0 et 100 000.');
+        const e = await D.reglerInscriptions(v.ouvertes === 'oui', quota, v.message);
+        if (S.etat) S.etat.inscriptions = e;
+        toast(e.ouvertes ? `Inscriptions ouvertes · ${e.restantes.toLocaleString('fr-FR')} places restantes` : 'Inscriptions fermées');
+        await admCharger();
       } else if (type === 'fonds') {
         await D.majFonds(Math.max(0, parseInt(v.collecte, 10) || 0), Math.max(0, parseInt(v.donateurs, 10) || 0));
         toast('Fonds mis à jour'); await admCharger();
       }
-    } catch (e) { return echec(e.message || 'Une erreur est survenue. Réessayez.'); }
+    } catch (e) {
+      let m = e.message || 'Une erreur est survenue. Réessayez.';
+      if (type === 'inscription' && /^Connexion impossible/.test(m)) m += " Vous pouvez renvoyer sans crainte : l'inscription ne sera pas créée deux fois.";
+      return echec(m);
+    }
     if (btn) btn.disabled = false; f.classList.remove('charge');
   });
 
