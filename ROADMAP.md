@@ -5,7 +5,7 @@ Le détail des tâches est dans les *issues* GitHub, rangées par jalon (*milest
 
 **Repères du 10 KM de Yaoundé 2027** (date provisoire) :
 - course : samedi 10 juillet 2027, départ à 8 h ;
-- ouverture des inscriptions : environ trois mois avant, vers le 10 avril 2027 ;
+- ouverture des inscriptions : **décembre 2026** (jour exact à confirmer) ;
 - gel des changements : deux semaines avant la course, vers le 26 juin 2027. Après cette date, seuls les correctifs urgents (`hotfix/*`) passent.
 
 Les dates des jalons sont des cibles de travail, à ajuster en réunion d'équipe.
@@ -26,17 +26,20 @@ Version actuelle. Tout fonctionne en **mode démonstration** (données gardées 
 - Espace organisateurs : 16 onglets (inscriptions, retrait des dossards par scan, paiements, modération…)
 - Base Supabase : tables, règles de sécurité (RLS), fonctions — `supabase/migrations/001_schema_initial.sql`
 
-## 🔜 v1.0 — Ouverture des inscriptions (cible : mars 2027)
+## 🔜 v1.0 — Mise en production et ouverture des inscriptions (cible : décembre 2026)
 
-Mettre la v0.9 en ligne pour de vrai, sans nouvelle fonction.
+**Priorité : permettre l'ouverture effective des inscriptions en décembre 2026.** Pas de nouvelle fonctionnalité avant cette ouverture : sécuriser et mettre en service le parcours existant.
 
+- [ ] Finaliser et vérifier les formulaires, tarifs, règles d'inscription et informations obligatoires
 - [ ] Créer les projets Supabase **test** et **production**, appliquer les migrations
 - [ ] Héberger l'appli sur un nom de domaine (production et test)
 - [ ] Renseigner `js/config.js` : numéros Mobile Money, contact, prix de la boutique
 - [ ] Confirmer les tarifs (le 3 km est provisoire) et les plages de dossards
 - [ ] Créer les comptes de l'équipe organisatrice (table `staff`)
 - [ ] Mentions légales et protection des données (loi camerounaise) relues
-- [ ] Test de charge : quelques milliers d'inscriptions simultanées sur la base de test
+- [ ] Tester de bout en bout une inscription et la validation manuelle du paiement sur l'environnement de test
+- [ ] Vérifier la sécurité des données et les permissions avant l'ouverture publique
+- [ ] Prévoir une vérification de capacité de la base avant la montée en charge des inscriptions
 - [ ] Choisir un fournisseur de tuiles de carte pour le jour J (la politique d'OpenStreetMap limite l'usage de ses serveurs)
 
 ## 🔜 v1.1 — Paiement automatique (cible : mai 2027)
