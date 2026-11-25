@@ -155,6 +155,38 @@ def main():
                 echecs.append("délai : l'espace organisateurs ne signale pas l'inscription hors délai")
             else:
                 print("ok  délai de paiement : place libérée après 48 h, paiement tardif refusé si complet, signalé à l'équipe")
+
+        # Vérification des paiements (#27) : l'équipe refuse un paiement introuvable, le coureur voit le motif
+        page.goto(URL + "#accueil"); page.wait_for_timeout(400)
+        ref = page.evaluate("""async () => {
+            const E = window.ODC_DATA.creer();
+            const p = { nom: 'Verif', prenom: 'Paiement', telephone: '+237699700001', email: 'v@exemple.cm', sexe: 'M',
+                        distance: '10', categorie: 'travailleur', urgence_nom: 'U', urgence_tel: '+237699700002', consentement: true,
+                        consentement_version: '2026-11-25', date_naissance: '1985-05-05', cle_envoi: crypto.randomUUID() };
+            const a = await E.creerInscription(p);
+            await E.declarerPaiement(a.reference, p.telephone, 'orange', 'OM-FAUX-777');
+            localStorage.setItem('odc_mes', JSON.stringify([{ reference: a.reference, telephone: p.telephone, prenom: p.prenom }]));
+            return a.reference;
+        }""")
+        page.goto(URL + "#admin"); page.reload(); page.wait_for_timeout(1800)
+        page.click('button[data-action="adm-onglet"][data-k="verification"]'); page.wait_for_timeout(600)
+        page.fill('input[data-filtre="vq"]', "OM-FAUX"); page.wait_for_timeout(300)
+        cartes = page.locator('#adm-liste .ligne-adm').count()
+        if cartes != 1:
+            echecs.append(f"vérification : recherche par identifiant de transaction ({cartes} résultat(s) au lieu de 1)")
+        else:
+            page.click('#adm-liste button[data-action="refus"]'); page.wait_for_timeout(200)
+            page.click('form[data-form="refus"] button[type="submit"]'); page.wait_for_timeout(1500)
+            st = page.evaluate("(r) => JSON.parse(localStorage.getItem('odc_demo_v1')).inscriptions.find((i) => i.reference === r)", ref)
+            if st["statut"] != "en_attente" or st.get("transaction_id") or "introuvable" not in (st.get("motif_refus") or ""):
+                echecs.append(f"vérification : état après refus incorrect ({st['statut']}, {st.get('motif_refus')!r})")
+            else:
+                page.goto(URL + "#dossard"); page.reload(); page.wait_for_timeout(1800)
+                corps = page.inner_text("body")
+                if "Paiement non retrouvé" not in corps or "Déclarer à nouveau mon paiement" not in corps:
+                    echecs.append("vérification : le coureur ne voit pas le motif du refus sur « Mon dossard »")
+                else:
+                    print("ok  vérification des paiements : recherche par transaction, refus motivé, motif affiché au coureur")
         nav.close()
     if echecs:
         print("\n".join(["", "ÉCHECS :"] + echecs))

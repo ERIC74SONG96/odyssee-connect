@@ -8,6 +8,13 @@ Numérotation : `vMAJEUR.MINEUR.CORRECTIF` (par exemple v1.1.2 = deuxième corre
 
 Ce qui est fusionné dans `develop` mais pas encore en production. Chaque Pull Request ajoute sa ligne ici.
 
+### Vérification des paiements par l'équipe — #27
+- Nouvel onglet **Paiements à vérifier** dans l'espace organisateurs : paiements déclarés du plus ancien au plus récent, montant, opérateur, identifiant de transaction en grand, recherche par identifiant / référence / téléphone, filtre MTN ou Orange.
+- **Refuser** un paiement introuvable avec un motif : l'inscription repasse « à payer », l'identifiant déclaré est effacé, le coureur voit le motif sur « Mon dossard » et l'écran de paiement, et dispose d'un nouveau délai complet.
+- Alerte sur le tableau de bord quand un paiement attend depuis plus de 24 h ; compteur dans l'onglet.
+- Procédure : `docs/equipe/verification-paiements.md`. Tests `tests/verifier_005.sql` et scénario dans `tests/verifier_demo.py`.
+- Migration `005_verification_paiements.sql`.
+
 ### Audit de sécurité du SQL — #26
 - Une inscription non payée ne garde sa place que jusqu'à sa **date limite de paiement** (création + 48 h par défaut, réglable dans l'espace organisateurs pour les inscriptions suivantes). Sans cela, des inscriptions abandonnées ou envoyées en masse pouvaient remplir le quota sans payer.
 - Déclaration de paiement : verrous dans le même ordre que la création ; une inscription annulée ou payée ne peut plus repasser en « paiement déclaré » ; une ancienne référence expirée ne peut pas être payée si la même personne s'est réinscrite.

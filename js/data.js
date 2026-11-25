@@ -59,6 +59,7 @@
       dons: () => toutLire('dons'),
       commandes: () => toutLire('commandes'),
       validerPaiement: (id) => rpc('valider_paiement', { p_id: id }),
+      refuserPaiement: (id, motif) => rpc('refuser_paiement', { p_id: id, p_motif: motif }),
       anonymiserInscriptions: () => rpc('anonymiser_inscriptions', {}),
       reglerInscriptions: (ouvertes, quota, message) => rpc('regler_inscriptions', { p_ouvertes: ouvertes, p_quota: quota, p_message: message || null }),
       reglerDelaiPaiement: (heures) => rpc('regler_delai_paiement', { p_heures: heures }),
@@ -285,7 +286,7 @@
         if (!i) return attendre(null);
         const { reference, prenom, nom, distance, categorie, montant, don, statut, dossard, retire, created_at, taille_tshirt } = i;
         return attendre({ reference, prenom, nom, distance, categorie, montant, don, statut, dossard, retire, created_at, taille_tshirt: taille_tshirt || null,
-                          paiement_avant: i.statut === 'en_attente' ? limite(lire(), i) : (i.paiement_avant || null) });
+                          paiement_avant: i.statut === 'en_attente' ? limite(lire(), i) : (i.paiement_avant || null), motif_refus: i.motif_refus || null });
       },
       declarerPaiement: async (ref, tel, op, tx) => {
         if (!['mtn', 'orange'].includes(op)) throw erreur('Opérateur invalide');
@@ -299,7 +300,7 @@
           throw erreur('Le délai de paiement de cette inscription est dépassé et vous avez une inscription plus récente : payez avec sa référence (« Mon dossard »).');
         if (!tient(d, i) && actives(d) >= d.reglages.quota)
           throw erreur("Le délai de paiement de cette inscription est dépassé et toutes les places sont prises. Si vous avez déjà payé, contactez l'organisation avec votre référence.");
-        Object.assign(i, { statut: 'paiement_declare', operateur: op, transaction_id: tx, paiement_declare_at: new Date().toISOString() });
+        Object.assign(i, { statut: 'paiement_declare', operateur: op, transaction_id: tx, paiement_declare_at: new Date().toISOString(), motif_refus: null });
         ecrire(); return attendre(i.statut);
       },
       creerDon: async (f) => {
@@ -380,6 +381,15 @@
         Object.assign(i, { statut: 'paye', paye_at: new Date().toISOString(), dossard: num });
         if (i.don > 0) { d.fonds.collecte += i.don; d.fonds.donateurs += 1; d.fonds.maj = new Date().toISOString(); }
         ecrire(); return attendre(num);
+      },
+      refuserPaiement: async (id, motif) => {
+        exigerStaff(); const d = lire(); const i = trouve(d.inscriptions, id);
+        const m = String(motif || '').trim();
+        if (m.length < 3 || m.length > 200) throw erreur('Indiquez un motif (3 à 200 caractères)');
+        if (i.statut !== 'paiement_declare') throw erreur(`Seul un paiement déclaré peut être refusé (statut actuel : ${i.statut})`);
+        Object.assign(i, { statut: 'en_attente', operateur: null, transaction_id: null, paiement_declare_at: null, motif_refus: m,
+          refus_at: new Date().toISOString(), refus_nombre: (i.refus_nombre || 0) + 1, paiement_avant: new Date(Date.now() + delaiMs(d)).toISOString() });
+        ecrire(); return attendre();
       },
       annulerInscription: async (id) => {
         exigerStaff(); const i = trouve(lire().inscriptions, id);

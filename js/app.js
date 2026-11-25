@@ -466,10 +466,11 @@
     if (!x) { consulterMoi().then(() => route() === 'paiement' && rendre(false)); return `${entete('Paiement', 'dossard')}<p class="vide">Chargement…</p>`; }
     if (x.statut !== 'en_attente') { location.hash = x.statut === 'paiement_declare' ? 'confirmation' : 'dossard'; return ''; }
     const lim = (x.paiement_avant || x.created_at) ? limitePaiement(x) : null;
+    const refus = x.motif_refus ? `<div class="pad" style="padding-bottom:0"><div class="info r">${I.info}<span><b>Votre paiement n'a pas été retrouvé par l'équipe :</b> ${esc(x.motif_refus)}. Vérifiez l'identifiant de transaction dans le SMS de confirmation Mobile Money et déclarez-le à nouveau ci-dessous.</span></div></div>` : '';
     const avis = !lim ? '' : delaiDepasse(x)
       ? `<div class="pad" style="padding-bottom:0"><div class="info r">${I.info}<span>Le délai de paiement est dépassé : votre place n'est plus réservée. Vous pouvez encore payer s'il reste des places.</span></div></div>`
       : `<div class="pad" style="padding-bottom:0"><div class="info">${I.info}<span>Votre place est réservée jusqu'au ${esc(lim.toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }))}.</span></div></div>`;
-    return `${entete('Paiement', 'dossard')}${etapes(3)}${avis}${blocPaiement('inscription', x.reference, S.moi.telephone, x.montant + x.don)}`;
+    return `${entete('Paiement', 'dossard')}${etapes(3)}${refus}${avis}${blocPaiement('inscription', x.reference, S.moi.telephone, x.montant + x.don)}`;
   };
 
   V.confirmation = () => {
@@ -548,7 +549,8 @@
             <span class="note">Référence <span class="ref">${esc(x.reference)}</span></span>
             <span class="note">Montant : ${fcfa(x.montant + x.don)}${x.don ? ` dont ${fcfa(x.don)} de don` : ''}</span>
           </div>
-          ${x.statut === 'en_attente' ? `<a class="btn j" href="#paiement">Payer maintenant</a>` : ''}
+          ${x.statut === 'en_attente' && x.motif_refus ? `<div class="info r">${I.info}<span><b>Paiement non retrouvé :</b> ${esc(x.motif_refus)}. Déclarez à nouveau le bon identifiant de transaction.</span></div>` : ''}
+          ${x.statut === 'en_attente' ? `<a class="btn j" href="#paiement">${x.motif_refus ? 'Déclarer à nouveau mon paiement' : 'Payer maintenant'}</a>` : ''}
           ${x.statut === 'paiement_declare' ? `<div class="info">${I.info}<span>Votre paiement est en cours de vérification. Revenez plus tard : votre numéro de dossard s'affichera ici.</span></div><button class="btn contour" data-action="recharger">Actualiser</button>` : ''}
           ${x.statut === 'annule' ? `<div class="info r">${I.info}<span>Cette inscription a été annulée. Contactez l'organisation si c'est une erreur.</span></div>` : ''}
           ${oublier}
@@ -1510,15 +1512,20 @@
           </form>
         </div>`;
     }
-    const tabs = [['tableau', 'Tableau de bord'], ['evenements', 'Événements et actions'], ['participations', 'Participations'], ['inscriptions', 'Inscriptions 10 KM'], ['retrait', 'Retrait dossards'], ['dons', 'Dons'], ['commandes', 'Boutique'], ['benevoles', 'Bénévoles'], ['candidatures', 'Ambassadeurs et demandes'], ['groupes', 'Groupes locaux'], ['contenus', 'Formations'], ['fil', 'Fil et photos'], ['carte', 'Carte et suivi'], ['annonces', 'Actualités'], ['resultats', 'Résultats'], ['fonds', 'Fonds']];
     return `${entete('Espace organisateurs', 'accueil', D.mode === 'demo' ? 'Mode démonstration' : 'Connecté')}
-      <div class="onglets-adm" role="group" aria-label="Rubriques">${tabs.map(([k, t]) => `<button type="button" data-action="adm-onglet" data-k="${k}" aria-pressed="${S.adm.onglet === k}">${t}</button>`).join('')}</div>
+      <div class="onglets-adm" id="adm-onglets" role="group" aria-label="Rubriques">${ongletsAdm()}</div>
       <div class="pad pile" id="adm">${admContenu()}</div>
       <div class="pad" style="display:flex;gap:8px;flex-wrap:wrap;padding-top:0">
         <button class="btn contour petit" data-action="adm-charger">Actualiser</button>
         <button class="btn contour petit" data-action="deconnexion">Se déconnecter</button>
       </div>`;
   };
+
+  function ongletsAdm() {
+    const aVerifier = (S.adm.ins || []).filter((i) => i.statut === 'paiement_declare').length;
+    const tabs = [['tableau', 'Tableau de bord'], ['verification', `Paiements à vérifier${aVerifier ? ` (${aVerifier})` : ''}`], ['evenements', 'Événements et actions'], ['participations', 'Participations'], ['inscriptions', 'Inscriptions 10 KM'], ['retrait', 'Retrait dossards'], ['dons', 'Dons'], ['commandes', 'Boutique'], ['benevoles', 'Bénévoles'], ['candidatures', 'Ambassadeurs et demandes'], ['groupes', 'Groupes locaux'], ['contenus', 'Formations'], ['fil', 'Fil et photos'], ['carte', 'Carte et suivi'], ['annonces', 'Actualités'], ['resultats', 'Résultats'], ['fonds', 'Fonds']];
+    return tabs.map(([k, t]) => `<button type="button" data-action="adm-onglet" data-k="${k}" aria-pressed="${S.adm.onglet === k}">${t}</button>`).join('');
+  }
 
   function admContenu() {
     const A = S.adm;
@@ -1529,6 +1536,8 @@
       const payes = ins.filter((i) => i.statut === 'paye');
       const par = (k) => `${payes.filter((i) => i.distance === k).length} / ${actifs.filter((i) => i.distance === k).length}`;
       const stat = (v, t) => `<div class="stat"><b>${v}</b><span>${t}</span></div>`;
+      const enRetard = ins.filter((i) => i.statut === 'paiement_declare' && Date.now() - new Date(i.paiement_declare_at).getTime() > 24 * 3600e3).length;
+      const alerteVerif = enRetard ? `<div class="info r" style="margin-bottom:12px">${I.info}<span><b>${enRetard} paiement${enRetard > 1 ? 's' : ''} déclaré${enRetard > 1 ? 's' : ''} depuis plus de 24 h</b> attend${enRetard > 1 ? 'ent' : ''} une vérification. <button class="lien" type="button" data-action="adm-onglet" data-k="verification">Les vérifier</button></span></div>` : '';
       const ei = (S.etat && S.etat.inscriptions) || null;
       const expirees = ins.filter(delaiDepasse).length;
       const reglages = ei ? `
@@ -1546,7 +1555,7 @@
           <p class="erreur" role="alert"></p>
           <button class="btn petit" type="submit">Enregistrer</button>
         </form>` : '';
-      return `${reglages}
+      return `${alerteVerif}${reglages}
         <div class="stats">
           ${stat(actifs.length, 'inscriptions (hors annulées)')}
           ${stat(payes.length, 'validées, dossard attribué')}
@@ -1575,6 +1584,15 @@
           </div>
           <p class="note">Le fichier s'ouvre dans Excel ou Google Sheets.</p>
         </div>`;
+    }
+    if (A.onglet === 'verification') {
+      return `
+        <div class="info">${I.info}<span>Pour chaque paiement déclaré, retrouvez l'identifiant de transaction sur le relevé Mobile Money de l'association (MTN ou Orange) et vérifiez le montant. <b>Trouvé et juste</b> : Valider (le dossard est attribué). <b>Introuvable ou montant faux</b> : Refuser avec un motif ; le coureur le voit et peut déclarer le bon identifiant.</span></div>
+        <div class="filtres">
+          <input type="search" data-filtre="vq" placeholder="Identifiant de transaction, référence, téléphone" value="${esc(A.vq || '')}" aria-label="Rechercher un paiement">
+          <select data-filtre="vop" aria-label="Opérateur"><option value="">MTN et Orange</option><option value="mtn" ${A.vop === 'mtn' ? 'selected' : ''}>MTN</option><option value="orange" ${A.vop === 'orange' ? 'selected' : ''}>Orange</option></select>
+        </div>
+        <div id="adm-liste" class="pile">${admVerification()}</div>`;
     }
     if (A.onglet === 'inscriptions') {
       return `
@@ -1851,6 +1869,44 @@
     return `<p class="note">${res.length} résultat${res.length > 1 ? 's' : ''}${res.length > 200 ? ' · 200 premiers affichés' : ''}</p>` + res.slice(0, 200).map((i) => carteInscription(i)).join('');
   }
 
+  // Paiements déclarés, du plus ancien au plus récent (les plus urgents d'abord)
+  function admVerification() {
+    const A = S.adm; const q = String(A.vq || '').trim().toLowerCase(); const qn = window.ODC_DATA.chiffres(q);
+    const tous = A.ins.filter((i) => i.statut === 'paiement_declare');
+    const res = tous.filter((i) => (!A.vop || i.operateur === A.vop) && (!q || String(i.transaction_id || '').toLowerCase().includes(q)
+        || String(i.reference || '').toLowerCase().includes(q) || (qn.length >= 6 && window.ODC_DATA.chiffres(i.telephone).includes(qn))))
+      .sort((a, b) => String(a.paiement_declare_at || '').localeCompare(String(b.paiement_declare_at || '')));
+    if (!tous.length) return '<p class="vide">Aucun paiement à vérifier. Tout est à jour.</p>';
+    if (!res.length) return '<p class="vide">Aucun paiement ne correspond.</p>';
+    const vieux = tous.filter((i) => Date.now() - new Date(i.paiement_declare_at).getTime() > 24 * 3600e3).length;
+    return `<p class="note">${res.length} paiement${res.length > 1 ? 's' : ''} à vérifier${vieux ? ` · <b style="color:var(--rouge)">${vieux} en attente depuis plus de 24 h</b>` : ''}</p>`
+      + res.slice(0, 200).map((i) => {
+        const d = distance(i.distance); const age = Date.now() - new Date(i.paiement_declare_at).getTime();
+        const ageTxt = age < 3600e3 ? `il y a ${Math.max(1, Math.round(age / 60000))} min` : age < 48 * 3600e3 ? `il y a ${Math.round(age / 3600e3)} h` : `il y a ${Math.round(age / 86400e3)} jours`;
+        const refus = A.refus === i.id;
+        return `
+        <div class="carte ligne-adm">
+          <div class="haut"><b>${esc(i.prenom)} ${esc(i.nom)}</b><span class="statut s-paiement_declare"${age > 24 * 3600e3 ? ' style="background:#fde2e1;color:var(--rouge)"' : ''}>${ageTxt}</span></div>
+          <span><b style="font-size:17px">${fcfa((i.montant || 0) + (i.don || 0))}</b> · ${esc(i.operateur === 'orange' ? 'Orange Money' : 'MTN MoMo')} · transaction <span class="ref">${esc(i.transaction_id || '')}</span></span>
+          <span class="note">Réf. ${esc(i.reference)} · ${esc(d ? d.km : i.distance)} · ${esc(i.telephone || '')}${i.refus_nombre ? ` · déjà refusé ${i.refus_nombre} fois` : ''}</span>
+          ${refus ? `
+          <form data-form="refus" data-id="${esc(i.id)}" class="pile" style="gap:6px" novalidate>
+            <label class="champ">Motif (le coureur le verra)
+              <select name="motif">
+                <option>Identifiant de transaction introuvable sur notre relevé</option>
+                <option>Montant reçu différent du montant à payer</option>
+                <option>Paiement reçu sur un autre numéro que celui de l'association</option>
+                <option value="autre">Autre motif…</option>
+              </select></label>
+            <label class="champ">Autre motif <span class="note">si « Autre motif »</span><input name="autre" maxlength="200"></label>
+            <p class="erreur" role="alert"></p>
+            <div style="display:flex;gap:8px"><button class="btn petit" type="submit">Confirmer le refus</button><button class="btn contour petit" type="button" data-action="refus-non">Annuler</button></div>
+          </form>` : `
+          <div class="actions"><button class="btn petit" data-action="valider" data-id="${esc(i.id)}">Valider le paiement</button><button class="btn contour petit" data-action="refus" data-id="${esc(i.id)}">Refuser…</button></div>`}
+        </div>`;
+      }).join('');
+  }
+
   function admRetrait() {
     const q = String(S.adm.r || '').trim(); if (!q) return '';
     const up = q.toUpperCase(); const qn = window.ODC_DATA.chiffres(q);
@@ -1870,7 +1926,10 @@
     } catch (e) { S.adm.erreur = e.message; }
     S.adm.chargement = false; majAdm();
   }
-  function majAdm() { const el = document.getElementById('adm'); if (el) el.innerHTML = admContenu(); else if (route() === 'admin') rendre(false); }
+  function majAdm() {
+    const el = document.getElementById('adm'); if (el) el.innerHTML = admContenu(); else if (route() === 'admin') rendre(false);
+    const o = document.getElementById('adm-onglets'); if (o) o.innerHTML = ongletsAdm();
+  }
 
 
   // Quiz : format texte de l'espace organisateurs
@@ -2137,6 +2196,8 @@
     }
     else if (a === 'deconnexion') { await D.deconnexion(); S.staff = false; S.adm.ins = []; rendre(true); }
     else if (a === 'csv') csv(b.dataset.k);
+    else if (a === 'refus') { S.adm.refus = b.dataset.id; document.getElementById('adm-liste').innerHTML = admVerification(); }
+    else if (a === 'refus-non') { S.adm.refus = null; document.getElementById('adm-liste').innerHTML = admVerification(); }
     else if (['valider', 'annuler', 'retrait', 'valider-don', 'annuler-don'].includes(a)) {
       b.disabled = true;
       try {
@@ -2155,6 +2216,7 @@
   document.addEventListener('input', (ev) => {
     const t = ev.target;
     if (t.dataset.filtre === 'retrait') { S.adm.r = t.value; document.getElementById('adm-liste').innerHTML = admRetrait(); return; }
+    if (t.dataset.filtre === 'vq' || t.dataset.filtre === 'vop') { S.adm[t.dataset.filtre] = t.value; document.getElementById('adm-liste').innerHTML = admVerification(); return; }
     if (t.dataset.filtre === 'parEv' || t.dataset.filtre === 'candType') return;
     if (t.dataset.filtre) { S.adm[t.dataset.filtre] = t.value; document.getElementById('adm-liste').innerHTML = admListe(); return; }
     if (t.name === 'nom_attestation') { S.nomAttestation = t.value.slice(0, 80); const n = document.querySelector('[data-nom-attestation]'); if (n) n.textContent = S.nomAttestation || 'Votre nom'; return; }
@@ -2327,6 +2389,11 @@
         await D.enregistrerContenu(p); S.adm.ctEdit = null; S.contenus = null; toast('Enregistré'); await admCharger();
       } else if (type === 'connexion') {
         await D.connexion(v.email, v.mdp); S.staff = true; rendre(true); admCharger();
+      } else if (type === 'refus') {
+        const motif = v.motif === 'autre' ? String(v.autre || '').trim() : v.motif;
+        if (!motif || motif.length < 3) return echec('Indiquez le motif du refus.');
+        await D.refuserPaiement(f.dataset.id, motif); S.adm.refus = null;
+        toast('Paiement refusé · le coureur verra le motif'); await admCharger();
       } else if (type === 'reglages') {
         const quota = parseInt(v.quota, 10);
         if (!Number.isInteger(quota) || quota < 0 || quota > 100000) return echec('Le quota doit être un nombre entre 0 et 100 000.');
