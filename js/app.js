@@ -1318,7 +1318,8 @@
       }
       const L = window.L;
       const m = L.map(zone, { zoomControl: true, attributionControl: true }).setView(CARTE.centre, CARTE.zoom);
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© contributeurs OpenStreetMap' }).addTo(m);
+      const fc = C.carte || {};
+      L.tileLayer(fc.tuiles || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: fc.zoomMax || 19, attribution: fc.attribution || '© contributeurs OpenStreetMap' }).addTo(m);
       carteEtat.leaflet = m; carteEtat.calques = L.layerGroup().addTo(m); const coureurs = L.layerGroup().addTo(m);
       const tr = (window.ODC_TRACES || {})['10'];
       if (tr && S.couches.evenements) {
@@ -1442,16 +1443,18 @@
 
   V.fil = () => {
     if (!S.fil && !S.filCharge) { S.filCharge = true; chargerFil(); }
-    return `<header class="barre-acc"><a class="rond-clair" href="#communaute" aria-label="Retour">${I.retour}</a><h1>Fil d'actualité</h1><a class="rond-clair" href="#publier" aria-label="Publier une photo">${I.plus}</a></header>
+    return `<header class="barre-acc"><a class="rond-clair" href="#communaute" aria-label="Retour">${I.retour}</a><h1>Fil d'actualité</h1>${S.staff ? `<a class="rond-clair" href="#publier" aria-label="Publier une photo">${I.plus}</a>` : '<span style="width:40px"></span>'}</header>
       <div class="cats" role="group" aria-label="Catégories">${CATS.map(([k, t]) => `<button type="button" data-action="fil-cat" data-k="${k}" aria-pressed="${S.filCat === k}">${t}</button>`).join('')}</div>
       <div class="pile fil-liste">
-        <a class="publier-cta" href="#publier"><span class="pub-av">${esc((prenomActuel() || '+').charAt(0).toUpperCase())}</span><span>Partagez une photo de votre action…</span>${I.appareil}</a>
+        ${S.staff ? `<a class="publier-cta" href="#publier"><span class="pub-av">O</span><span>Publier une photo au nom de L'Odyssée…</span>${I.appareil}</a>`
+          : `<p class="note" style="margin:0">Les photos sont publiées par l'équipe de L'Odyssée de l'environnement. Aimez-les et commentez-les !</p>`}
         ${!S.fil ? '<p class="vide">Chargement…</p>' : S.filErr ? `<div class="info r">${I.info}<span>${esc(S.filErr)}</span></div>` : S.fil.length ? S.fil.map(cartePublication).join('') : '<p class="vide">Aucune publication dans cette catégorie pour l’instant.</p>'}
       </div>`;
   };
 
   V.publier = () => {
-    if (S.pubFaite) return `${entete('Publier', 'fil')}<div class="pad pile"><div class="info">${I.ok}<span>Merci ! Votre photo est envoyée. Elle apparaîtra dans le fil dès que l'équipe l'aura validée.</span></div><a class="btn" href="#fil" data-action="pub-retour">Retour au fil</a></div>`;
+    if (!S.staff) return `${entete('Publier une photo', 'fil')}<div class="pad pile"><div class="info">${I.info}<span>Seule l'équipe de L'Odyssée de l'environnement publie des photos dans le fil. Vous avez une belle photo d'une action ? Envoyez-la à l'équipe, elle pourra la partager.</span></div><a class="btn" href="#fil">Retour au fil</a></div>`;
+    if (S.pubFaite) return `${entete('Publier', 'fil')}<div class="pad pile"><div class="info">${I.ok}<span>Photo publiée dans le fil.</span></div><a class="btn" href="#fil" data-action="pub-retour">Voir le fil</a></div>`;
     const evs = (S.evs || []).filter((e) => !passe(e) || e.bilan);
     return `${entete('Publier une photo', 'fil')}
       <div class="pad">
@@ -1470,7 +1473,7 @@
           </div>
           ${evs.length ? `<label class="champ">Événement ou action <small>facultatif</small><select name="evenement_id"><option value="">Aucun</option>${evs.map((e) => `<option value="${esc(e.id)}">${esc(e.titre)}</option>`).join('')}</select></label>` : ''}
           <div class="grille2">
-            <label class="champ">Votre nom<input name="auteur" required maxlength="80" value="${esc(prenomActuel())}"></label>
+            <label class="champ">Signature<input name="auteur" required maxlength="80" value="L'Odyssée de l'environnement"></label>
             <label class="champ">Ville<input name="ville" maxlength="80" value="${esc((S.profil && S.profil.ville) || '')}"></label>
           </div>
           <label class="case"><input type="checkbox" name="accord" required> <span>Les personnes reconnaissables sur la photo sont d'accord pour être publiées. Pour un enfant, l'accord de ses parents a été donné.</span></label>
@@ -1754,9 +1757,10 @@
 
     if (A.onglet === 'fil') {
       const l = A.pubs || [];
-      if (!l.length) return '<p class="vide">Aucune publication pour l’instant.</p>';
+      const bouton = '<a class="btn petit" href="#publier" style="align-self:flex-start;margin-bottom:8px">Publier une photo</a>';
+      if (!l.length) return bouton + '<p class="vide">Aucune publication pour l’instant.</p>';
       const LIB = { en_attente: 'À valider', publie: 'Publiée', masque: 'Masquée' };
-      return `<p class="note">${l.filter((x) => x.statut === 'en_attente').length} photo(s) à valider. Vérifiez qu'aucun enfant n'est reconnaissable sans accord et que le contenu respecte la charte.</p>` + l.map((x) => `
+      return bouton + `<p class="note">Avant de publier : pas d'enfant reconnaissable sans l'accord de ses parents, personnes d'accord pour être prises en photo, contenu conforme à la charte.</p>` + l.map((x) => `
         <div class="carte ligne-adm">
           <div class="haut"><b>${esc(x.auteur)}${x.ville ? ' · ' + esc(x.ville) : ''}</b><span class="statut ${x.statut === 'publie' ? 's-paye' : x.statut === 'masque' ? 's-annule' : 's-en_attente'}">${LIB[x.statut]}</span></div>
           <img src="${esc(D.urlPhoto(x.photo))}" alt="" style="width:100%;max-height:260px;object-fit:cover;border-radius:12px">

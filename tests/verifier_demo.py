@@ -191,6 +191,31 @@ def main():
                         echecs.append(f"vérification : identifiant refusé redéclarable ({msg!r})")
                     else:
                         print("ok  vérification des paiements : recherche par transaction, refus motivé, motif affiché au coureur, identifiant refusé bloqué")
+
+        # Fil : seule l'équipe publie (décision du 25/11/2026)
+        page.goto(URL + "#accueil"); page.wait_for_timeout(400)
+        r = page.evaluate("""async () => {
+            const E = window.ODC_DATA.creer(); await E.deconnexion();
+            const f = { appareil: 'abcdefghijklmnop1234', auteur: 'Public', texte: 'test', categorie: 'collecte' };
+            let refus = '';
+            try { await E.creerPublication(f, null, 'data:image/jpeg;base64,AAAA'); } catch (e) { refus = e.message; }
+            await E.connexion('equipe@exemple.cm', 'odyssee2027');
+            await E.creerPublication({ ...f, auteur: '', texte: 'Photo officielle de test' }, null, 'data:image/jpeg;base64,AAAA');
+            const fil = await E.fil('', 'abcdefghijklmnop1234');
+            const x = fil.find((p) => p.texte === 'Photo officielle de test');
+            await E.deconnexion();
+            return { refus, statut: x && x.statut, auteur: x && x.auteur };
+        }""")
+        page.goto(URL + "#fil"); page.reload(); page.wait_for_timeout(1500)
+        cta = page.locator('a.publier-cta').count()
+        if "Accès réservé" not in r["refus"]:
+            echecs.append(f"fil : le public a pu publier ({r['refus']!r})")
+        elif r["statut"] != "publie" or r["auteur"] != "L'Odyssée de l'environnement":
+            echecs.append(f"fil : publication de l'équipe mal enregistrée ({r})")
+        elif cta:
+            echecs.append("fil : le bouton « publier » est visible pour le public")
+        else:
+            print("ok  fil : seule l'équipe publie, publication immédiate, bouton masqué pour le public")
         nav.close()
     if echecs:
         print("\n".join(["", "ÉCHECS :"] + echecs))

@@ -41,3 +41,9 @@ Chaque case cochée est notée dans l'issue #25 avec la date et le nom de la per
 ## Retour arrière
 - Incident : fermer les inscriptions depuis l'espace organisateurs (les inscriptions faites restent consultables).
 - Problème de données : restaurer la dernière sauvegarde Supabase ; prévenir les inscrits concernés.
+
+## Fil d'actualité (photos publiées par l'équipe)
+- Seuls les comptes de l'équipe publient (contrôlé par la base et par le stockage, pas seulement par l'appli).
+- Avant de publier : pas d'enfant reconnaissable sans l'accord de ses parents, personnes d'accord pour être photographiées.
+- **Masquer** une publication la retire du fil, mais la photo reste accessible par son adresse directe (le seau `photos` est public).
+  Pour retirer vraiment une photo problématique : la masquer, puis la supprimer dans Supabase → Storage → `photos/publications/`.
