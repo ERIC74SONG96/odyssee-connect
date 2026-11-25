@@ -34,7 +34,7 @@ drop policy if exists consentements_lecture_staff on public.consentements_textes
 create policy consentements_lecture_staff on public.consentements_textes for select using (public.est_staff());
 
 insert into public.consentements_textes (version, texte) values ('2026-11-25',
-  'J''accepte que L''Odyssée de l''environnement au Cameroun utilise mes données pour organiser la course (inscription, paiement, dossard, sécurité, résultats), conformément à la loi n° 2024/017. Elles sont hébergées sur des serveurs en Europe (Supabase). Elles ne sont jamais vendues ni louées, et ne sont communiquées qu''aux prestataires techniques nécessaires (hébergement, paiement). Mes coordonnées (téléphone, e-mail, contact d''urgence, date de naissance précise) sont effacées au plus tard trois mois après la course ; seuls mon prénom, l''initiale de mon nom, mon épreuve, mon dossard et mon résultat sont conservés pour les résultats. Pour consulter, corriger ou faire supprimer mes données : contact@odyssee-env.org.
+  'J''accepte que L''Odyssée de l''environnement au Cameroun utilise mes données pour organiser la course (inscription, paiement, dossard, sécurité, résultats), conformément à la loi n° 2024/017. Elles sont hébergées sur des serveurs en Europe (Supabase). Elles ne sont jamais vendues ni louées, et ne sont communiquées qu''aux prestataires techniques nécessaires (hébergement, paiement). Mes coordonnées (nom complet, téléphone, e-mail, contact d''urgence, date de naissance précise) sont effacées au plus tard trois mois après la course. Sont alors conservés : pour les résultats, mon prénom, l''initiale de mon nom, mon année de naissance, mon sexe, mon épreuve, ma catégorie, mon dossard et mon résultat ; pour la comptabilité, la référence de l''inscription, les montants payés et leurs dates. Pour consulter, corriger ou faire supprimer mes données : contact@odyssee-env.org.
 [Moins de 18 ans le jour de la course] Un parent ou représentant légal autorise cette inscription et le traitement de ces données.')
 on conflict (version) do nothing;
 
@@ -123,7 +123,8 @@ begin
 end $$;
 
 -- Effacement des coordonnées (pseudonymisation) : fonction interne, appelée par l'équipe ou par pg_cron.
--- Garde prénom, initiale du nom, année de naissance, sexe, épreuve et dossard pour les résultats.
+-- Garde, pour les résultats : prénom, initiale du nom, année de naissance, sexe, épreuve, catégorie, dossard ;
+-- pour la comptabilité : référence, montants, statut et dates. (Ce qui est dit dans le texte de consentement.)
 create or replace function public._effacer_coordonnees_inscriptions()
 returns integer
 language plpgsql volatile security definer set search_path = public, pg_temp as $$
@@ -166,6 +167,7 @@ grant execute on function public.anonymiser_inscriptions() to authenticated;
 grant execute on function public.creer_inscription(jsonb) to anon, authenticated;
 
 -- Effacement automatique le 10 octobre (échéance annoncée), si l'extension pg_cron est activée.
+-- pg_cron tourne en UTC : 03:00 UTC = 04:00 à Yaoundé (UTC+1).
 -- Sans pg_cron, l'équipe lance l'effacement depuis l'espace organisateurs (voir ROADMAP).
 do $do$
 begin
