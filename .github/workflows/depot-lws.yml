@@ -1,11 +1,12 @@
 # Envoie l'application sur LWS : https://inscription.odyssee-env.com/
 # Le mot de passe FTP est dans le secret LWS_FTP_PASSWORD_COM (jamais dans le code).
-# Chaque fusion dans develop met à jour le site de test (version de démonstration tant que js/config.js est vide).
+# Production : seule la branche main (protégée, vérifications obligatoires) est déposée.
+# Lancement manuel possible, mais uniquement depuis main.
 name: Dépôt sur LWS
 
 on:
   push:
-    branches: [develop]
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
@@ -14,7 +15,9 @@ concurrency:
 
 jobs:
   depot:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    environment: production
     steps:
       - uses: actions/checkout@v4
 
