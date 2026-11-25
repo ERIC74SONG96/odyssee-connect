@@ -48,8 +48,13 @@ begin
 end $t$;
 reset role;
 
--- 3. L'inscription « Un » dépasse le délai (49 h) : sa place se libère
-update public.inscriptions set created_at = now() - interval '49 hours' where nom = 'Quatre' and prenom = 'Un';
+-- 3. L'inscription « Un » dépasse sa date limite : sa place se libère
+do $t$ begin
+  if (select paiement_avant from public.inscriptions where nom = 'Quatre' and prenom = 'Un')
+     not between now() + interval '47 hours 59 minutes' and now() + interval '48 hours 1 minute' then
+    raise exception 'ÉCHEC : date limite de paiement différente de création + 48 h'; end if;
+end $t$;
+update public.inscriptions set paiement_avant = now() - interval '1 hour' where nom = 'Quatre' and prenom = 'Un';
 set local role anon;
 do $t$
 declare b jsonb := '{"telephone":"+237699400001","email":"x@exemple.cm","sexe":"F","distance":"5","categorie":"etudiant","urgence_nom":"U","urgence_tel":"+237699400002","consentement":true,"consentement_version":"2026-11-25","date_naissance":"1995-03-01"}';
@@ -63,6 +68,20 @@ begin
   exception when others then if sqlerrm like 'ÉCHEC%' then raise; end if;
     if sqlerrm not like 'Complet%' then raise exception 'ÉCHEC : la personne expirée est refusée pour un autre motif : %', sqlerrm; end if; end;
 end $t$;
+reset role;
+
+-- 3 bis. Allonger le délai ne fait pas revivre une inscription expirée (pas de dépassement du quota)
+set local role authenticated;
+set local request.jwt.uid = '00000000-0000-0000-0000-0000000000dd';
+do $t$ begin perform public.regler_delai_paiement(720); end $t$;
+reset role;
+do $t$ begin
+  if (public.etat_public() -> 'inscriptions' ->> 'restantes')::int <> 0 then
+    raise exception 'ÉCHEC : allonger le délai a réactivé une inscription expirée'; end if;
+end $t$;
+set local role authenticated;
+set local request.jwt.uid = '00000000-0000-0000-0000-0000000000dd';
+do $t$ begin perform public.regler_delai_paiement(48); end $t$;
 reset role;
 
 -- 4. « Un » (expirée) déclare son paiement alors que tout est pris : refus clair
@@ -99,6 +118,49 @@ do $t$ begin
   if (public.etat_public() -> 'inscriptions' ->> 'restantes')::int <> 0 then raise exception 'ÉCHEC : un paiement déclaré a perdu sa place'; end if;
 end $t$;
 
+-- 6 ter. Une inscription annulée par l'équipe ne peut pas être « redéclarée » payée
+set local role authenticated;
+set local request.jwt.uid = '00000000-0000-0000-0000-0000000000dd';
+do $t$ begin
+  perform public.regler_inscriptions(true, 10, null);
+  perform public.annuler_inscription((select id from public.inscriptions where nom = 'Quatre' and prenom = 'Deux'));
+end $t$;
+reset role;
+set local role anon;
+do $t$
+declare r text := (select reference from public.inscriptions where nom = 'Quatre' and prenom = 'Deux');
+begin
+  begin
+    perform public.declarer_paiement(r, '+237699400001', 'orange', 'TX-QUATRE-DEUX');
+    raise exception 'ÉCHEC : une inscription annulée a été remise en « paiement déclaré »';
+  exception when others then if sqlerrm like 'ÉCHEC%' then raise; end if;
+    if sqlerrm not like 'Inscription introuvable%' then raise exception 'ÉCHEC : message inattendu (annulée) : %', sqlerrm; end if; end;
+end $t$;
+reset role;
+
+-- 6 quater. Expirée puis réinscrite : l'ancienne référence ne peut plus être payée
+set local role anon;
+do $t$
+declare b jsonb := '{"nom":"Cinq","prenom":"Ancien","telephone":"+237699400011","email":"y@exemple.cm","sexe":"M","distance":"10","categorie":"travailleur","urgence_nom":"U","urgence_tel":"+237699400012","consentement":true,"consentement_version":"2026-11-25","date_naissance":"1988-07-07"}';
+begin
+  perform public.creer_inscription(b || jsonb_build_object('cle_envoi', gen_random_uuid()));
+end $t$;
+reset role;
+update public.inscriptions set paiement_avant = now() - interval '1 hour' where nom = 'Cinq';
+set local role anon;
+do $t$
+declare b jsonb := '{"nom":"Cinq","prenom":"Ancien","telephone":"+237699400011","email":"y@exemple.cm","sexe":"M","distance":"10","categorie":"travailleur","urgence_nom":"U","urgence_tel":"+237699400012","consentement":true,"consentement_version":"2026-11-25","date_naissance":"1988-07-07"}';
+  ancienne text := (select reference from public.inscriptions where nom = 'Cinq');
+begin
+  perform public.creer_inscription(b || jsonb_build_object('cle_envoi', gen_random_uuid()));
+  begin
+    perform public.declarer_paiement(ancienne, '+237699400011', 'mtn', 'TX-CINQ-ANCIEN');
+    raise exception 'ÉCHEC : l''ancienne référence a pu être payée alors qu''une plus récente tient une place';
+  exception when others then if sqlerrm like 'ÉCHEC%' then raise; end if;
+    if sqlerrm not like '%plus récente%' then raise exception 'ÉCHEC : message inattendu (réinscrit) : %', sqlerrm; end if; end;
+end $t$;
+reset role;
+
 -- 6 bis. Une inscription payée (validée par l'équipe) garde sa place pour toujours
 set local role authenticated;
 set local request.jwt.uid = '00000000-0000-0000-0000-0000000000dd';
@@ -110,7 +172,8 @@ update public.inscriptions set created_at = now() - interval '60 days' where nom
 do $t$ begin
   if (select statut from public.inscriptions where nom = 'Quatre' and prenom = 'Un') <> 'paye' then
     raise exception 'ÉCHEC : la validation n''a pas donné le statut paye'; end if;
-  if (public.etat_public() -> 'inscriptions' ->> 'restantes')::int <> 0 then raise exception 'ÉCHEC : une inscription payée a perdu sa place'; end if;
+  if not (select public._place_tenue(statut, paiement_avant) from public.inscriptions where nom = 'Quatre' and prenom = 'Un') then
+    raise exception 'ÉCHEC : une inscription payée a perdu sa place'; end if;
 end $t$;
 
 -- 7. Droits : anon et authenticated ne peuvent ni écrire ni vider les tables
@@ -143,6 +206,20 @@ begin
    where n.nspname = 'public' and p.proname like '\_%'
      and (has_function_privilege('anon', p.oid, 'execute') or has_function_privilege('authenticated', p.oid, 'execute'));
   if f is not null then raise exception 'ÉCHEC : fonctions internes exécutables : %', f; end if;
+end $t$;
+
+-- 8 bis. Liste blanche : seules ces fonctions sont exécutables par anon
+do $t$
+declare f text;
+begin
+  select string_agg(p.proname, ', ' order by p.proname) into f from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+   where n.nspname = 'public' and has_function_privilege('anon', p.oid, 'execute')
+     and p.proname not in ('aimer','annonces_publiques','arreter_position','commentaires_publics','commenter',
+       'consulter_inscription','contenus_publics','creer_benevole','creer_candidature','creer_commande','creer_don',
+       'creer_inscription','creer_participation','creer_publication','declarer_don','declarer_paiement','est_staff',
+       'etat_public','evenements_publics','fil_public','groupes_publics','impact_public','partager_position',
+       'points_publics','positions_publiques','resultats_publics','signaler','suivi_etat');
+  if f is not null then raise exception 'ÉCHEC : fonctions exécutables par anon hors liste blanche : %', f; end if;
 end $t$;
 
 -- 9. Tout compte connecté non-staff est refusé par chaque fonction réservée à l'équipe

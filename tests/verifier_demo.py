@@ -130,7 +130,7 @@ def main():
             let complet = false;
             try { await E.creerInscription({ ...p, prenom: 'Autre', cle_envoi: crypto.randomUUID() }); } catch (e) { complet = /Complet/.test(e.message); }
             const d = JSON.parse(localStorage.getItem('odc_demo_v1'));
-            d.inscriptions.find((i) => i.reference === a.reference).created_at = new Date(Date.now() - 49 * 3600e3).toISOString();
+            d.inscriptions.find((i) => i.reference === a.reference).paiement_avant = new Date(Date.now() - 3600e3).toISOString();
             localStorage.setItem('odc_demo_v1', JSON.stringify(d));
             const E2 = window.ODC_DATA.creer();   // relit le stockage modifié
             await E2.connexion('equipe@exemple.cm', 'odyssee2027');

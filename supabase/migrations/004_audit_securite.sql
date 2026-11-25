@@ -1,11 +1,16 @@
 -- =====================================================================
 -- Migration 004 : audit de sécurité avant la production (issue #26)
---   1. Places « réservées » : une inscription non payée ne bloque une place
---      que pendant un délai (48 h par défaut). Sans cela, des inscriptions
---      abandonnées, ou envoyées en masse par un robot, rempliraient le quota.
---   2. Droits sur les tables : anon et authenticated ne gardent que la lecture
---      (filtrée par la RLS). Toutes les écritures passent par les fonctions.
---   3. Stockage : plus de dépôt de photos anonyme (fonction communautaire v2).
+--   1. Délai de paiement : une inscription non payée ne tient sa place que
+--      jusqu'à sa date limite (« paiement_avant », fixée à la création :
+--      48 h par défaut). Sans cela, des inscriptions abandonnées ou envoyées
+--      en masse par un robot rempliraient le quota sans payer.
+--      Changer le délai ne vaut que pour les nouvelles inscriptions : une
+--      inscription déjà expirée ne reprend jamais de place toute seule.
+--   2. Déclaration de paiement sérialisée avec les créations (même verrou),
+--      ligne verrouillée, aucun retour en arrière depuis « payé » ou « annulé ».
+--   3. Droits : anon et authenticated ne gardent que la lecture sur les
+--      tables (filtrée par la RLS) ; plus de droit EXECUTE implicite (PUBLIC)
+--      sur les fonctions futures ; plus de dépôt anonyme de photos.
 -- Relançable sans erreur.
 -- =====================================================================
 
@@ -21,23 +26,35 @@ do $$ begin
   end if;
 end $$;
 
+alter table public.inscriptions add column if not exists paiement_avant timestamptz;
+-- Inscriptions déjà en attente : date limite = création + délai actuel
+update public.inscriptions i
+   set paiement_avant = i.created_at + make_interval(hours => coalesce(
+         (select r.delai_paiement_heures from public.reglages_inscriptions r where r.id = 1), 48))
+ where i.statut = 'en_attente' and i.paiement_avant is null;
+
+-- Comptage rapide des places tenues
+create index if not exists inscriptions_tenues_idx on public.inscriptions (statut) where statut in ('paye','paiement_declare');
+create index if not exists inscriptions_attente_idx on public.inscriptions (paiement_avant) where statut = 'en_attente';
+-- Contrôle « 6 inscriptions au plus par numéro » sans parcourir toute la table (fait sous verrou)
+create index if not exists inscriptions_tel_chiffres_idx on public.inscriptions (public._chiffres(telephone));
+
 -- Une inscription tient-elle une place ? Payée ou paiement déclaré : oui.
--- En attente de paiement : seulement pendant le délai.
-create or replace function public._place_tenue(p_statut text, p_cree timestamptz)
-returns boolean language sql stable security definer set search_path = public, pg_temp as $$
-  select case
-    when p_statut in ('paye','paiement_declare') then true
-    when p_statut = 'en_attente' then p_cree > now() - make_interval(hours => coalesce(
-           (select r.delai_paiement_heures from public.reglages_inscriptions r where r.id = 1), 48))
-    else false end;
+-- En attente : seulement avant sa date limite. (Fonction simple, en ligne dans les requêtes.)
+drop function if exists public._place_tenue(text, timestamptz);
+create function public._place_tenue(p_statut text, p_paiement_avant timestamptz)
+returns boolean language sql stable set search_path = public, pg_temp as $$
+  select p_statut in ('paye','paiement_declare')
+      or (p_statut = 'en_attente' and coalesce(p_paiement_avant > now(), false));
 $$;
 
 create or replace function public._places_prises()
 returns integer language sql stable security definer set search_path = public, pg_temp as $$
-  select count(*)::integer from public.inscriptions i where public._place_tenue(i.statut, i.created_at);
+  select ((select count(*) from public.inscriptions where statut in ('paye','paiement_declare'))
+        + (select count(*) from public.inscriptions where statut = 'en_attente' and paiement_avant > now()))::integer;
 $$;
 
--- Création d'une inscription : quota et anti-doublons sur les places tenues
+-- Création d'une inscription : quota et anti-doublons sur les places tenues, date limite enregistrée
 create or replace function public.creer_inscription(p jsonb)
 returns table (reference text, montant integer, don integer)
 language plpgsql volatile security definer set search_path = public, pg_temp as $$
@@ -132,11 +149,11 @@ begin
   -- Même personne déjà inscrite (hors annulées)
   if exists (select 1 from public.inscriptions i
               where lower(btrim(i.nom)) = lower(v_nom) and lower(btrim(i.prenom)) = lower(v_prenom)
-                and i.date_naissance = v_ddn and public._place_tenue(i.statut, i.created_at)) then
+                and i.date_naissance = v_ddn and public._place_tenue(i.statut, i.paiement_avant)) then
     raise exception 'Cette personne est déjà inscrite (même nom, prénom et date de naissance). Retrouvez l''inscription dans « Mon dossard » avec sa référence, ou contactez l''organisation.';
   end if;
   if (select count(*) from public.inscriptions i
-        where public._chiffres(i.telephone) = public._chiffres(v_tel) and public._place_tenue(i.statut, i.created_at)) >= 6 then
+        where public._chiffres(i.telephone) = public._chiffres(v_tel) and public._place_tenue(i.statut, i.paiement_avant)) >= 6 then
     raise exception 'Trop d''inscriptions avec ce numéro. Contactez l''organisation.';
   end if;
 
@@ -146,7 +163,7 @@ begin
   insert into public.inscriptions (reference, cle_envoi, nom, prenom, telephone, email, date_naissance, sexe, ville,
                                    distance, categorie, urgence_nom, urgence_tel, consentement,
                                    consentement_parental, consentement_version, consentement_at,
-                                   montant, don, taille_tshirt)
+                                   montant, don, taille_tshirt, paiement_avant)
   values (v_ref, v_cle, v_nom, v_prenom, v_tel, v_mail, v_ddn,
           case when p ->> 'sexe' in ('F','M') then p ->> 'sexe' else null end,
           null, v_dist, v_cat,
@@ -155,13 +172,18 @@ begin
           v_mineur and v_parent,
           v_version, now(),
           v_mont, v_don,
-          case when p ->> 'taille_tshirt' in ('XS','S','M','L','XL','XXL') then p ->> 'taille_tshirt' else null end);
+          case when p ->> 'taille_tshirt' in ('XS','S','M','L','XL','XXL') then p ->> 'taille_tshirt' else null end,
+          now() + make_interval(hours => v_reg.delai_paiement_heures));
 
   return query select v_ref, v_mont, v_don;
 end $$;
 
--- Déclarer un paiement : si l'inscription a dépassé le délai, elle ne peut
--- reprendre une place que s'il en reste.
+-- ---------------------------------------------------------------------
+-- 2. Déclarer un paiement
+--    Ordre des verrous identique à la création : réglages, puis l'inscription.
+--    Une inscription hors délai ne reprend une place que s'il en reste et si
+--    la même personne n'a pas déjà une autre inscription qui tient une place.
+-- ---------------------------------------------------------------------
 create or replace function public.declarer_paiement(p_reference text, p_telephone text,
                                                     p_operateur text, p_transaction text)
 returns text language plpgsql volatile security definer set search_path = public, pg_temp as $$
@@ -176,15 +198,23 @@ begin
     raise exception 'Cet identifiant de transaction est déjà déclaré pour un autre paiement. Vérifiez-le ou contactez l''organisation.';
   end if;
 
+  select * into v_reg from public.reglages_inscriptions where id = 1 for update;
   select * into v_ins from public.inscriptions i
    where i.reference = upper(btrim(p_reference))
      and public._chiffres(i.telephone) = public._chiffres(p_telephone)
-     and i.statut in ('en_attente','paiement_declare');
-  if v_ins.id is null then raise exception 'Inscription introuvable ou déjà traitée'; end if;
+   for update;
+  if v_ins.id is null or v_ins.statut not in ('en_attente','paiement_declare') then
+    raise exception 'Inscription introuvable ou déjà traitée';
+  end if;
 
-  if not public._place_tenue(v_ins.statut, v_ins.created_at) then
-    -- Délai dépassé : même verrou que les créations, pour un quota exact
-    select * into v_reg from public.reglages_inscriptions where id = 1 for update;
+  if not public._place_tenue(v_ins.statut, v_ins.paiement_avant) then
+    if exists (select 1 from public.inscriptions i
+                where i.id <> v_ins.id
+                  and lower(btrim(i.nom)) = lower(btrim(v_ins.nom)) and lower(btrim(i.prenom)) = lower(btrim(v_ins.prenom))
+                  and i.date_naissance = v_ins.date_naissance
+                  and public._place_tenue(i.statut, i.paiement_avant)) then
+      raise exception 'Le délai de paiement de cette inscription est dépassé et vous avez une inscription plus récente : payez avec sa référence (« Mon dossard »).';
+    end if;
     if public._places_prises() >= coalesce(v_reg.quota, 0) then
       raise exception 'Le délai de paiement de cette inscription est dépassé et toutes les places sont prises. Si vous avez déjà payé, contactez l''organisation avec votre référence.';
     end if;
@@ -194,15 +224,31 @@ begin
     update public.inscriptions i
        set statut = 'paiement_declare', operateur = p_operateur,
            transaction_id = btrim(p_transaction), paiement_declare_at = now()
-     where i.id = v_ins.id
+     where i.id = v_ins.id and i.statut in ('en_attente','paiement_declare')
     returning i.statut into v_statut;
   exception when unique_violation then
     raise exception 'Cet identifiant de transaction est déjà déclaré pour un autre paiement. Vérifiez-le ou contactez l''organisation.';
   end;
+  if v_statut is null then raise exception 'Inscription introuvable ou déjà traitée'; end if;
   return v_statut;
 end $$;
 
--- Les compteurs publics comptent les places réellement tenues
+-- « Mon dossard » : la date limite de paiement en plus (le type de retour change)
+drop function if exists public.consulter_inscription(text, text);
+create function public.consulter_inscription(p_reference text, p_telephone text)
+returns table (reference text, prenom text, nom text, distance text, categorie text, montant integer,
+               don integer, statut text, dossard integer, retire boolean, created_at timestamptz, taille_tshirt text,
+               paiement_avant timestamptz)
+language sql stable security definer set search_path = public, pg_temp as $$
+  select i.reference, i.prenom, i.nom, i.distance, i.categorie, i.montant, i.don, i.statut,
+         i.dossard, i.retire, i.created_at, i.taille_tshirt, i.paiement_avant
+  from public.inscriptions i
+  where i.reference = upper(btrim(p_reference))
+    and public._chiffres(i.telephone) = public._chiffres(p_telephone)
+  limit 1;
+$$;
+
+-- Compteurs publics : places réellement tenues
 create or replace function public._etat_inscriptions()
 returns jsonb language sql stable security definer set search_path = public, pg_temp as $$
   select jsonb_build_object(
@@ -216,20 +262,25 @@ $$;
 
 create or replace function public.etat_public()
 returns jsonb language sql stable security definer set search_path = public, pg_temp as $$
+  with tenues as (
+    select i.distance from public.inscriptions i where i.statut in ('paye','paiement_declare')
+    union all
+    select i.distance from public.inscriptions i where i.statut = 'en_attente' and i.paiement_avant > now()
+  ), par as (select distance, count(*) n from tenues group by distance)
   select jsonb_build_object(
     'fonds', (select jsonb_build_object('objectif', f.objectif, 'collecte', f.collecte,
                                         'donateurs', f.donateurs, 'maj', f.maj)
               from public.fonds f where f.id = 1),
     'inscrits', jsonb_build_object(
-      '3',  (select count(*) from public.inscriptions i where i.distance = '3'  and public._place_tenue(i.statut, i.created_at)),
-      '5',  (select count(*) from public.inscriptions i where i.distance = '5'  and public._place_tenue(i.statut, i.created_at)),
-      '10', (select count(*) from public.inscriptions i where i.distance = '10' and public._place_tenue(i.statut, i.created_at))),
+      '3',  coalesce((select n from par where distance = '3'), 0),
+      '5',  coalesce((select n from par where distance = '5'), 0),
+      '10', coalesce((select n from par where distance = '10'), 0)),
     'inscriptions', public._etat_inscriptions(),
     'resultats', (select count(*) from public.resultats)
   );
 $$;
 
--- L'équipe règle aussi le délai de paiement (nouvelle signature, l'ancienne reste)
+-- L'équipe règle le délai ; il s'applique aux inscriptions créées ensuite
 create or replace function public.regler_delai_paiement(p_heures integer)
 returns jsonb language plpgsql volatile security definer set search_path = public, pg_temp as $$
 begin
@@ -240,36 +291,37 @@ begin
 end $$;
 
 -- ---------------------------------------------------------------------
--- 2. Droits sur les tables et séquences
---    Supabase accorde par défaut TOUT (y compris TRUNCATE, que la RLS ne
---    filtre pas) à anon et authenticated. On ne garde que SELECT.
+-- 3. Droits
+--    Supabase accorde par défaut TOUT sur les tables (y compris TRUNCATE,
+--    que la RLS ne filtre pas) à anon et authenticated : on ne garde que SELECT.
+--    PostgreSQL donne EXECUTE à PUBLIC sur toute nouvelle fonction : on retire
+--    ce droit implicite pour le rôle qui applique les migrations.
 -- ---------------------------------------------------------------------
 revoke insert, update, delete, truncate, references, trigger on all tables in schema public from anon, authenticated;
 revoke all on all sequences in schema public from anon, authenticated;
 alter default privileges in schema public revoke insert, update, delete, truncate, references, trigger on tables from anon, authenticated;
 alter default privileges in schema public revoke all on sequences from anon, authenticated;
-alter default privileges in schema public revoke execute on functions from public, anon, authenticated;
+alter default privileges in schema public revoke execute on functions from anon, authenticated;
+alter default privileges revoke execute on functions from public;
 
--- ---------------------------------------------------------------------
--- 3. Stockage : pas de dépôt anonyme de photos
--- ---------------------------------------------------------------------
+-- Stockage : pas de dépôt anonyme de photos (fonction communautaire v2)
 do $$ begin
   if exists (select 1 from information_schema.schemata where schema_name = 'storage') then
     drop policy if exists depot_photos_publications on storage.objects;
   end if;
 end $$;
 
--- ---------------------------------------------------------------------
--- 4. Droits d'exécution des fonctions de cette migration
--- ---------------------------------------------------------------------
+-- Droits d'exécution des fonctions de cette migration
 revoke all on function public._place_tenue(text, timestamptz)                   from public, anon, authenticated;
 revoke all on function public._places_prises()                                  from public, anon, authenticated;
 revoke all on function public.regler_delai_paiement(integer)                    from public, anon, authenticated;
 revoke all on function public.declarer_paiement(text, text, text, text)         from public, anon, authenticated;
 revoke all on function public.creer_inscription(jsonb)                         from public, anon, authenticated;
+revoke all on function public.consulter_inscription(text, text)                 from public, anon, authenticated;
 revoke all on function public._etat_inscriptions()                              from public, anon, authenticated;
 revoke all on function public.etat_public()                                     from public, anon, authenticated;
 grant execute on function public.declarer_paiement(text, text, text, text)      to anon, authenticated;
 grant execute on function public.creer_inscription(jsonb)                       to anon, authenticated;
+grant execute on function public.consulter_inscription(text, text)              to anon, authenticated;
 grant execute on function public.etat_public()                                  to anon, authenticated;
 grant execute on function public.regler_delai_paiement(integer)                 to authenticated;

@@ -209,10 +209,11 @@
     const plages = { '10': [1, 4999], '5': [5001, 9999], '3': [10001, 19999] };
     function exigerStaff() { if (!lire().staff) throw erreur("Accès réservé à l'équipe organisatrice"); }
     // Une inscription tient une place si elle est payée ou en vérification,
-    // ou si elle attend son paiement depuis moins que le délai (48 h par défaut).
+    // ou si elle attend son paiement avant sa date limite (fixée à la création : 48 h par défaut).
     const delaiMs = (d) => (Number(d.reglages.delai_paiement_heures) || 48) * 3600 * 1000;
+    const limite = (d, i) => i.paiement_avant || new Date(new Date(i.created_at).getTime() + delaiMs(d)).toISOString();
     const tient = (d, i) => ['paye', 'paiement_declare'].includes(i.statut)
-      || (i.statut === 'en_attente' && Date.now() - new Date(i.created_at).getTime() < delaiMs(d));
+      || (i.statut === 'en_attente' && new Date(limite(d, i)).getTime() > Date.now());
     const actives = (d) => d.inscriptions.filter((i) => tient(d, i)).length;
     function etatInscriptions(d) {
       const r = d.reglages;
@@ -273,6 +274,7 @@
           urgence_tel: texte(f, 'urgence_tel', 20, true), consentement: true,
           montant: dist.tarifs[f.categorie], don, statut: 'en_attente', operateur: null, transaction_id: null,
           paiement_declare_at: null, paye_at: null, dossard: null, retire: false, retire_at: null,
+          paiement_avant: new Date(Date.now() + delaiMs(d)).toISOString(),
           taille_tshirt: ['XS', 'S', 'M', 'L', 'XL', 'XXL'].includes(f.taille_tshirt) ? f.taille_tshirt : null
         };
         d.inscriptions.push(ins); ecrire();
@@ -282,7 +284,8 @@
         const i = lire().inscriptions.find((x) => x.reference === String(ref).trim().toUpperCase() && chiffres(x.telephone) === chiffres(tel));
         if (!i) return attendre(null);
         const { reference, prenom, nom, distance, categorie, montant, don, statut, dossard, retire, created_at, taille_tshirt } = i;
-        return attendre({ reference, prenom, nom, distance, categorie, montant, don, statut, dossard, retire, created_at, taille_tshirt: taille_tshirt || null });
+        return attendre({ reference, prenom, nom, distance, categorie, montant, don, statut, dossard, retire, created_at, taille_tshirt: taille_tshirt || null,
+                          paiement_avant: i.statut === 'en_attente' ? limite(lire(), i) : (i.paiement_avant || null) });
       },
       declarerPaiement: async (ref, tel, op, tx) => {
         if (!['mtn', 'orange'].includes(op)) throw erreur('Opérateur invalide');
@@ -292,6 +295,8 @@
         const d = lire();
         const i = d.inscriptions.find((x) => x.reference === String(ref).trim().toUpperCase() && chiffres(x.telephone) === chiffres(tel) && ['en_attente', 'paiement_declare'].includes(x.statut));
         if (!i) throw erreur('Inscription introuvable ou déjà traitée');
+        if (!tient(d, i) && d.inscriptions.some((x) => x !== i && tient(d, x) && norm(x.nom) === norm(i.nom) && norm(x.prenom) === norm(i.prenom) && x.date_naissance === i.date_naissance))
+          throw erreur('Le délai de paiement de cette inscription est dépassé et vous avez une inscription plus récente : payez avec sa référence (« Mon dossard »).');
         if (!tient(d, i) && actives(d) >= d.reglages.quota)
           throw erreur("Le délai de paiement de cette inscription est dépassé et toutes les places sont prises. Si vous avez déjà payé, contactez l'organisation avec votre référence.");
         Object.assign(i, { statut: 'paiement_declare', operateur: op, transaction_id: tx, paiement_declare_at: new Date().toISOString() });

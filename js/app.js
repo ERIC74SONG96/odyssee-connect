@@ -457,18 +457,18 @@
 
   // Délai pendant lequel une inscription non payée garde sa place (réglé par l'équipe)
   const delaiPaiementH = () => Number(S.etat && S.etat.inscriptions && S.etat.inscriptions.delai_paiement_heures) || 48;
-  const limitePaiement = (x) => new Date(new Date(x.created_at).getTime() + delaiPaiementH() * 3600e3);
-  const delaiDepasse = (x) => x.statut === 'en_attente' && x.created_at && limitePaiement(x) < new Date();
+  const limitePaiement = (x) => new Date(x.paiement_avant || (new Date(x.created_at).getTime() + delaiPaiementH() * 3600e3));
+  const delaiDepasse = (x) => x.statut === 'en_attente' && (x.paiement_avant || x.created_at) && limitePaiement(x) < new Date();
 
   V.paiement = () => {
     if (!S.moi) return `${entete('Paiement', 'accueil')}<div class="pad pile"><p class="vide">Aucune inscription en cours sur ce téléphone.</p><a class="btn" href="#course">S'inscrire</a><a class="btn contour" href="#dossard">Retrouver mon inscription</a></div>`;
     const x = S.consult;
     if (!x) { consulterMoi().then(() => route() === 'paiement' && rendre(false)); return `${entete('Paiement', 'dossard')}<p class="vide">Chargement…</p>`; }
     if (x.statut !== 'en_attente') { location.hash = x.statut === 'paiement_declare' ? 'confirmation' : 'dossard'; return ''; }
-    const lim = x.created_at ? limitePaiement(x) : null;
+    const lim = (x.paiement_avant || x.created_at) ? limitePaiement(x) : null;
     const avis = !lim ? '' : delaiDepasse(x)
-      ? `<div class="pad" style="padding-bottom:0"><div class="info r">${I.info}<span>Le délai de paiement de ${delaiPaiementH()} h est dépassé : votre place n'est plus réservée. Vous pouvez encore payer s'il reste des places.</span></div></div>`
-      : `<div class="pad" style="padding-bottom:0"><div class="info">${I.info}<span>Votre place est réservée pendant ${delaiPaiementH()} h : payez avant le ${esc(lim.toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }))}.</span></div></div>`;
+      ? `<div class="pad" style="padding-bottom:0"><div class="info r">${I.info}<span>Le délai de paiement est dépassé : votre place n'est plus réservée. Vous pouvez encore payer s'il reste des places.</span></div></div>`
+      : `<div class="pad" style="padding-bottom:0"><div class="info">${I.info}<span>Votre place est réservée jusqu'au ${esc(lim.toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }))}.</span></div></div>`;
     return `${entete('Paiement', 'dossard')}${etapes(3)}${avis}${blocPaiement('inscription', x.reference, S.moi.telephone, x.montant + x.don)}`;
   };
 

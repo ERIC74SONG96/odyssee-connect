@@ -9,7 +9,9 @@ Numérotation : `vMAJEUR.MINEUR.CORRECTIF` (par exemple v1.1.2 = deuxième corre
 Ce qui est fusionné dans `develop` mais pas encore en production. Chaque Pull Request ajoute sa ligne ici.
 
 ### Audit de sécurité du SQL — #26
-- Une inscription non payée ne garde sa place que pendant un **délai de paiement** (48 h par défaut, réglable dans l'espace organisateurs). Sans cela, des inscriptions abandonnées ou envoyées en masse pouvaient remplir le quota sans payer.
+- Une inscription non payée ne garde sa place que jusqu'à sa **date limite de paiement** (création + 48 h par défaut, réglable dans l'espace organisateurs pour les inscriptions suivantes). Sans cela, des inscriptions abandonnées ou envoyées en masse pouvaient remplir le quota sans payer.
+- Déclaration de paiement : verrous dans le même ordre que la création ; une inscription annulée ou payée ne peut plus repasser en « paiement déclaré » ; une ancienne référence expirée ne peut pas être payée si la même personne s'est réinscrite.
+- Test de charge `tests/test_de_charge.sh` (#7) et index pour tenir la charge : 3 000 places sous 4 000 envois simultanés, ~500 inscriptions/s en local.
 - Écran de paiement : « Votre place est réservée pendant 48 h : payez avant le… » ; message clair si le délai est dépassé.
 - Espace organisateurs : places tenues, inscriptions hors délai signalées, réglage du délai.
 - Tables : `anon` et `authenticated` n'ont plus que la lecture (filtrée par la RLS) ; plus de droit sur les séquences ; plus de dépôt anonyme de photos.
