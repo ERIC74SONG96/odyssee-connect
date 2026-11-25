@@ -170,8 +170,8 @@
   function exemplesPublications() {
     const t = Date.now();
     return [
-      { id: 'pub-1', created_at: new Date(t - 3600e3 * 5).toISOString(), appareil: 'equipe', auteur: 'Équipe Odyssée', ville: 'Yaoundé', categorie: 'evenement', texte: 'Exemple : séance photo pour l’affiche des 10 KM de Yaoundé 2027. Merci aux coureurs !', lieu: 'Monument de la Réunification', photo: 'images/hero-accueil.jpg', statut: 'publie' },
-      { id: 'pub-2', created_at: new Date(t - 3600e3 * 30).toISOString(), appareil: 'equipe', auteur: 'Équipe Odyssée', ville: 'Yaoundé', categorie: 'communaute', texte: 'Exemple : les maillots Odyssée sont prêts pour l’entraînement collectif.', lieu: 'Yaoundé', photo: 'images/coureurs.jpg', statut: 'publie' }
+      { id: 'pub-1', created_at: new Date(t - 3600e3 * 5).toISOString(), appareil: 'equipe', auteur: 'Équipe Odyssée', ville: 'Yaoundé', categorie: 'evenement', texte: 'Exemple : séance photo pour l’affiche des 10 KM de Yaoundé 2027. Merci aux coureurs !', lieu: 'Monument de la Réunification', photo: 'images/hero-accueil.webp', statut: 'publie' },
+      { id: 'pub-2', created_at: new Date(t - 3600e3 * 30).toISOString(), appareil: 'equipe', auteur: 'Équipe Odyssée', ville: 'Yaoundé', categorie: 'communaute', texte: 'Exemple : les maillots Odyssée sont prêts pour l’entraînement collectif.', lieu: 'Yaoundé', photo: 'images/coureurs.webp', statut: 'publie' }
     ];
   }
 
