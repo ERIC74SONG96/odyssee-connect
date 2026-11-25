@@ -10,9 +10,11 @@ Ce qui est fusionné dans `develop` mais pas encore en production. Chaque Pull R
 
 ### Données personnelles (loi n° 2024/017) — #6
 - Inscription : e-mail obligatoire, ville plus demandée.
-- Texte de consentement complet (finalités, hébergement en Europe, anonymisation au plus tard trois mois après la course, contact) ; version enregistrée avec l'inscription.
-- Accord d'un parent ou représentant légal obligatoire pour les moins de 18 ans le jour de la course (appli et base).
-- Espace organisateurs : anonymisation des inscriptions après la course.
+- Texte de consentement complet (finalités, hébergement en Europe, prestataires, effacement des coordonnées au plus tard trois mois après la course, données gardées pour les résultats, contact) ; chaque version conservée (`consentements_textes`), version et horodatage enregistrés avec l'inscription ; version inconnue refusée.
+- Accord d'un parent ou représentant légal obligatoire pour les moins de 18 ans le jour de la course (appli et base) ; âge minimum de 10 ans apprécié le jour de la course.
+- Effacement des coordonnées après la course : par l'équipe depuis l'espace organisateurs, ou automatiquement le 10 octobre 2027 si `pg_cron` est activé.
+- Entrées malformées (date, don) refusées avec un message clair ; droits des fonctions explicites ; `search_path = public, pg_temp`.
+- Tests SQL `tests/verifier_002.sql` : dates frontières de la majorité, compte non-staff refusé, droits effectifs.
 - Migration `002_donnees_personnelles.sql`.
 
 ## [v0.9.0] — 2026-11-25

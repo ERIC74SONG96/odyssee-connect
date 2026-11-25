@@ -222,11 +222,12 @@
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(f.email || '').trim())) throw erreur('Adresse e-mail invalide');
         if (f.consentement !== true) throw erreur('Le consentement est obligatoire');
         const ddn = new Date(f.date_naissance);
-        const limite = new Date(); limite.setFullYear(limite.getFullYear() - 10);
+        const limite = new Date(C.evenement.depart); limite.setFullYear(limite.getFullYear() - 10);
         if (isNaN(ddn) || ddn > limite || ddn < new Date('1920-01-01')) throw erreur('Date de naissance invalide');
         const majorite = new Date(ddn); majorite.setFullYear(ddn.getFullYear() + 18);
         const mineur = majorite > new Date(C.evenement.depart);
         if (mineur && f.consentement_parental !== true) throw erreur("L'accord d'un parent ou représentant légal est obligatoire pour les moins de 18 ans");
+        if (f.consentement_version !== '2026-11-25') throw erreur('Version du texte de consentement inconnue. Rechargez la page.');
         if (d.inscriptions.filter((i) => chiffres(i.telephone) === chiffres(f.telephone) && i.statut !== 'annule').length >= 6)
           throw erreur("Trop d'inscriptions avec ce numéro. Contactez l'organisation.");
         const don = Math.max(0, Math.min(parseInt(f.don, 10) || 0, 1000000));
@@ -234,7 +235,8 @@
           id: uid(), reference: reference('ODY', d.inscriptions), created_at: new Date().toISOString(),
           nom: texte(f, 'nom', 80, true), prenom: texte(f, 'prenom', 80, true), telephone: texte(f, 'telephone', 20, true),
           email: texte(f, 'email', 120, true).toLowerCase(), date_naissance: f.date_naissance, sexe: f.sexe, ville: null,
-          consentement_parental: mineur, consentement_version: String(f.consentement_version || '').slice(0, 20), anonymise_at: null,
+          consentement_parental: mineur && f.consentement_parental === true, consentement_version: f.consentement_version,
+          consentement_at: new Date().toISOString(), anonymise_at: null,
           distance: f.distance, categorie: f.categorie, urgence_nom: texte(f, 'urgence_nom', 80, true),
           urgence_tel: texte(f, 'urgence_tel', 20, true), consentement: true,
           montant: dist.tarifs[f.categorie], don, statut: 'en_attente', operateur: null, transaction_id: null,
@@ -298,12 +300,12 @@
       commandes: async () => { exigerStaff(); return attendre(lire().commandes.slice().reverse()); },
       anonymiserInscriptions: async () => {
         exigerStaff();
-        if (new Date() <= new Date(C.evenement.depart)) throw erreur("L'anonymisation n'est possible qu'après la course");
+        if (new Date() <= new Date(C.evenement.depart)) throw erreur("L'effacement n'est possible qu'après la course");
         const d = lire(); let n = 0;
         for (const i of d.inscriptions) {
           if (i.anonymise_at) continue;
-          Object.assign(i, { nom: String(i.nom || '').slice(0, 1) + '.', telephone: 'anonymise-' + String(i.id).slice(0, 8), email: null,
-            date_naissance: String(i.date_naissance || '').slice(0, 4) + '-01-01', ville: null, urgence_nom: '—', urgence_tel: '—', transaction_id: null,
+          Object.assign(i, { nom: String(i.nom || '').slice(0, 1) + '.', telephone: 'efface-' + String(i.id).slice(0, 8), email: null,
+            date_naissance: String(i.date_naissance || '').slice(0, 4) + '-01-01', ville: null, urgence_nom: '', urgence_tel: '', transaction_id: null,
             anonymise_at: new Date().toISOString() });
           n++;
         }

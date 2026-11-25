@@ -62,7 +62,11 @@ def main():
             if "paiement" not in page.url:
                 echecs.append("inscription d'un mineur : échec — " + page.inner_text('form[data-form="inscription"] .erreur'))
             else:
-                print("ok  inscription d'un mineur avec accord parental")
+                ins = page.evaluate("JSON.parse(localStorage.getItem('odc_demo_v1')).inscriptions.slice(-1)[0]")
+                if not ins.get("consentement_parental") or not ins.get("consentement_at") or ins.get("ville") is not None:
+                    echecs.append("inscription d'un mineur : accord parental, horodatage ou ville mal enregistrés")
+                else:
+                    print("ok  inscription d'un mineur avec accord parental")
         nav.close()
     if echecs:
         print("\n".join(["", "ÉCHECS :"] + echecs))
