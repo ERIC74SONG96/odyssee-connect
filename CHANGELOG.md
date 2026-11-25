@@ -38,6 +38,13 @@ Ce qui est fusionné dans `develop` mais pas encore en production. Chaque Pull R
 - Tests SQL `tests/verifier_002.sql` : dates frontières de la majorité, compte non-staff refusé, droits effectifs.
 - Migration `002_donnees_personnelles.sql`.
 
+### Ajouté (documentation uniquement, aucun déploiement)
+- Décision d'architecture ADR 001 : Supabase comme backend de la v1 (`docs/decisions/`).
+- Règles de l'équipe, procédure d'incident et fiche de passation pour les assistants d'IA (`docs/equipe/`).
+
+### Modifié
+- Feuille de route : ouverture des inscriptions visée le 1er décembre 2026, sous conditions (juridique, sécurité, protocole de paiement, répétition générale) ; plan de repli ; paiement automatique visé pour février 2027.
+
 ## [v0.9.0] — 2026-11-25
 
 Premier prototype complet, en mode démonstration.
