@@ -21,6 +21,16 @@ La répartition peut changer d'une tâche à l'autre. La règle fixe : **celui q
 6. **Un humain relit et assume** chaque ligne qui part en production.
 7. **Aucune donnée réelle de participant et aucune clé secrète** ne sont données à un assistant ni écrites dans le dépôt.
 
+## En cas d'incident
+
+Exemples : inscriptions bloquées, paiements mal validés, données exposées, appli hors ligne le jour J.
+
+1. **Gédéon, ou un membre de l'équipe organisatrice qu'il a désigné**, peut suspendre les inscriptions immédiatement, sans attendre une Pull Request.
+2. Si une nouvelle version est en cause : revenir à la version précédente (étiquette `vX.Y.Z` précédente).
+3. Si des données sont perdues : restaurer la dernière sauvegarde Supabase sur le projet concerné.
+4. Si des données personnelles ont pu fuiter : prévenir l'association le jour même ; elle évalue avec son juriste les obligations de notification prévues par la loi camerounaise.
+5. Après l'incident : une issue « post-mortem » décrit ce qui s'est passé et ce qui change, sans chercher de coupable.
+
 ## Le circuit d'une tâche
 
 ```

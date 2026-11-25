@@ -8,12 +8,12 @@ Numérotation : `vMAJEUR.MINEUR.CORRECTIF` (par exemple v1.1.2 = deuxième corre
 
 Ce qui est fusionné dans `develop` mais pas encore en production. Chaque Pull Request ajoute sa ligne ici.
 
-### Ajouté
+### Ajouté (documentation uniquement, aucun déploiement)
 - Décision d'architecture ADR 001 : Supabase comme backend de la v1 (`docs/decisions/`).
-- Règles de l'équipe et fiche de passation pour les assistants d'IA (`docs/equipe/`).
+- Règles de l'équipe, procédure d'incident et fiche de passation pour les assistants d'IA (`docs/equipe/`).
 
 ### Modifié
-- Feuille de route : ouverture des inscriptions fixée au 1er décembre 2026, paiement automatique visé pour février 2027.
+- Feuille de route : ouverture des inscriptions visée le 1er décembre 2026, sous conditions (juridique, sécurité, protocole de paiement, répétition générale) ; plan de repli ; paiement automatique visé pour février 2027.
 
 ## [v0.9.0] — 2026-11-25
 

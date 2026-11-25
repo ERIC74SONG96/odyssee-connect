@@ -30,7 +30,10 @@ CE QUE TU DOIS RESPECTER :
   petit téléphone Android et connexion lente.
 - Pas de données réelles de participants, pas de clé secrète, pas de chiffre inventé
   (montants, statistiques) : si une valeur manque, le signaler.
-- Explique chaque fichier modifié et pourquoi. Dis ce qui reste incertain.
+- Explique chaque fichier modifié et pourquoi.
+- Sépare clairement dans ta réponse : faits vérifiés dans le dépôt / hypothèses /
+  risques non vérifiés / points qui demandent la décision de Gédéon.
+  Une suggestion technique n'est jamais une décision validée.
 
 FICHIERS JOINTS : CONTRIBUTING.md, ROADMAP.md, docs/decisions/001-supabase-backend.md,
 [fichiers concernés par la tâche]

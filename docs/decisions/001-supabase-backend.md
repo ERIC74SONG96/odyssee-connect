@@ -29,8 +29,8 @@ Deux autres options ont été étudiées :
 
 1. **Le délai** : les inscriptions ouvrent en décembre 2026. Le backend Supabase est écrit et testé ; une réécriture ne tiendrait pas ce délai.
 2. **Une seule personne peut le tenir**, en parallèle de ses études : pas de serveur à louer, sécuriser, mettre à jour ou surveiller.
-3. **La sécurité est dans la base** : les règles RLS protègent les données même si quelqu'un modifie l'appli sur son téléphone.
-4. **Le coût est faible et prévisible** : offre Pro d'environ 25 $ par mois pendant les mois actifs, avec plafond de dépenses et sauvegardes quotidiennes.
+3. **La sécurité est appliquée au niveau de la base**, grâce aux règles RLS et à des fonctions contrôlées. Cette protection dépend de la configuration des politiques, des privilèges SQL (droits `EXECUTE`, `search_path` des fonctions `security definer`) et des règles du stockage des photos : elle doit être **auditée avant la mise en production**.
+4. **Le coût est faible et maîtrisable** : offre Pro à partir de 25 $ par mois, hors éventuels coûts supplémentaires (calcul, stockage, trafic), avec plafond de dépenses et sauvegardes quotidiennes conservées 7 jours. Vérifier le coût réel avant la production.
 5. **Ce choix ne ferme aucune porte** : la base est du PostgreSQL standard. Un backend Java pourra s'y brancher plus tard sans migrer les données.
 
 ## Conséquences
@@ -39,6 +39,7 @@ Deux autres options ont été étudiées :
 - ✅ Les relectures portent surtout sur le SQL des migrations et les règles RLS : c'est là que se trouve la sécurité.
 - ⚠️ La logique métier complexe en SQL demande de la rigueur : chaque fonction est testée par `tests/verifier_sql.sh` et relue avant fusion.
 - ⚠️ Le projet dépend d'un prestataire (Supabase). En cas de besoin, la base peut être exportée (PostgreSQL standard).
+- ⚠️ Les données sont hébergées hors du Cameroun (aucune région Supabase en Afrique). La loi camerounaise n° 2024/017 du 23 décembre 2024 sur les données personnelles encadre ces transferts : **aucune donnée réelle n'est collectée avant validation juridique** (issue dédiée). Le choix de la région fera l'objet de l'ADR 002, après mesures depuis Yaoundé.
 - 🔁 **À revoir après la course** (v2) : un backend Spring Boot, complet ou par modules, pourra être proposé par une nouvelle décision (ADR 00X), qui remplacera celle-ci.
 
 ## Ce que les assistants d'IA doivent retenir
