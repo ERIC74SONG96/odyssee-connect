@@ -564,10 +564,10 @@
       urlPhoto: (chemin) => chemin,
       // Fil d'actualité
       creerPublication: async (f, blob, dataUrl) => {
+        exigerStaff();   // seule l'équipe publie dans le fil
         const d = lire();
-        if ((d.publications.filter((x) => x.appareil === f.appareil && Date.now() - new Date(x.created_at) < 86400e3)).length >= 10) throw erreur('Limite de 10 publications par jour atteinte');
-        const x = { id: uid(), created_at: new Date().toISOString(), appareil: f.appareil, auteur: texte(f, 'auteur', 80, true), ville: texte(f, 'ville', 80, false),
-          categorie: f.categorie || 'communaute', evenement_id: f.evenement_id || null, texte: texte(f, 'texte', 1000, false), lieu: texte(f, 'lieu', 120, false), photo: dataUrl, statut: 'en_attente' };
+        const x = { id: uid(), created_at: new Date().toISOString(), appareil: f.appareil, auteur: texte(f, 'auteur', 80, false) || "L'Odyssée de l'environnement", ville: texte(f, 'ville', 80, false),
+          categorie: f.categorie || 'communaute', evenement_id: f.evenement_id || null, texte: texte(f, 'texte', 1000, false), lieu: texte(f, 'lieu', 120, false), photo: dataUrl, statut: 'publie' };
         d.publications.push(x);
         try { localStorage.setItem(CLE, JSON.stringify(d)); } catch (e) { d.publications.pop(); throw erreur('Mémoire du navigateur pleine : supprimez des publications de démonstration ou touchez « Tout effacer ».'); }
         return attendre(x.id);

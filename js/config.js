@@ -22,6 +22,15 @@ window.ODC_CONFIG = {
   // Pour afficher une image à la place, par exemple '10': { image: 'images/parcours-10km.jpg' }
   parcours: {},
 
+  // Fond de carte (écran Carte). OpenStreetMap convient aux essais, mais sa politique d'usage
+  // interdit un trafic important : pour le jour J, mettre ici l'adresse d'un fournisseur
+  // choisi par l'association (issue #8), avec sa clé publique si besoin, et son attribution.
+  carte: {
+    tuiles: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '© contributeurs OpenStreetMap',
+    zoomMax: 19
+  },
+
   // Tarifs affichés (les montants réellement facturés sont fixés dans la base, table tarifs)
   distances: [
     // Tarif du 3 km : provisoire (même montant que le 5 km), à confirmer par l'association
