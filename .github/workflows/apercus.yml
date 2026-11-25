@@ -29,7 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Garder seulement les fichiers de l'appli
-        run: mkdir _site && cp -r index.html manifest.webmanifest sw.js css js images icons parcours _site/
+        run: mkdir _site && cp -r index.html manifest.webmanifest sw.js css js images icons parcours outils _site/
       - uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
@@ -44,7 +44,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Garder seulement les fichiers de l'appli
         if: github.event.action != 'closed'
-        run: mkdir _site && cp -r index.html manifest.webmanifest sw.js css js images icons parcours _site/
+        run: mkdir _site && cp -r index.html manifest.webmanifest sw.js css js images icons parcours outils _site/
       - uses: rossjrw/pr-preview-action@v1
         with:
           source-dir: _site
