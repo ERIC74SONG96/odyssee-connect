@@ -8,6 +8,12 @@ Numérotation : `vMAJEUR.MINEUR.CORRECTIF` (par exemple v1.1.2 = deuxième corre
 
 Ce qui est fusionné dans `develop` mais pas encore en production. Chaque Pull Request ajoute sa ligne ici.
 
+### Chargement plus léger sur mobile (Cameroun)
+- Polices (Inter, Barlow Condensed) et bibliothèque Supabase servies depuis le site : plus d'appel à Google Fonts ni au CDN jsdelivr (chaque domaine externe coûte plusieurs allers-retours de ~170 ms depuis Yaoundé, et peut être bloqué par un opérateur).
+- Images en WebP : image d'accueil 131 → 74 Ko, pictogrammes divisés par 3.
+- Préchargement hors ligne allégé de ~190 Ko (le lecteur de QR code de l'équipe et l'image de démonstration ne sont plus téléchargés d'office).
+- Hébergement LWS : compression gzip (le code passe d'environ 300 Ko à 80 Ko), cache d'une semaine pour images et polices, en-têtes de sécurité ; dépôt automatique à chaque fusion dans `develop`.
+
 ### Audit de sécurité du SQL — #26
 - Une inscription non payée ne garde sa place que jusqu'à sa **date limite de paiement** (création + 48 h par défaut, réglable dans l'espace organisateurs pour les inscriptions suivantes). Sans cela, des inscriptions abandonnées ou envoyées en masse pouvaient remplir le quota sans payer.
 - Déclaration de paiement : verrous dans le même ordre que la création ; une inscription annulée ou payée ne peut plus repasser en « paiement déclaré » ; une ancienne référence expirée ne peut pas être payée si la même personne s'est réinscrite.
