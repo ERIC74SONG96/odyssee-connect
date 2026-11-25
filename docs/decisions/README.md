@@ -6,6 +6,7 @@ On ne modifie pas une décision acceptée : on en écrit une nouvelle qui la rem
 | N° | Décision | Statut | Date |
 |---|---|---|---|
 | [001](001-supabase-backend.md) | Supabase comme backend de la v1 | Acceptée | 25/11/2026 |
+| [002](002-region-supabase.md) | Région d'hébergement des projets Supabase (règle de choix, Paris par défaut) | Proposée | 25/11/2026 |
 
 ## Modèle
 
