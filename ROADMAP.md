@@ -5,10 +5,11 @@ Le détail des tâches est dans les *issues* GitHub, rangées par jalon (*milest
 
 **Repères du 10 KM de Yaoundé 2027** (date provisoire) :
 - course : samedi 10 juillet 2027, départ à 8 h ;
-- ouverture des inscriptions : environ trois mois avant, vers le 10 avril 2027 ;
+- ouverture des inscriptions : **décembre 2026** (date exacte à fixer) ;
 - gel des changements : deux semaines avant la course, vers le 26 juin 2027. Après cette date, seuls les correctifs urgents (`hotfix/*`) passent.
 
 Les dates des jalons sont des cibles de travail, à ajuster en réunion d'équipe.
+Les choix d'architecture sont dans [`docs/decisions/`](docs/decisions/) ; l'organisation de l'équipe dans [`docs/equipe/`](docs/equipe/).
 
 ---
 
@@ -26,9 +27,10 @@ Version actuelle. Tout fonctionne en **mode démonstration** (données gardées 
 - Espace organisateurs : 16 onglets (inscriptions, retrait des dossards par scan, paiements, modération…)
 - Base Supabase : tables, règles de sécurité (RLS), fonctions — `supabase/migrations/001_schema_initial.sql`
 
-## 🔜 v1.0 — Ouverture des inscriptions (cible : mars 2027)
+## 🔜 v1.0 — Ouverture des inscriptions (cible : décembre 2026)
 
-Mettre la v0.9 en ligne pour de vrai, sans nouvelle fonction.
+Mettre la v0.9 en ligne pour de vrai, sans nouvelle fonction. Backend : Supabase ([ADR 001](docs/decisions/001-supabase-backend.md)).
+Le paiement reste **validé à la main** par l'équipe à l'ouverture ; le paiement automatique arrive avec la v1.1.
 
 - [ ] Créer les projets Supabase **test** et **production**, appliquer les migrations
 - [ ] Héberger l'appli sur un nom de domaine (production et test)
@@ -39,7 +41,7 @@ Mettre la v0.9 en ligne pour de vrai, sans nouvelle fonction.
 - [ ] Test de charge : quelques milliers d'inscriptions simultanées sur la base de test
 - [ ] Choisir un fournisseur de tuiles de carte pour le jour J (la politique d'OpenStreetMap limite l'usage de ses serveurs)
 
-## 🔜 v1.1 — Paiement automatique (cible : mai 2027)
+## 🔜 v1.1 — Paiement automatique (cible : février 2027)
 
 - [ ] Choisir un agrégateur de paiement Mobile Money camerounais (contrat marchand au nom de l'association)
 - [ ] Paiement automatique MTN MoMo et Orange Money, confirmation sans validation manuelle

@@ -3,6 +3,7 @@
 Ce guide dit comment l'équipe s'organise : branches, commits, revues, base de données et mises en production.
 Pour savoir **où en est le projet**, lire [`ROADMAP.md`](ROADMAP.md) et le tableau du projet sur GitHub.
 Pour savoir **ce qui a changé**, lire [`CHANGELOG.md`](CHANGELOG.md).
+Pour les **choix d'architecture**, lire [`docs/decisions/`](docs/decisions/) ; pour **travailler avec les assistants d'IA**, lire [`docs/equipe/`](docs/equipe/).
 
 ## 1. Lancer l'appli sur son ordinateur
 

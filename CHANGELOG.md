@@ -8,6 +8,13 @@ Numérotation : `vMAJEUR.MINEUR.CORRECTIF` (par exemple v1.1.2 = deuxième corre
 
 Ce qui est fusionné dans `develop` mais pas encore en production. Chaque Pull Request ajoute sa ligne ici.
 
+### Ajouté
+- Décision d'architecture ADR 001 : Supabase comme backend de la v1 (`docs/decisions/`).
+- Règles de l'équipe et fiche de passation pour les assistants d'IA (`docs/equipe/`).
+
+### Modifié
+- Feuille de route : ouverture des inscriptions avancée à décembre 2026, paiement automatique visé pour février 2027.
+
 ## [v0.9.0] — 2026-11-25
 
 Premier prototype complet, en mode démonstration.
