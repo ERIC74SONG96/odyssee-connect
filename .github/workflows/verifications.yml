@@ -34,6 +34,7 @@ jobs:
       PGUSER: postgres
       PGPASSWORD: postgres
       PGDATABASE: postgres
+      ODC_BASE_DE_TEST: oui   # base jetable du runner : le test de concurrence peut la modifier
     steps:
       - uses: actions/checkout@v4
       - run: tests/verifier_sql.sh

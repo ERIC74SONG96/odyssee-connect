@@ -13,4 +13,10 @@ for passe in 1 2; do
 done
 psql -tAc "select public.etat_public()"
 psql -v ON_ERROR_STOP=1 -q -f tests/verifier_002.sql
+psql -v ON_ERROR_STOP=1 -q -f tests/verifier_003.sql
+if [ "${ODC_BASE_DE_TEST:-}" = "oui" ]; then
+  tests/verifier_concurrence.sh
+else
+  echo "Test de concurrence ignoré : il ne tourne que sur une base de test (ODC_BASE_DE_TEST=oui)."
+fi
 echo "Migrations : OK"

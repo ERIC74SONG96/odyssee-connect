@@ -2,6 +2,8 @@
 -- Chaque test lève une exception en cas d'échec.
 \set ON_ERROR_STOP on
 begin;
+-- Depuis la migration 003, les inscriptions sont fermées par défaut : on les ouvre pour ces tests.
+update public.reglages_inscriptions set ouvertes = true;
 set local role anon;
 do $t$
 declare r record;
@@ -9,45 +11,45 @@ declare r record;
   procedure_ok boolean;
 begin
   -- 1. Adulte accepté
-  perform public.creer_inscription(base || '{"date_naissance":"1990-05-01"}');
+  perform public.creer_inscription(base || '{"date_naissance":"1990-05-01"}' || jsonb_build_object('cle_envoi', gen_random_uuid()));
   -- 2. 18 ans pile le jour de la course (né le 10/07/2009) : majeur, pas d'accord parental exigé
-  perform public.creer_inscription(base || '{"date_naissance":"2009-07-10","telephone":"+237699000103"}');
+  perform public.creer_inscription(base || '{"date_naissance":"2009-07-10","telephone":"+237699000103"}' || jsonb_build_object('cle_envoi', gen_random_uuid()));
   -- 3. 18 ans le lendemain (né le 11/07/2009) : mineur, refusé sans accord
   begin
-    perform public.creer_inscription(base || '{"date_naissance":"2009-07-11","telephone":"+237699000104"}');
+    perform public.creer_inscription(base || '{"date_naissance":"2009-07-11","telephone":"+237699000104"}' || jsonb_build_object('cle_envoi', gen_random_uuid()));
     raise exception 'ÉCHEC : mineur (11/07/2009) accepté sans accord parental';
   exception when others then
     if sqlerrm like 'ÉCHEC%' then raise; end if;
   end;
   -- 4. … et accepté avec accord
-  perform public.creer_inscription(base || '{"date_naissance":"2009-07-11","telephone":"+237699000104","consentement_parental":true}');
+  perform public.creer_inscription(base || '{"date_naissance":"2009-07-11","telephone":"+237699000104","consentement_parental":true}' || jsonb_build_object('cle_envoi', gen_random_uuid()));
   -- 5. Sans e-mail : refusé
   begin
-    perform public.creer_inscription((base - 'email') || '{"date_naissance":"1990-01-01","telephone":"+237699000105"}');
+    perform public.creer_inscription((base - 'email') || '{"date_naissance":"1990-01-01","telephone":"+237699000105"}' || jsonb_build_object('cle_envoi', gen_random_uuid()));
     raise exception 'ÉCHEC : inscription sans e-mail acceptée';
   exception when others then if sqlerrm like 'ÉCHEC%' then raise; end if; end;
   -- 6. Version de consentement inconnue : refusée
   begin
-    perform public.creer_inscription(base || '{"date_naissance":"1990-01-01","telephone":"+237699000106","consentement_version":"v999"}');
+    perform public.creer_inscription(base || '{"date_naissance":"1990-01-01","telephone":"+237699000106","consentement_version":"v999"}' || jsonb_build_object('cle_envoi', gen_random_uuid()));
     raise exception 'ÉCHEC : version de consentement inconnue acceptée';
   exception when others then if sqlerrm like 'ÉCHEC%' then raise; end if; end;
   -- 7. Entrées malformées : erreurs claires, pas d'erreur de conversion brute
   begin
-    perform public.creer_inscription(base || '{"date_naissance":"pas-une-date","telephone":"+237699000107"}');
+    perform public.creer_inscription(base || '{"date_naissance":"pas-une-date","telephone":"+237699000107"}' || jsonb_build_object('cle_envoi', gen_random_uuid()));
     raise exception 'ÉCHEC : date malformée acceptée';
   exception when others then
     if sqlerrm like 'ÉCHEC%' then raise; end if;
     if sqlerrm <> 'Date de naissance invalide' then raise exception 'ÉCHEC : message inattendu pour une date malformée : %', sqlerrm; end if;
   end;
   begin
-    perform public.creer_inscription(base || '{"date_naissance":"1990-01-01","telephone":"+237699000108","don":"abc"}');
+    perform public.creer_inscription(base || '{"date_naissance":"1990-01-01","telephone":"+237699000108","don":"abc"}' || jsonb_build_object('cle_envoi', gen_random_uuid()));
     raise exception 'ÉCHEC : don malformé accepté';
   exception when others then
     if sqlerrm like 'ÉCHEC%' then raise; end if;
     if sqlerrm <> 'Montant du don invalide' then raise exception 'ÉCHEC : message inattendu pour un don malformé : %', sqlerrm; end if;
   end;
   -- 8. Âge minimum apprécié le jour de la course : 10 ans le 10/07/2027 accepté
-  perform public.creer_inscription(base || '{"date_naissance":"2017-07-10","telephone":"+237699000109","consentement_parental":true}');
+  perform public.creer_inscription(base || '{"date_naissance":"2017-07-10","telephone":"+237699000109","consentement_parental":true}' || jsonb_build_object('cle_envoi', gen_random_uuid()));
   -- 9. Le rôle anonyme ne peut pas effacer
   begin
     perform public.anonymiser_inscriptions();
