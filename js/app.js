@@ -14,6 +14,19 @@
   const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const fcfa = (n) => (Number(n) || 0).toLocaleString('fr-FR').replace(/ | /g, ' ') + ' FCFA';
   const dateFr = (d, h) => { try { return new Date(d).toLocaleDateString('fr-FR', h ? { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' } : { day: 'numeric', month: 'long', year: 'numeric' }); } catch (e) { return ''; } };
+  // Version du texte de consentement affiché à l'inscription (enregistrée avec chaque inscription)
+  const CONSENTEMENT_VERSION = '2026-11-25';
+  const dateLimiteEffacement = () => { const j = new Date(C.evenement.depart); j.setMonth(j.getMonth() + 3); return j.toISOString().slice(0, 10); };
+  // Mineur le jour de la course ? (accord parental obligatoire)
+  // Âge minimum de 10 ans apprécié le jour de la course
+  const dateMaxNaissance = () => { const j = new Date(C.evenement.depart); j.setFullYear(j.getFullYear() - 10); return j.toISOString().slice(0, 10); };
+  const mineurLeJourJ = (ddn) => {
+    if (!ddn) return false;
+    const jour = new Date(C.evenement.depart); const n = new Date(ddn);
+    if (isNaN(n)) return false;
+    const majorite = new Date(n); majorite.setFullYear(n.getFullYear() + 18);
+    return majorite > jour;
+  };
   const distance = (id) => C.distances.find((d) => d.id === id) || C.distances[C.distances.length - 1];
   const CAT = { etudiant: 'Étudiant', travailleur: 'Travailleur' };
   const STATUT_PAR = { inscrit: 'Inscrit', present: 'Présent', absent: 'Absent', annule: 'Annulé' };
@@ -354,14 +367,11 @@
             <h2 class="titre-form">Mes informations</h2>
             <label class="champ ico-champ"><span class="i">${I.personne}</span><span class="pile" style="gap:4px;flex:1">Nom *<input name="nom" required maxlength="80" autocomplete="family-name" value="${val('nom')}"></span></label>
             <label class="champ ico-champ"><span class="i">${I.personne}</span><span class="pile" style="gap:4px;flex:1">Prénom *<input name="prenom" required maxlength="80" autocomplete="given-name" value="${val('prenom')}"></span></label>
-            <label class="champ ico-champ"><span class="i">${I.cal}</span><span class="pile" style="gap:4px;flex:1">Date de naissance *<input name="date_naissance" required type="date" max="${new Date(Date.now() - 315576e6).toISOString().slice(0, 10)}" value="${val('date_naissance')}"></span></label>
+            <label class="champ ico-champ"><span class="i">${I.cal}</span><span class="pile" style="gap:4px;flex:1">Date de naissance *<input name="date_naissance" required type="date" max="${dateMaxNaissance()}" value="${val('date_naissance')}"></span></label>
             <fieldset class="champ ico-champ" style="border:0;margin:0;padding:0"><span class="i">${I.personne}</span><span class="pile" style="gap:4px;flex:1"><span>Sexe *</span>
               <span class="radios" role="radiogroup" aria-label="Sexe">${[['M', 'Homme'], ['F', 'Femme']].map(([k, t]) => `<label><input type="radio" name="sexe" value="${k}" required ${D0.sexe === k ? 'checked' : ''}> ${t}</label>`).join('')}</span></span></fieldset>
             <label class="champ ico-champ"><span class="i">${I.telephone}</span><span class="pile" style="gap:4px;flex:1">Téléphone Mobile Money *<input name="telephone" required type="tel" inputmode="tel" autocomplete="tel" placeholder="+237 6XX XX XX XX" maxlength="20" value="${val('telephone')}"></span></label>
-            <div class="grille2">
-              <label class="champ">Ville<input name="ville" maxlength="80" value="${val('ville', 'Yaoundé')}"></label>
-              <label class="champ">E-mail <small>facultatif</small><input name="email" type="email" maxlength="120" value="${val('email')}"></label>
-            </div>
+            <label class="champ ico-champ"><span class="i">${I.info}</span><span class="pile" style="gap:4px;flex:1">E-mail *<input name="email" required type="email" inputmode="email" autocomplete="email" maxlength="120" value="${val('email')}"></span></label>
             <div class="grille2">
               <label class="champ">Contact d'urgence *<input name="urgence_nom" required maxlength="80" placeholder="Nom" value="${val('urgence_nom')}"></label>
               <label class="champ">Son téléphone *<input name="urgence_tel" required type="tel" inputmode="tel" maxlength="20" placeholder="+237" value="${val('urgence_tel')}"></label>
@@ -393,7 +403,8 @@
             <button type="button" class="puce" data-action="don-autre" aria-pressed="${autre}">Autre</button></div>
           ${autre ? `<label class="champ">Montant du don (FCFA)<input name="don_autre" type="number" min="100" max="1000000" step="100" inputmode="numeric" value="${S.choix.don || ''}"></label>` : ''}
           <label class="case"><input type="checkbox" name="reglement" required> <span>J'accepte le règlement de la course et je certifie être apte à la course à pied.</span></label>
-          <label class="case"><input type="checkbox" name="consentement" required> <span>J'accepte que L'Odyssée de l'environnement au Cameroun traite mes données pour organiser la course (loi n° 2024/017).</span></label>
+          ${mineurLeJourJ((S.insData || {}).date_naissance) ? `<label class="case"><input type="checkbox" name="consentement_parental" required> <span><b>Moins de 18 ans le jour de la course :</b> un parent ou représentant légal autorise cette inscription et le traitement de ces données.</span></label>` : ''}
+          <label class="case"><input type="checkbox" name="consentement" required> <span>J'accepte que L'Odyssée de l'environnement au Cameroun utilise mes données pour organiser la course (inscription, paiement, dossard, sécurité, résultats), conformément à la loi n° 2024/017. Elles sont hébergées sur des serveurs en Europe (Supabase). Elles ne sont jamais vendues ni louées, et ne sont communiquées qu'aux prestataires techniques nécessaires (hébergement, paiement). Mes coordonnées (nom complet, téléphone, e-mail, contact d'urgence, date de naissance précise) sont effacées au plus tard trois mois après la course. Sont alors conservés : pour les résultats, mon prénom, l'initiale de mon nom, mon année de naissance, mon sexe, mon épreuve, ma catégorie, mon dossard et mon résultat ; pour la comptabilité, la référence de l'inscription, son statut, les montants payés et leurs dates. Pour consulter, corriger ou faire supprimer mes données : contact@odyssee-env.org.</span></label>
           <p class="erreur" role="alert"></p>
           <div class="barre-bas" style="margin:0 -16px;bottom:72px">
             <div class="recap"><span>${esc(d.km)} · ${CAT[S.choix.categorie]}${S.choix.taille ? ' · ' + S.choix.taille : ''}${S.choix.don ? ' + don' : ''}</span><b data-total>${fcfa(prix + (S.choix.don || 0))}</b></div>
@@ -1505,7 +1516,12 @@
           <select data-filtre="statut" aria-label="Statut"><option value="">Tous les statuts</option>${['paiement_declare', 'en_attente', 'paye', 'annule'].map((s) => `<option value="${s}" ${A.statut === s ? 'selected' : ''}>${STATUT[s]}</option>`).join('')}</select>
           <select data-filtre="dist" aria-label="Distance"><option value="">Toutes distances</option>${C.distances.map((d) => `<option value="${d.id}" ${A.dist === d.id ? 'selected' : ''}>${d.km}</option>`).join('')}</select>
         </div>
-        <div id="adm-liste" class="pile">${admListe()}</div>`;
+        <div id="adm-liste" class="pile">${admListe()}</div>
+        <div class="carte pile" style="gap:6px;margin-top:12px"><b>Après la course : effacer les coordonnées</b>
+          <span class="note">Efface noms complets, téléphones, e-mails, contacts d'urgence, dates de naissance précises et identifiants de transaction. Garde, pour les résultats : prénom, initiale du nom, année de naissance, sexe, épreuve, catégorie, dossard et résultat ; pour la comptabilité : référence, statut, montants et dates. Irréversible. Possible seulement après le jour de la course ; à faire <b>au plus tard le ${esc(dateFr(dateLimiteEffacement()))}</b> (fait automatiquement ce jour-là si la planification est activée dans Supabase).</span>
+          ${A.anonConfirm ? `<div class="info r">${I.info}<span>Confirmer l'effacement des coordonnées de toutes les inscriptions ? Cette action ne peut pas être annulée.</span></div>
+          <div style="display:flex;gap:8px"><button class="btn petit" data-action="adm-anonymiser-ok">Oui, effacer</button><button class="btn contour petit" data-action="adm-anonymiser-non">Annuler</button></div>`
+          : `<button class="btn contour petit" data-action="adm-anonymiser" ${new Date() <= new Date(C.evenement.depart) ? 'disabled' : ''}>Effacer les coordonnées…</button>`}</div>`;
     }
     if (A.onglet === 'retrait') {
       return `
@@ -2046,6 +2062,12 @@
     else if (a === 'nouvelle-commande') { S.commandeFaite = null; S.panier = {}; rendre(true); }
     else if (a === 'adm-onglet') { if (scan) arreterScan(); S.adm.onglet = b.dataset.k; rendre(false); }
     else if (a === 'adm-charger') admCharger();
+    else if (a === 'adm-anonymiser') { S.adm.anonConfirm = true; majAdm(); }
+    else if (a === 'adm-anonymiser-non') { S.adm.anonConfirm = false; majAdm(); }
+    else if (a === 'adm-anonymiser-ok') {
+      S.adm.anonConfirm = false;
+      D.anonymiserInscriptions().then((n) => { toast(`Coordonnées effacées pour ${n} inscription(s).`); admCharger(); }).catch((e) => { toast(e.message); majAdm(); });
+    }
     else if (a === 'deconnexion') { await D.deconnexion(); S.staff = false; S.adm.ins = []; rendre(true); }
     else if (a === 'csv') csv(b.dataset.k);
     else if (['valider', 'annuler', 'retrait', 'valider-don', 'annuler-don'].includes(a)) {
@@ -2126,7 +2148,7 @@
     try {
       if (type === 'ins1') {
         if (!window.ODC_DATA.telValide(v.telephone) || !window.ODC_DATA.telValide(v.urgence_tel)) return echec('Vérifiez les numéros de téléphone (8 à 15 chiffres).');
-        if (v.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email)) return echec("L'adresse e-mail n'est pas valide.");
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email || '')) return echec("L'adresse e-mail n'est pas valide.");
         S.insData = v; S.insEtape = 2; rendre(true); return;
       }
       if (type === 'inscription') {
@@ -2134,8 +2156,9 @@
         const P = S.insData || {};
         if (!P.nom) { S.insEtape = 1; rendre(true); return; }
         const r = await D.creerInscription({
-          nom: P.nom, prenom: P.prenom, telephone: P.telephone, email: P.email, date_naissance: P.date_naissance, sexe: P.sexe, ville: P.ville,
-          distance: S.choix.distance, categorie: S.choix.categorie, urgence_nom: P.urgence_nom, urgence_tel: P.urgence_tel, consentement: true, don,
+          nom: P.nom, prenom: P.prenom, telephone: P.telephone, email: P.email, date_naissance: P.date_naissance, sexe: P.sexe,
+          distance: S.choix.distance, categorie: S.choix.categorie, urgence_nom: P.urgence_nom, urgence_tel: P.urgence_tel, consentement: true,
+          consentement_parental: v.consentement_parental === 'on', consentement_version: CONSENTEMENT_VERSION, don,
           taille_tshirt: S.choix.taille
         });
         ajouterMoi({ reference: r.reference, telephone: P.telephone, prenom: P.prenom });

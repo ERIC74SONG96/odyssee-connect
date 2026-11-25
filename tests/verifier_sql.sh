@@ -12,4 +12,5 @@ for passe in 1 2; do
   done
 done
 psql -tAc "select public.etat_public()"
+psql -v ON_ERROR_STOP=1 -q -f tests/verifier_002.sql
 echo "Migrations : OK"

@@ -41,6 +41,32 @@ def main():
                 echecs.append(f"parcours {km} km : tracé absent")
             else:
                 print(f"ok  tracé {km} km")
+        # Inscription d'un participant mineur : e-mail et accord parental obligatoires
+        page.goto(URL + "#inscription"); page.wait_for_timeout(600)
+        page.fill('input[name="nom"]', "Test"); page.fill('input[name="prenom"]', "Mineur")
+        page.fill('input[name="date_naissance"]', "2012-03-15")
+        page.check('input[name="sexe"][value="F"]')
+        page.fill('input[name="telephone"]', "+237699000011")
+        page.fill('input[name="urgence_nom"]', "Parent"); page.fill('input[name="urgence_tel"]', "+237699000012")
+        page.click('form[data-form="ins1"] button[type="submit"]'); page.wait_for_timeout(400)
+        if not page.inner_text('form[data-form="ins1"] .erreur').strip() or not page.locator('input[name="email"]:focus').count():
+            echecs.append("inscription : l'e-mail n'est pas obligatoire")
+        page.fill('input[name="email"]', "test@exemple.cm")
+        page.click('form[data-form="ins1"] button[type="submit"]'); page.wait_for_timeout(600)
+        if not page.locator('input[name="consentement_parental"]').count():
+            echecs.append("inscription : accord parental absent pour un mineur")
+        else:
+            page.click('[data-action="taille-ins"][data-t="M"]')
+            page.check('input[name="reglement"]'); page.check('input[name="consentement"]'); page.check('input[name="consentement_parental"]')
+            page.click('form[data-form="inscription"] button[type="submit"]'); page.wait_for_timeout(1200)
+            if "paiement" not in page.url:
+                echecs.append("inscription d'un mineur : échec — " + page.inner_text('form[data-form="inscription"] .erreur'))
+            else:
+                ins = page.evaluate("JSON.parse(localStorage.getItem('odc_demo_v1')).inscriptions.slice(-1)[0]")
+                if not ins.get("consentement_parental") or not ins.get("consentement_at") or ins.get("ville") is not None:
+                    echecs.append("inscription d'un mineur : accord parental, horodatage ou ville mal enregistrés")
+                else:
+                    print("ok  inscription d'un mineur avec accord parental")
         nav.close()
     if echecs:
         print("\n".join(["", "ÉCHECS :"] + echecs))
