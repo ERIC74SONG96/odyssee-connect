@@ -5,7 +5,7 @@ Le détail des tâches est dans les *issues* GitHub, rangées par jalon (*milest
 
 **Repères du 10 KM de Yaoundé 2027** (date provisoire) :
 - course : samedi 10 juillet 2027, départ à 8 h ;
-- ouverture des inscriptions : **décembre 2026** (date exacte à fixer) ;
+- ouverture des inscriptions : **mardi 1er décembre 2026** ;
 - gel des changements : deux semaines avant la course, vers le 26 juin 2027. Après cette date, seuls les correctifs urgents (`hotfix/*`) passent.
 
 Les dates des jalons sont des cibles de travail, à ajuster en réunion d'équipe.
@@ -27,7 +27,7 @@ Version actuelle. Tout fonctionne en **mode démonstration** (données gardées 
 - Espace organisateurs : 16 onglets (inscriptions, retrait des dossards par scan, paiements, modération…)
 - Base Supabase : tables, règles de sécurité (RLS), fonctions — `supabase/migrations/001_schema_initial.sql`
 
-## 🔜 v1.0 — Ouverture des inscriptions (cible : décembre 2026)
+## 🔜 v1.0 — Ouverture des inscriptions (1er décembre 2026)
 
 Mettre la v0.9 en ligne pour de vrai, sans nouvelle fonction. Backend : Supabase ([ADR 001](docs/decisions/001-supabase-backend.md)).
 Le paiement reste **validé à la main** par l'équipe à l'ouverture ; le paiement automatique arrive avec la v1.1.

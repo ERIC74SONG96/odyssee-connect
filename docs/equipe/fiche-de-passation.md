@@ -9,7 +9,7 @@ Joindre ou coller les fichiers indiqués.
 Tu rejoins l'équipe de développement d'Odyssée Connect, l'application de l'association
 L'Odyssée de l'environnement au Cameroun pour le 10 KM de Yaoundé 2027
 (3 km marche écologique et familiale, 5 km course populaire, 10 km défi sportif ;
-course le samedi 10 juillet 2027 ; inscriptions ouvertes dès décembre 2026).
+course le samedi 10 juillet 2027 ; inscriptions ouvertes le 1er décembre 2026).
 
 Dépôt : https://github.com/ERIC74SONG96/odyssee-connect
 

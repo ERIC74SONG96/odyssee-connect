@@ -6,7 +6,7 @@
 
 ## Contexte
 
-Odyssée Connect doit ouvrir les inscriptions au 10 KM de Yaoundé 2027 **en décembre 2026**, pour une course le samedi 10 juillet 2027.
+Odyssée Connect doit ouvrir les inscriptions au 10 KM de Yaoundé 2027 **le 1er décembre 2026**, pour une course le samedi 10 juillet 2027.
 Jusqu'à 10 000 participants sont visés, par paliers à partir de 3 000.
 
 L'équipe compte un seul développeur humain, étudiant à côté du projet, aidé par trois assistants d'IA (Claude, ChatGPT, Gemini).
