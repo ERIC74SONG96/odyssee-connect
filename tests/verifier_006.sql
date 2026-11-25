@@ -45,5 +45,39 @@ begin
 end $t$;
 reset role;
 
+-- 3. Stockage : seul un membre de l'équipe connecté peut déposer une photo
+do $t$ begin
+  if not exists (select 1 from storage.buckets where id = 'photos') then raise exception 'ÉCHEC : seau photos absent'; end if;
+end $t$;
+set local request.jwt.uid = '';
+set local role anon;
+do $t$ begin
+  begin insert into storage.objects (bucket_id, name) values ('photos', 'publications/anon.jpg');
+    raise exception 'ÉCHEC : anon a déposé une photo';
+  exception when others then if sqlerrm like 'ÉCHEC%' then raise; end if; end;
+end $t$;
+reset role;
+set local role authenticated;
+set local request.jwt.uid = '00000000-0000-0000-0000-0000000000bb';
+do $t$ begin
+  begin insert into storage.objects (bucket_id, name) values ('photos', 'publications/nonstaff.jpg');
+    raise exception 'ÉCHEC : un compte non-staff a déposé une photo';
+  exception when others then if sqlerrm like 'ÉCHEC%' then raise; end if; end;
+end $t$;
+reset role;
+set local role authenticated;
+set local request.jwt.uid = '00000000-0000-0000-0000-0000000000f6';
+do $t$ begin
+  insert into storage.objects (bucket_id, name) values ('photos', 'publications/equipe.jpg');
+  begin insert into storage.objects (bucket_id, name) values ('photos', 'autre/equipe.jpg');
+    raise exception 'ÉCHEC : dépôt hors du dossier publications/ accepté';
+  exception when others then if sqlerrm like 'ÉCHEC%' then raise; end if; end;
+end $t$;
+reset role;
+do $t$ begin
+  if (select count(*) from pg_policies where schemaname = 'storage' and tablename = 'objects' and cmd = 'INSERT') <> 1 then
+    raise exception 'ÉCHEC : une autre politique de dépôt existe sur storage.objects'; end if;
+end $t$;
+
 \echo 'Migration 006 : tous les tests passent'
 rollback;
