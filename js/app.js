@@ -455,12 +455,21 @@
       </div>`;
   };
 
+  // Délai pendant lequel une inscription non payée garde sa place (réglé par l'équipe)
+  const delaiPaiementH = () => Number(S.etat && S.etat.inscriptions && S.etat.inscriptions.delai_paiement_heures) || 48;
+  const limitePaiement = (x) => new Date(new Date(x.created_at).getTime() + delaiPaiementH() * 3600e3);
+  const delaiDepasse = (x) => x.statut === 'en_attente' && x.created_at && limitePaiement(x) < new Date();
+
   V.paiement = () => {
     if (!S.moi) return `${entete('Paiement', 'accueil')}<div class="pad pile"><p class="vide">Aucune inscription en cours sur ce téléphone.</p><a class="btn" href="#course">S'inscrire</a><a class="btn contour" href="#dossard">Retrouver mon inscription</a></div>`;
     const x = S.consult;
     if (!x) { consulterMoi().then(() => route() === 'paiement' && rendre(false)); return `${entete('Paiement', 'dossard')}<p class="vide">Chargement…</p>`; }
     if (x.statut !== 'en_attente') { location.hash = x.statut === 'paiement_declare' ? 'confirmation' : 'dossard'; return ''; }
-    return `${entete('Paiement', 'dossard')}${etapes(3)}${blocPaiement('inscription', x.reference, S.moi.telephone, x.montant + x.don)}`;
+    const lim = x.created_at ? limitePaiement(x) : null;
+    const avis = !lim ? '' : delaiDepasse(x)
+      ? `<div class="pad" style="padding-bottom:0"><div class="info r">${I.info}<span>Le délai de paiement de ${delaiPaiementH()} h est dépassé : votre place n'est plus réservée. Vous pouvez encore payer s'il reste des places.</span></div></div>`
+      : `<div class="pad" style="padding-bottom:0"><div class="info">${I.info}<span>Votre place est réservée pendant ${delaiPaiementH()} h : payez avant le ${esc(lim.toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }))}.</span></div></div>`;
+    return `${entete('Paiement', 'dossard')}${etapes(3)}${avis}${blocPaiement('inscription', x.reference, S.moi.telephone, x.montant + x.don)}`;
   };
 
   V.confirmation = () => {
@@ -1521,15 +1530,17 @@
       const par = (k) => `${payes.filter((i) => i.distance === k).length} / ${actifs.filter((i) => i.distance === k).length}`;
       const stat = (v, t) => `<div class="stat"><b>${v}</b><span>${t}</span></div>`;
       const ei = (S.etat && S.etat.inscriptions) || null;
+      const expirees = ins.filter(delaiDepasse).length;
       const reglages = ei ? `
         <form data-form="reglages" class="carte pile" novalidate style="gap:6px;margin-bottom:12px">
           <b>Ouverture des inscriptions</b>
-          <span class="note">${ei.ouvertes ? '<b style="color:var(--vert)">Ouvertes</b>' : '<b style="color:var(--rouge)">Fermées</b>'} · ${actifs.length.toLocaleString('fr-FR')} inscriptions (hors annulées) pour ${ei.quota.toLocaleString('fr-FR')} places · ${ei.restantes.toLocaleString('fr-FR')} restantes.</span>
+          <span class="note">${ei.ouvertes ? '<b style="color:var(--vert)">Ouvertes</b>' : '<b style="color:var(--rouge)">Fermées</b>'} · ${(ei.quota - ei.restantes).toLocaleString('fr-FR')} places tenues sur ${ei.quota.toLocaleString('fr-FR')} · ${ei.restantes.toLocaleString('fr-FR')} restantes${expirees ? ` · ${expirees.toLocaleString('fr-FR')} inscription${expirees > 1 ? 's' : ''} non payée${expirees > 1 ? 's' : ''} hors délai (place libérée)` : ''}.</span>
           ${actifs.length > ei.quota ? `<div class="info r">${I.info}<span>Le quota est inférieur au nombre d'inscriptions déjà faites (${actifs.length.toLocaleString('fr-FR')}) : aucune nouvelle inscription ne passera, celles déjà faites sont conservées.</span></div>` : ''}
           <span class="radios" role="radiogroup" aria-label="Inscriptions">
             <label><input type="radio" name="ouvertes" value="oui" ${ei.ouvertes ? 'checked' : ''}> Ouvertes</label>
             <label><input type="radio" name="ouvertes" value="non" ${ei.ouvertes ? '' : 'checked'}> Fermées</label></span>
           <label class="champ">Quota de la vague (places, annulées non comptées)<input name="quota" type="number" min="0" max="100000" step="1" inputmode="numeric" required value="${esc(ei.quota)}"></label>
+          <label class="champ">Délai pour payer (heures) <span class="note">au-delà, une inscription non payée libère sa place</span><input name="delai" type="number" min="1" max="720" step="1" inputmode="numeric" required value="${esc(ei.delai_paiement_heures || 48)}"></label>
           <label class="champ">Message affiché quand c'est fermé <span class="note">facultatif</span><textarea name="message" maxlength="300" rows="2" placeholder="Ex. : Inscriptions suspendues pour maintenance, reprise à 18 h.">${esc(ei.message || '')}</textarea></label>
           <p class="note">En cas d'incident (paiements anormaux, panne), fermer ici suspend aussitôt les nouvelles inscriptions ; celles déjà faites restent consultables et payables.</p>
           <p class="erreur" role="alert"></p>
@@ -1822,7 +1833,7 @@
     if (i.statut === 'paye') actions.push(i.retire ? `<button class="btn contour petit" data-action="retrait" data-id="${esc(i.id)}" data-v="0">Annuler le retrait</button>` : `<button class="btn ${retrait ? 'j' : ''} petit" data-action="retrait" data-id="${esc(i.id)}" data-v="1">Remettre le dossard</button>`);
     return `
       <div class="carte ligne-adm">
-        <div class="haut"><b>${esc(i.prenom)} ${esc(i.nom)}</b><span class="statut s-${esc(i.statut)}">${esc(STATUT[i.statut] || i.statut)}</span></div>
+        <div class="haut"><b>${esc(i.prenom)} ${esc(i.nom)}</b><span class="statut s-${esc(i.statut)}">${esc(STATUT[i.statut] || i.statut)}${delaiDepasse(i) ? ' · délai dépassé' : ''}</span></div>
         ${i.dossard ? `<span style="font-size:${retrait ? 40 : 20}px;font-weight:800;line-height:1.1">Dossard ${esc(i.dossard)}${i.retire ? ' · retiré' : ''}</span>` : ''}
         <span class="meta">${esc(i.reference)} · ${esc(d.km)} · ${CAT[i.categorie] || ''} · ${fcfa(i.montant)}${i.don ? ` + don ${fcfa(i.don)}` : ''}</span>
         <span class="meta">${esc(i.telephone)} · ${i.sexe === 'F' ? 'Femme' : 'Homme'} · né(e) le ${dateFr(i.date_naissance)} · urgence : ${esc(i.urgence_nom)} ${esc(i.urgence_tel)}</span>
@@ -2319,7 +2330,10 @@
       } else if (type === 'reglages') {
         const quota = parseInt(v.quota, 10);
         if (!Number.isInteger(quota) || quota < 0 || quota > 100000) return echec('Le quota doit être un nombre entre 0 et 100 000.');
-        const e = await D.reglerInscriptions(v.ouvertes === 'oui', quota, v.message);
+        const delai = parseInt(v.delai, 10);
+        if (!Number.isInteger(delai) || delai < 1 || delai > 720) return echec('Le délai pour payer doit être entre 1 et 720 heures.');
+        let e = await D.reglerInscriptions(v.ouvertes === 'oui', quota, v.message);
+        if (delai !== (e.delai_paiement_heures || 48)) e = await D.reglerDelaiPaiement(delai);
         if (S.etat) S.etat.inscriptions = e;
         toast(e.ouvertes ? `Inscriptions ouvertes · ${e.restantes.toLocaleString('fr-FR')} places restantes` : 'Inscriptions fermées');
         await admCharger();

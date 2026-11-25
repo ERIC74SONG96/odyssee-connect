@@ -14,6 +14,7 @@ done
 psql -tAc "select public.etat_public()"
 psql -v ON_ERROR_STOP=1 -q -f tests/verifier_002.sql
 psql -v ON_ERROR_STOP=1 -q -f tests/verifier_003.sql
+psql -v ON_ERROR_STOP=1 -q -f tests/verifier_004.sql
 if [ "${ODC_BASE_DE_TEST:-}" = "oui" ]; then
   tests/verifier_concurrence.sh
 else

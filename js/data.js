@@ -61,6 +61,7 @@
       validerPaiement: (id) => rpc('valider_paiement', { p_id: id }),
       anonymiserInscriptions: () => rpc('anonymiser_inscriptions', {}),
       reglerInscriptions: (ouvertes, quota, message) => rpc('regler_inscriptions', { p_ouvertes: ouvertes, p_quota: quota, p_message: message || null }),
+      reglerDelaiPaiement: (heures) => rpc('regler_delai_paiement', { p_heures: heures }),
       annulerInscription: (id) => rpc('annuler_inscription', { p_id: id }),
       retrait: (id, oui) => rpc('marquer_retrait', { p_id: id, p_retire: oui }),
       validerDon: (id) => rpc('valider_don', { p_id: id }),
@@ -181,7 +182,7 @@
       return { inscriptions: [], dons: [], commandes: [], benevoles: [], annonces: [], resultats: {}, staff: false,
                evenements: exemplesEvenements(), participations: [], candidatures: [], groupes: [], contenus: exemplesContenus(),
                points: exemplesPoints(), publications: exemplesPublications(), commentaires: [], reactions: [], signalements: [], suivi: { actif: true },
-               reglages: { ouvertes: true, quota: 3000, message: null },
+               reglages: { ouvertes: true, quota: 3000, message: null, delai_paiement_heures: 48 },
                fonds: { objectif: C.fonds.objectif, collecte: 0, donateurs: 0, maj: new Date().toISOString() } };
     }
     function lire() {
@@ -207,10 +208,15 @@
     }
     const plages = { '10': [1, 4999], '5': [5001, 9999], '3': [10001, 19999] };
     function exigerStaff() { if (!lire().staff) throw erreur("Accès réservé à l'équipe organisatrice"); }
-    const actives = (d) => d.inscriptions.filter((i) => i.statut !== 'annule').length;
+    // Une inscription tient une place si elle est payée ou en vérification,
+    // ou si elle attend son paiement depuis moins que le délai (48 h par défaut).
+    const delaiMs = (d) => (Number(d.reglages.delai_paiement_heures) || 48) * 3600 * 1000;
+    const tient = (d, i) => ['paye', 'paiement_declare'].includes(i.statut)
+      || (i.statut === 'en_attente' && Date.now() - new Date(i.created_at).getTime() < delaiMs(d));
+    const actives = (d) => d.inscriptions.filter((i) => tient(d, i)).length;
     function etatInscriptions(d) {
       const r = d.reglages;
-      return { ouvertes: r.ouvertes, quota: r.quota, restantes: Math.max(0, r.quota - actives(d)), message: r.message };
+      return { ouvertes: r.ouvertes, quota: r.quota, restantes: Math.max(0, r.quota - actives(d)), delai_paiement_heures: Number(r.delai_paiement_heures) || 48, message: r.message };
     }
     const norm = (t) => String(t || '').trim().toLowerCase();
     // Un identifiant de transaction ne sert qu'une fois (inscriptions et dons confondus)
@@ -223,7 +229,7 @@
     return {
       mode: 'demo',
       etatPublic: async () => {
-        const d = lire(); const n = (k) => d.inscriptions.filter((i) => i.distance === k && i.statut !== 'annule').length;
+        const d = lire(); const n = (k) => d.inscriptions.filter((i) => i.distance === k && tient(d, i)).length;
         return attendre({ fonds: { ...d.fonds }, inscrits: { '3': n('3'), '5': n('5'), '10': n('10') }, inscriptions: etatInscriptions(d), resultats: Object.keys(d.resultats).length });
       },
       creerInscription: async (f) => {
@@ -252,9 +258,9 @@
         }
         if (!d.reglages.ouvertes) throw erreur((d.reglages.message || '').trim() || 'Les inscriptions ne sont pas ouvertes pour le moment.');
         if (actives(d) >= d.reglages.quota) throw erreur('Complet : toutes les places de cette vague sont prises. Suivez nos annonces pour la prochaine ouverture.');
-        if (d.inscriptions.some((i) => i.statut !== 'annule' && norm(i.nom) === norm(f.nom) && norm(i.prenom) === norm(f.prenom) && i.date_naissance === f.date_naissance))
+        if (d.inscriptions.some((i) => tient(d, i) && norm(i.nom) === norm(f.nom) && norm(i.prenom) === norm(f.prenom) && i.date_naissance === f.date_naissance))
           throw erreur("Cette personne est déjà inscrite (même nom, prénom et date de naissance). Retrouvez l'inscription dans « Mon dossard » avec sa référence, ou contactez l'organisation.");
-        if (d.inscriptions.filter((i) => chiffres(i.telephone) === chiffres(f.telephone) && i.statut !== 'annule').length >= 6)
+        if (d.inscriptions.filter((i) => chiffres(i.telephone) === chiffres(f.telephone) && tient(d, i)).length >= 6)
           throw erreur("Trop d'inscriptions avec ce numéro. Contactez l'organisation.");
         const don = Math.max(0, Math.min(parseInt(f.don, 10) || 0, 1000000));
         const ins = {
@@ -283,8 +289,11 @@
         tx = String(tx || '').trim();
         if (tx.length < 4 || tx.length > 60) throw erreur('Identifiant de transaction invalide');
         if (transactionPrise(lire(), op, tx, ref)) throw erreur("Cet identifiant de transaction est déjà déclaré pour un autre paiement. Vérifiez-le ou contactez l'organisation.");
-        const i = lire().inscriptions.find((x) => x.reference === String(ref).trim().toUpperCase() && chiffres(x.telephone) === chiffres(tel) && ['en_attente', 'paiement_declare'].includes(x.statut));
+        const d = lire();
+        const i = d.inscriptions.find((x) => x.reference === String(ref).trim().toUpperCase() && chiffres(x.telephone) === chiffres(tel) && ['en_attente', 'paiement_declare'].includes(x.statut));
         if (!i) throw erreur('Inscription introuvable ou déjà traitée');
+        if (!tient(d, i) && actives(d) >= d.reglages.quota)
+          throw erreur("Le délai de paiement de cette inscription est dépassé et toutes les places sont prises. Si vous avez déjà payé, contactez l'organisation avec votre référence.");
         Object.assign(i, { statut: 'paiement_declare', operateur: op, transaction_id: tx, paiement_declare_at: new Date().toISOString() });
         ecrire(); return attendre(i.statut);
       },
@@ -332,7 +341,14 @@
         if (typeof ouvertes !== 'boolean') throw erreur('Choisissez ouvertes ou fermées');
         if (!Number.isInteger(q) || q < 0 || q > 100000) throw erreur('Quota invalide (0 à 100 000)');
         if (String(message || '').length > 300) throw erreur('Message trop long (300 caractères au plus)');
-        const d = lire(); d.reglages = { ouvertes, quota: q, message: String(message || '').trim() || null }; ecrire();
+        const d = lire(); d.reglages = { ...d.reglages, ouvertes, quota: q, message: String(message || '').trim() || null }; ecrire();
+        return attendre(etatInscriptions(d));
+      },
+      reglerDelaiPaiement: async (heures) => {
+        exigerStaff();
+        const h = Number(heures);
+        if (!Number.isInteger(h) || h < 1 || h > 720) throw erreur('Délai invalide (1 à 720 heures)');
+        const d = lire(); d.reglages = { ...d.reglages, delai_paiement_heures: h }; ecrire();
         return attendre(etatInscriptions(d));
       },
       anonymiserInscriptions: async () => {

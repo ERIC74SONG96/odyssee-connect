@@ -115,6 +115,46 @@ def main():
                     echecs.append("interrupteur : réouverture depuis l'espace organisateurs sans effet")
                 else:
                     print("ok  fermeture affichée, formulaire bloqué, réouverture par l'équipe")
+
+        # Délai de paiement : une inscription non payée depuis plus de 48 h libère sa place
+        page.goto(URL + "#accueil"); page.wait_for_timeout(500)
+        r = page.evaluate("""async () => {
+            const E = window.ODC_DATA.creer();
+            await E.connexion('equipe@exemple.cm', 'odyssee2027');
+            const avant = (await E.etatPublic()).inscriptions;
+            await E.reglerInscriptions(true, avant.quota - avant.restantes + 1, null);
+            const p = { nom: 'Delai', prenom: 'Test', telephone: '+237699500001', email: 'd@exemple.cm', sexe: 'F',
+                        distance: '5', categorie: 'etudiant', urgence_nom: 'U', urgence_tel: '+237699500002', consentement: true,
+                        consentement_version: '2026-11-25', date_naissance: '1990-01-01' };
+            const a = await E.creerInscription({ ...p, cle_envoi: crypto.randomUUID() });
+            let complet = false;
+            try { await E.creerInscription({ ...p, prenom: 'Autre', cle_envoi: crypto.randomUUID() }); } catch (e) { complet = /Complet/.test(e.message); }
+            const d = JSON.parse(localStorage.getItem('odc_demo_v1'));
+            d.inscriptions.find((i) => i.reference === a.reference).created_at = new Date(Date.now() - 49 * 3600e3).toISOString();
+            localStorage.setItem('odc_demo_v1', JSON.stringify(d));
+            const E2 = window.ODC_DATA.creer();   // relit le stockage modifié
+            await E2.connexion('equipe@exemple.cm', 'odyssee2027');
+            const libre = (await E2.etatPublic()).inscriptions.restantes;
+            let refus = '';
+            await E2.creerInscription({ ...p, prenom: 'Autre', cle_envoi: crypto.randomUUID() });
+            try { await E2.declarerPaiement(a.reference, p.telephone, 'mtn', 'TX-DELAI-1'); } catch (e) { refus = e.message; }
+            await E2.reglerInscriptions(true, 3000, null);
+            return { complet, libre, refus };
+        }""")
+        if not r["complet"]:
+            echecs.append("délai : la place en attente n'est pas comptée tant que le délai court")
+        elif r["libre"] != 1:
+            echecs.append(f"délai : la place expirée n'est pas libérée (restantes = {r['libre']})")
+        elif "délai de paiement" not in r["refus"]:
+            echecs.append(f"délai : paiement d'une inscription expirée accepté alors que c'est complet ({r['refus']!r})")
+        else:
+            page.goto(URL + "#admin"); page.reload(); page.wait_for_timeout(1800)
+            tableau = page.inner_text("body")
+            page.click('button[data-action="adm-onglet"][data-k="inscriptions"]'); page.wait_for_timeout(800)
+            if "hors délai" not in tableau or "délai dépassé" not in page.inner_text("body"):
+                echecs.append("délai : l'espace organisateurs ne signale pas l'inscription hors délai")
+            else:
+                print("ok  délai de paiement : place libérée après 48 h, paiement tardif refusé si complet, signalé à l'équipe")
         nav.close()
     if echecs:
         print("\n".join(["", "ÉCHECS :"] + echecs))
