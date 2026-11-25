@@ -5,6 +5,8 @@
 --   remet l'inscription en attente avec un motif que le coureur voit, efface
 --   l'identifiant déclaré et lui redonne le délai de paiement complet.
 --   La place reste tenue pendant ce nouveau délai (elle l'était déjà).
+--   L'identifiant refusé est gardé dans paiements_refuses : il ne peut plus
+--   être déclaré par personne (l'équipe peut toujours valider à la main).
 -- Relançable sans erreur.
 -- =====================================================================
 
@@ -12,6 +14,39 @@ alter table public.inscriptions add column if not exists motif_refus text;
 alter table public.inscriptions add column if not exists refus_at timestamptz;
 alter table public.inscriptions add column if not exists refus_nombre integer not null default 0;
 
+
+-- Historique des identifiants refusés : un refus n'efface pas la trace de la transaction.
+-- Sans cela, un identifiant réel refusé par erreur pourrait être redéclaré pour une autre
+-- inscription et validé une seconde fois (deux inscriptions pour un seul paiement).
+create table if not exists public.paiements_refuses (
+  id             uuid primary key default gen_random_uuid(),
+  operateur      text not null check (operateur in ('mtn','orange')),
+  transaction_id text not null,            -- normalisé : lower(btrim(...))
+  reference      text not null,            -- inscription à laquelle il avait été déclaré
+  motif          text not null,
+  refuse_par     uuid,
+  refuse_at      timestamptz not null default now()
+);
+create unique index if not exists paiements_refuses_uidx on public.paiements_refuses (operateur, transaction_id);
+alter table public.paiements_refuses enable row level security;
+drop policy if exists staff_lit_paiements_refuses on public.paiements_refuses;
+create policy staff_lit_paiements_refuses on public.paiements_refuses for select using (public.est_staff());
+revoke insert, update, delete, truncate, references, trigger on public.paiements_refuses from anon, authenticated;
+
+-- Contrôle d'unicité des identifiants : déclarés ailleurs, ou déjà refusés
+create or replace function public._transaction_deja_utilisee(p_operateur text, p_transaction text, p_reference text)
+returns boolean
+language sql stable security definer set search_path = public, pg_temp as $$
+  select exists (select 1 from public.inscriptions i
+                  where i.operateur = p_operateur and lower(i.transaction_id) = lower(btrim(p_transaction))
+                    and i.statut <> 'annule' and i.reference <> upper(btrim(p_reference)))
+      or exists (select 1 from public.dons d
+                  where d.operateur = p_operateur and lower(d.transaction_id) = lower(btrim(p_transaction))
+                    and d.statut <> 'annule' and d.reference <> upper(btrim(p_reference)))
+      -- Un identifiant refusé par l'équipe ne peut plus être déclaré, par personne
+      or exists (select 1 from public.paiements_refuses r
+                  where r.operateur = p_operateur and r.transaction_id = lower(btrim(p_transaction)));
+$$;
 create or replace function public.refuser_paiement(p_id uuid, p_motif text)
 returns void language plpgsql volatile security definer set search_path = public, pg_temp as $$
 declare v public.inscriptions; v_reg public.reglages_inscriptions; v_motif text := btrim(coalesce(p_motif, ''));
@@ -23,6 +58,9 @@ begin
   select * into v from public.inscriptions where id = p_id for update;
   if v.id is null then raise exception 'Inscription introuvable'; end if;
   if v.statut <> 'paiement_declare' then raise exception 'Seul un paiement déclaré peut être refusé (statut actuel : %)', v.statut; end if;
+  insert into public.paiements_refuses (operateur, transaction_id, reference, motif, refuse_par)
+  values (v.operateur, lower(btrim(v.transaction_id)), v.reference, v_motif, auth.uid())
+  on conflict (operateur, transaction_id) do nothing;
   update public.inscriptions
      set statut = 'en_attente', operateur = null, transaction_id = null, paiement_declare_at = null,
          motif_refus = v_motif, refus_at = now(), refus_nombre = refus_nombre + 1,
@@ -104,6 +142,7 @@ begin
   if current_date <= public._date_course() then
     raise exception 'L''effacement n''est possible qu''après la course';
   end if;
+  delete from public.paiements_refuses;
   update public.inscriptions set
     nom = left(nom, 1) || '.',
     telephone = 'efface-' || left(id::text, 8),
@@ -123,6 +162,7 @@ end $$;
 
 revoke all on function public._effacer_coordonnees_inscriptions()          from public, anon, authenticated;
 revoke all on function public.refuser_paiement(uuid, text)                  from public, anon, authenticated;
+revoke all on function public._transaction_deja_utilisee(text, text, text)   from public, anon, authenticated;
 revoke all on function public.declarer_paiement(text, text, text, text)     from public, anon, authenticated;
 revoke all on function public.consulter_inscription(text, text)             from public, anon, authenticated;
 grant execute on function public.refuser_paiement(uuid, text)               to authenticated;

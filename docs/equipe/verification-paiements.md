@@ -16,6 +16,6 @@ l'identifiant de transaction reçu par SMS. Sa place reste réservée pendant la
 
 ## Règles
 - On ne valide jamais sur la seule foi d'une capture d'écran envoyée par WhatsApp : seul le relevé de l'association fait foi.
-- Un même identifiant de transaction ne peut servir qu'une fois (l'appli le refuse).
+- Un même identifiant de transaction ne peut servir qu'une fois (l'appli le refuse). Un identifiant **refusé** ne peut plus être déclaré par personne : si le refus était une erreur, retrouver l'inscription dans l'onglet « Inscriptions 10 KM » et la valider directement.
 - Les remboursements se font hors appli, par l'équipe, avec trace écrite.
 - Deux personnes au moins doivent savoir faire cette vérification (remplacement, absence).

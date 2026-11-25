@@ -54,13 +54,19 @@ begin
   if (public.etat_public() -> 'inscriptions' ->> 'restantes')::int <> 0 then raise exception 'ÉCHEC : la place a été libérée par le refus'; end if;
 end $t$;
 
--- 3. Le coureur voit le motif, déclare le bon identifiant : motif effacé ; l'ancien identifiant est réutilisable
+-- 3. Le coureur voit le motif ; l'identifiant refusé ne peut plus être déclaré (ni par lui, ni par un autre) ;
+--    il déclare le bon identifiant : motif effacé
 set local role anon;
 do $t$
 declare r text := (select reference from public.inscriptions where nom = 'Six'); m text;
 begin
   select motif_refus into m from public.consulter_inscription(r, '+237699600001');
   if m is distinct from 'Identifiant introuvable sur le relevé MTN' then raise exception 'ÉCHEC : motif non visible par le coureur (%)', m; end if;
+  begin
+    perform public.declarer_paiement(r, '+237699600001', 'mtn', ' faux-123 ');
+    raise exception 'ÉCHEC : un identifiant refusé a pu être redéclaré';
+  exception when others then if sqlerrm like 'ÉCHEC%' then raise; end if;
+    if sqlerrm not like '%déjà déclaré%' then raise exception 'ÉCHEC : message inattendu (refusé) : %', sqlerrm; end if; end;
   perform public.declarer_paiement(r, '+237699600001', 'mtn', 'VRAI-456');
   select motif_refus into m from public.consulter_inscription(r, '+237699600001');
   if m is not null then raise exception 'ÉCHEC : motif toujours affiché après nouvelle déclaration'; end if;
@@ -80,6 +86,18 @@ begin
     if sqlerrm not like 'Seul un paiement déclaré%' then raise exception 'ÉCHEC : message inattendu : %', sqlerrm; end if; end;
 end $t$;
 reset role;
+
+-- 5. L'historique est réservé à l'équipe
+set local request.jwt.uid = '';
+set local role anon;
+do $t$ begin
+  if (select count(*) from public.paiements_refuses) <> 0 then raise exception 'ÉCHEC : anon lit les paiements refusés'; end if;
+end $t$;
+reset role;
+do $t$ begin
+  if (select count(*) from public.paiements_refuses where transaction_id = 'faux-123' and operateur = 'mtn') <> 1 then
+    raise exception 'ÉCHEC : identifiant refusé absent de l''historique'; end if;
+end $t$;
 
 \echo 'Migration 005 : tous les tests passent'
 rollback;

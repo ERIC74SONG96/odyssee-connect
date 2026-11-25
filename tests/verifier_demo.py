@@ -186,7 +186,11 @@ def main():
                 if "Paiement non retrouvé" not in corps or "Déclarer à nouveau mon paiement" not in corps:
                     echecs.append("vérification : le coureur ne voit pas le motif du refus sur « Mon dossard »")
                 else:
-                    print("ok  vérification des paiements : recherche par transaction, refus motivé, motif affiché au coureur")
+                    msg = page.evaluate("""async (r) => { try { await window.ODC_DATA.creer().declarerPaiement(r, '+237699700001', 'orange', 'om-faux-777'); return 'accepté'; } catch (e) { return e.message; } }""", ref)
+                    if "déjà déclaré" not in msg:
+                        echecs.append(f"vérification : identifiant refusé redéclarable ({msg!r})")
+                    else:
+                        print("ok  vérification des paiements : recherche par transaction, refus motivé, motif affiché au coureur, identifiant refusé bloqué")
         nav.close()
     if echecs:
         print("\n".join(["", "ÉCHECS :"] + echecs))

@@ -183,7 +183,7 @@
       return { inscriptions: [], dons: [], commandes: [], benevoles: [], annonces: [], resultats: {}, staff: false,
                evenements: exemplesEvenements(), participations: [], candidatures: [], groupes: [], contenus: exemplesContenus(),
                points: exemplesPoints(), publications: exemplesPublications(), commentaires: [], reactions: [], signalements: [], suivi: { actif: true },
-               reglages: { ouvertes: true, quota: 3000, message: null, delai_paiement_heures: 48 },
+               reglages: { ouvertes: true, quota: 3000, message: null, delai_paiement_heures: 48 }, refuses: [],
                fonds: { objectif: C.fonds.objectif, collecte: 0, donateurs: 0, maj: new Date().toISOString() } };
     }
     function lire() {
@@ -224,7 +224,7 @@
     // Un identifiant de transaction ne sert qu'une fois (inscriptions et dons confondus)
     function transactionPrise(d, op, tx, ref) {
       const meme = (x) => x.operateur === op && norm(x.transaction_id) === norm(tx) && x.statut !== 'annule' && x.reference !== String(ref).trim().toUpperCase();
-      return d.inscriptions.some(meme) || d.dons.some(meme);
+      return d.inscriptions.some(meme) || d.dons.some(meme) || (d.refuses || []).some((r) => r.operateur === op && r.transaction_id === norm(tx));
     }
     function trouve(liste, id) { const x = liste.find((i) => i.id === id); if (!x) throw erreur('Introuvable'); return x; }
 
@@ -387,6 +387,9 @@
         const m = String(motif || '').trim();
         if (m.length < 3 || m.length > 200) throw erreur('Indiquez un motif (3 à 200 caractères)');
         if (i.statut !== 'paiement_declare') throw erreur(`Seul un paiement déclaré peut être refusé (statut actuel : ${i.statut})`);
+        d.refuses = d.refuses || [];
+        if (!d.refuses.some((r) => r.operateur === i.operateur && r.transaction_id === norm(i.transaction_id)))
+          d.refuses.push({ operateur: i.operateur, transaction_id: norm(i.transaction_id), reference: i.reference, motif: m, refuse_at: new Date().toISOString() });
         Object.assign(i, { statut: 'en_attente', operateur: null, transaction_id: null, paiement_declare_at: null, motif_refus: m,
           refus_at: new Date().toISOString(), refus_nombre: (i.refus_nombre || 0) + 1, paiement_avant: new Date(Date.now() + delaiMs(d)).toISOString() });
         ecrire(); return attendre();
