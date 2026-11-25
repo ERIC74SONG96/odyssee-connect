@@ -1318,7 +1318,8 @@
       }
       const L = window.L;
       const m = L.map(zone, { zoomControl: true, attributionControl: true }).setView(CARTE.centre, CARTE.zoom);
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© contributeurs OpenStreetMap' }).addTo(m);
+      const fc = C.carte || {};
+      L.tileLayer(fc.tuiles || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: fc.zoomMax || 19, attribution: fc.attribution || '© contributeurs OpenStreetMap' }).addTo(m);
       carteEtat.leaflet = m; carteEtat.calques = L.layerGroup().addTo(m); const coureurs = L.layerGroup().addTo(m);
       const tr = (window.ODC_TRACES || {})['10'];
       if (tr && S.couches.evenements) {

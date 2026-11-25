@@ -8,6 +8,10 @@ Numérotation : `vMAJEUR.MINEUR.CORRECTIF` (par exemple v1.1.2 = deuxième corre
 
 Ce qui est fusionné dans `develop` mais pas encore en production. Chaque Pull Request ajoute sa ligne ici.
 
+### Fil d'actualité publié par l'équipe ; fond de carte réglable
+- **Seule L'Odyssée de l'environnement publie des photos dans le fil** (décision du 25/11/2026). Le public les voit, les aime et les commente. Publication immédiate par l'équipe connectée ; dépôt de photos réservé à l'équipe. Migration `006_fil_equipe.sql`, tests `tests/verifier_006.sql`.
+- Fond de carte réglable dans `js/config.js` (`carte.tuiles`, `carte.attribution`) pour passer d'OpenStreetMap (essais) au fournisseur choisi pour le jour J (#8).
+
 ### Vérification des paiements par l'équipe — #27
 - Nouvel onglet **Paiements à vérifier** dans l'espace organisateurs : paiements déclarés du plus ancien au plus récent, montant, opérateur, identifiant de transaction en grand, recherche par identifiant / référence / téléphone, filtre MTN ou Orange.
 - **Refuser** un paiement introuvable avec un motif : l'inscription repasse « à payer », l'identifiant refusé est gardé dans un historique (il ne peut plus être déclaré par personne), le coureur voit le motif sur « Mon dossard » et l'écran de paiement, et dispose d'un nouveau délai complet.
