@@ -59,6 +59,7 @@
       dons: () => toutLire('dons'),
       commandes: () => toutLire('commandes'),
       validerPaiement: (id) => rpc('valider_paiement', { p_id: id }),
+      anonymiserInscriptions: () => rpc('anonymiser_inscriptions', {}),
       annulerInscription: (id) => rpc('annuler_inscription', { p_id: id }),
       retrait: (id, oui) => rpc('marquer_retrait', { p_id: id, p_retire: oui }),
       validerDon: (id) => rpc('valider_don', { p_id: id }),
@@ -218,17 +219,22 @@
         if (!dist) throw erreur('Distance invalide');
         if (!['etudiant', 'travailleur'].includes(f.categorie)) throw erreur('Catégorie invalide');
         if (!telValide(f.telephone) || !telValide(f.urgence_tel)) throw erreur('Numéro de téléphone invalide');
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(f.email || '').trim())) throw erreur('Adresse e-mail invalide');
         if (f.consentement !== true) throw erreur('Le consentement est obligatoire');
         const ddn = new Date(f.date_naissance);
         const limite = new Date(); limite.setFullYear(limite.getFullYear() - 10);
         if (isNaN(ddn) || ddn > limite || ddn < new Date('1920-01-01')) throw erreur('Date de naissance invalide');
+        const majorite = new Date(ddn); majorite.setFullYear(ddn.getFullYear() + 18);
+        const mineur = majorite > new Date(C.evenement.depart);
+        if (mineur && f.consentement_parental !== true) throw erreur("L'accord d'un parent ou représentant légal est obligatoire pour les moins de 18 ans");
         if (d.inscriptions.filter((i) => chiffres(i.telephone) === chiffres(f.telephone) && i.statut !== 'annule').length >= 6)
           throw erreur("Trop d'inscriptions avec ce numéro. Contactez l'organisation.");
         const don = Math.max(0, Math.min(parseInt(f.don, 10) || 0, 1000000));
         const ins = {
           id: uid(), reference: reference('ODY', d.inscriptions), created_at: new Date().toISOString(),
           nom: texte(f, 'nom', 80, true), prenom: texte(f, 'prenom', 80, true), telephone: texte(f, 'telephone', 20, true),
-          email: texte(f, 'email', 120, false), date_naissance: f.date_naissance, sexe: f.sexe, ville: texte(f, 'ville', 80, false),
+          email: texte(f, 'email', 120, true).toLowerCase(), date_naissance: f.date_naissance, sexe: f.sexe, ville: null,
+          consentement_parental: mineur, consentement_version: String(f.consentement_version || '').slice(0, 20), anonymise_at: null,
           distance: f.distance, categorie: f.categorie, urgence_nom: texte(f, 'urgence_nom', 80, true),
           urgence_tel: texte(f, 'urgence_tel', 20, true), consentement: true,
           montant: dist.tarifs[f.categorie], don, statut: 'en_attente', operateur: null, transaction_id: null,
@@ -290,6 +296,19 @@
       inscriptions: async () => { exigerStaff(); return attendre(lire().inscriptions.slice().reverse()); },
       dons: async () => { exigerStaff(); return attendre(lire().dons.slice().reverse()); },
       commandes: async () => { exigerStaff(); return attendre(lire().commandes.slice().reverse()); },
+      anonymiserInscriptions: async () => {
+        exigerStaff();
+        if (new Date() <= new Date(C.evenement.depart)) throw erreur("L'anonymisation n'est possible qu'après la course");
+        const d = lire(); let n = 0;
+        for (const i of d.inscriptions) {
+          if (i.anonymise_at) continue;
+          Object.assign(i, { nom: String(i.nom || '').slice(0, 1) + '.', telephone: 'anonymise-' + String(i.id).slice(0, 8), email: null,
+            date_naissance: String(i.date_naissance || '').slice(0, 4) + '-01-01', ville: null, urgence_nom: '—', urgence_tel: '—', transaction_id: null,
+            anonymise_at: new Date().toISOString() });
+          n++;
+        }
+        ecrire(); return attendre(n);
+      },
       validerPaiement: async (id) => {
         exigerStaff(); const d = lire(); const i = trouve(d.inscriptions, id);
         if (i.statut === 'paye') return i.dossard;

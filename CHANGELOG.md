@@ -8,6 +8,13 @@ Numérotation : `vMAJEUR.MINEUR.CORRECTIF` (par exemple v1.1.2 = deuxième corre
 
 Ce qui est fusionné dans `develop` mais pas encore en production. Chaque Pull Request ajoute sa ligne ici.
 
+### Données personnelles (loi n° 2024/017) — #6
+- Inscription : e-mail obligatoire, ville plus demandée.
+- Texte de consentement complet (finalités, hébergement en Europe, anonymisation au plus tard trois mois après la course, contact) ; version enregistrée avec l'inscription.
+- Accord d'un parent ou représentant légal obligatoire pour les moins de 18 ans le jour de la course (appli et base).
+- Espace organisateurs : anonymisation des inscriptions après la course.
+- Migration `002_donnees_personnelles.sql`.
+
 ## [v0.9.0] — 2026-11-25
 
 Premier prototype complet, en mode démonstration.
