@@ -8,6 +8,15 @@ Numérotation : `vMAJEUR.MINEUR.CORRECTIF` (par exemple v1.1.2 = deuxième corre
 
 Ce qui est fusionné dans `develop` mais pas encore en production. Chaque Pull Request ajoute sa ligne ici.
 
+### Données personnelles (loi n° 2024/017) — #6
+- Inscription : e-mail obligatoire, ville plus demandée.
+- Texte de consentement complet (finalités, hébergement en Europe, prestataires, effacement des coordonnées au plus tard trois mois après la course, données gardées pour les résultats, contact) ; chaque version conservée (`consentements_textes`), version et horodatage enregistrés avec l'inscription ; version inconnue refusée.
+- Accord d'un parent ou représentant légal obligatoire pour les moins de 18 ans le jour de la course (appli et base) ; âge minimum de 10 ans apprécié le jour de la course.
+- Effacement des coordonnées après la course : par l'équipe depuis l'espace organisateurs, ou automatiquement le 10 octobre 2027 si `pg_cron` est activé.
+- Entrées malformées (date, don) refusées avec un message clair ; droits des fonctions explicites ; `search_path = public, pg_temp`.
+- Tests SQL `tests/verifier_002.sql` : dates frontières de la majorité, compte non-staff refusé, droits effectifs.
+- Migration `002_donnees_personnelles.sql`.
+
 ### Ajouté (documentation uniquement, aucun déploiement)
 - Décision d'architecture ADR 001 : Supabase comme backend de la v1 (`docs/decisions/`).
 - Règles de l'équipe, procédure d'incident et fiche de passation pour les assistants d'IA (`docs/equipe/`).
