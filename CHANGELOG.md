@@ -8,6 +8,16 @@ Numérotation : `vMAJEUR.MINEUR.CORRECTIF` (par exemple v1.1.2 = deuxième corre
 
 Ce qui est fusionné dans `develop` mais pas encore en production. Chaque Pull Request ajoute sa ligne ici.
 
+### Audit de sécurité du SQL — #26
+- Une inscription non payée ne garde sa place que jusqu'à sa **date limite de paiement** (création + 48 h par défaut, réglable dans l'espace organisateurs pour les inscriptions suivantes). Sans cela, des inscriptions abandonnées ou envoyées en masse pouvaient remplir le quota sans payer.
+- Déclaration de paiement : verrous dans le même ordre que la création ; une inscription annulée ou payée ne peut plus repasser en « paiement déclaré » ; une ancienne référence expirée ne peut pas être payée si la même personne s'est réinscrite.
+- Test de charge `tests/test_de_charge.sh` (#7) et index pour tenir la charge : 3 000 places sous 4 000 envois simultanés, ~500 inscriptions/s en local.
+- Écran de paiement : « Votre place est réservée pendant 48 h : payez avant le… » ; message clair si le délai est dépassé.
+- Espace organisateurs : places tenues, inscriptions hors délai signalées, réglage du délai.
+- Tables : `anon` et `authenticated` n'ont plus que la lecture (filtrée par la RLS) ; plus de droit sur les séquences ; plus de dépôt anonyme de photos.
+- Rapport : `docs/securite/audit-sql-2026-11-25.md`. Tests `tests/verifier_004.sql` (avec les droits par défaut de Supabase reproduits dans `tests/mock_supabase.sql`) et scénario ajouté à `tests/verifier_demo.py`.
+- Migration `004_audit_securite.sql`.
+
 ### Ouverture des inscriptions et anti-doublons — #29, #28
 - Interrupteur d'ouverture dans l'espace organisateurs (tableau de bord) : ouvertes / fermées, quota de la vague, message affiché quand c'est fermé. **Fermées par défaut** à l'installation. Sert aussi à suspendre en cas d'incident.
 - Quota exact même sous forte affluence (créations sérialisées par un verrou) ; « Complet » affiché quand il est atteint ; « Plus que N places » sous 300 places.
