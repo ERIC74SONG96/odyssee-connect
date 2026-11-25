@@ -517,3 +517,4 @@ img.dist-ico{width:40px;height:auto;object-fit:contain}
 .km-tr{flex:none;width:66px;white-space:nowrap;font-weight:800;color:#0b4d2c;font-variant-numeric:tabular-nums}
 .trace-reel .cp-legende{color:#13241a;display:flex;flex-wrap:wrap;gap:6px 12px;padding:8px 10px;background:#fff;font-size:12px}
 .trace-reel .cp-legende i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.info button.lien,button.lien{background:none;border:0;padding:0;box-shadow:none;min-height:0;font:inherit;font-weight:700;color:inherit;text-decoration:underline;cursor:pointer}
