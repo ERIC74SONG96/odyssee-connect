@@ -5,7 +5,7 @@ Le détail des tâches est dans les *issues* GitHub, rangées par jalon (*milest
 
 **Repères du 10 KM de Yaoundé 2027** (date provisoire) :
 - course : samedi 10 juillet 2027, départ à 8 h ;
-- ouverture des inscriptions : **mardi 1er décembre 2026** ;
+- ouverture des inscriptions : **date cible mardi 1er décembre 2026**, sous conditions (voir v1.0) ;
 - gel des changements : deux semaines avant la course, vers le 26 juin 2027. Après cette date, seuls les correctifs urgents (`hotfix/*`) passent.
 
 Les dates des jalons sont des cibles de travail, à ajuster en réunion d'équipe.

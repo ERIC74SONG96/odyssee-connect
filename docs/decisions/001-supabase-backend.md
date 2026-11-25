@@ -6,7 +6,7 @@
 
 ## Contexte
 
-Odyssée Connect doit ouvrir les inscriptions au 10 KM de Yaoundé 2027 **le 1er décembre 2026**, pour une course le samedi 10 juillet 2027.
+Odyssée Connect vise l'ouverture des inscriptions au 10 KM de Yaoundé 2027 **le 1er décembre 2026 (date cible, sous conditions)**, pour une course le samedi 10 juillet 2027.
 Jusqu'à 10 000 participants sont visés, par paliers à partir de 3 000.
 
 L'équipe compte un seul développeur humain, étudiant à côté du projet, aidé par trois assistants d'IA (Claude, ChatGPT, Gemini).
@@ -27,7 +27,7 @@ Deux autres options ont été étudiées :
 
 ## Raisons
 
-1. **Le délai** : les inscriptions ouvrent en décembre 2026. Le backend Supabase est écrit et testé ; une réécriture ne tiendrait pas ce délai.
+1. **Le délai** : l'ouverture des inscriptions est visée pour le 1er décembre 2026. Le backend Supabase est écrit et testé ; une réécriture ne tiendrait pas ce délai.
 2. **Une seule personne peut le tenir**, en parallèle de ses études : pas de serveur à louer, sécuriser, mettre à jour ou surveiller.
 3. **La sécurité est appliquée au niveau de la base**, grâce aux règles RLS et à des fonctions contrôlées. Cette protection dépend de la configuration des politiques, des privilèges SQL (droits `EXECUTE`, `search_path` des fonctions `security definer`) et des règles du stockage des photos : elle doit être **auditée avant la mise en production**.
 4. **Le coût est faible et maîtrisable** : offre Pro à partir de 25 $ par mois, hors éventuels coûts supplémentaires (calcul, stockage, trafic), avec plafond de dépenses et sauvegardes quotidiennes conservées 7 jours. Vérifier le coût réel avant la production.
