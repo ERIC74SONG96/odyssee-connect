@@ -1,5 +1,5 @@
-# Envoie l'application sur LWS : https://inscription.odyssee-env.org/
-# Le mot de passe FTP est dans le secret LWS_FTP_PASSWORD (jamais dans le code).
+# Envoie l'application sur LWS : https://inscription.odyssee-env.com/
+# Le mot de passe FTP est dans le secret LWS_FTP_PASSWORD_COM (jamais dans le code).
 name: Dépôt sur LWS
 
 on:
@@ -28,17 +28,17 @@ jobs:
 
       - name: Tester l acces au port FTP
         run: |
-          timeout 15 bash -c "echo > /dev/tcp/193.203.239.71/21" && echo "port 21 ouvert" || echo "port 21 injoignable"
-          getent hosts ftp.odyssee-env.org || true
+          timeout 15 bash -c "echo > /dev/tcp/193.203.239.78/21" && echo "port 21 ouvert" || echo "port 21 injoignable"
+          getent hosts ftp.odyssee-env.com || true
 
       - name: Envoyer sur LWS (FTP)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: 193.203.239.71
-          username: odyss2839868
-          password: ${{ secrets.LWS_FTP_PASSWORD }}
+          server: 193.203.239.78
+          username: odyss2839870
+          password: ${{ secrets.LWS_FTP_PASSWORD_COM }}
           protocol: ftps
           local-dir: ./site/
-          server-dir: inscription.odyssee-env.org/
+          server-dir: inscription.odyssee-env.com/
           timeout: 120000
           log-level: verbose

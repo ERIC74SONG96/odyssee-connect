@@ -1,4 +1,4 @@
-# Odyssée Connect · inscription.odyssee-env.org
+# Odyssée Connect · inscription.odyssee-env.com
 RewriteEngine On
 RewriteCond %{HTTPS} off
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
