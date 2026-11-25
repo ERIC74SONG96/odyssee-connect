@@ -9,6 +9,7 @@ dans *Supabase > SQL Editor*, d'abord sur la base de **test**, puis sur la **pro
 | `002_donnees_personnelles.sql` | E-mail obligatoire, accord parental des mineurs, version du consentement, anonymisation après la course | — |
 | `003_ouverture_et_doublons.sql` | Interrupteur d'ouverture et quota (fermé par défaut), clé d'envoi anti-doublon, même personne refusée, identifiant de transaction unique | — |
 | `004_audit_securite.sql` | Audit #26 : délai de paiement (48 h) avant qu'une inscription non payée libère sa place, droits limités à la lecture sur les tables, plus de dépôt anonyme de photos | — |
+| `005_verification_paiements.sql` | #27 : l'équipe peut refuser un paiement déclaré introuvable, avec un motif visible par le coureur (identifiant effacé, nouveau délai de paiement) | — |
 
 Règles :
 - ne jamais modifier un fichier déjà appliqué en production : écrire le suivant (`002_…`) ;

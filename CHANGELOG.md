@@ -8,6 +8,13 @@ Numérotation : `vMAJEUR.MINEUR.CORRECTIF` (par exemple v1.1.2 = deuxième corre
 
 Ce qui est fusionné dans `develop` mais pas encore en production. Chaque Pull Request ajoute sa ligne ici.
 
+### Vérification des paiements par l'équipe — #27
+- Nouvel onglet **Paiements à vérifier** dans l'espace organisateurs : paiements déclarés du plus ancien au plus récent, montant, opérateur, identifiant de transaction en grand, recherche par identifiant / référence / téléphone, filtre MTN ou Orange.
+- **Refuser** un paiement introuvable avec un motif : l'inscription repasse « à payer », l'identifiant refusé est gardé dans un historique (il ne peut plus être déclaré par personne), le coureur voit le motif sur « Mon dossard » et l'écran de paiement, et dispose d'un nouveau délai complet.
+- Alerte sur le tableau de bord quand un paiement attend depuis plus de 24 h ; compteur dans l'onglet.
+- Procédure : `docs/equipe/verification-paiements.md`. Tests `tests/verifier_005.sql` et scénario dans `tests/verifier_demo.py`.
+- Migration `005_verification_paiements.sql`.
+
 ### Chargement plus léger sur mobile (Cameroun)
 - Polices (Inter, Barlow Condensed) et bibliothèque Supabase (2.119.2, dernière 2.x) servies depuis le site : plus d'appel à Google Fonts ni au CDN jsdelivr (chaque domaine externe coûte plusieurs allers-retours de ~170 ms depuis Yaoundé, et peut être bloqué par un opérateur).
 - Images en WebP : image d'accueil 131 → 74 Ko, pictogrammes divisés par 3.
