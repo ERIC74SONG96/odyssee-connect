@@ -222,6 +222,16 @@ begin
   if f is not null then raise exception 'ÉCHEC : fonctions exécutables par anon hors liste blanche : %', f; end if;
 end $t$;
 
+-- 8 ter. Aucune fonction du schéma public n'est exécutable par PUBLIC (droit implicite ou explicite)
+do $t$
+declare f text;
+begin
+  select string_agg(p.oid::regprocedure::text, ', ') into f from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+   where n.nspname = 'public'
+     and (p.proacl is null or exists (select 1 from aclexplode(p.proacl) a where a.grantee = 0 and a.privilege_type = 'EXECUTE'));
+  if f is not null then raise exception 'ÉCHEC : fonctions exécutables par PUBLIC : %', f; end if;
+end $t$;
+
 -- 9. Tout compte connecté non-staff est refusé par chaque fonction réservée à l'équipe
 do $t$
 declare f record; argl text; ko text := '';
