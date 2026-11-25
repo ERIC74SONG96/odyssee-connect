@@ -1,0 +1,29 @@
+# Odyssée Connect · inscription.odyssee-env.com (hébergement LWS, Apache)
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+Options -Indexes
+
+# Types
+AddType application/manifest+json .webmanifest
+AddType image/webp .webp
+AddType font/woff2 .woff2
+AddType application/gpx+xml .gpx
+
+# Compression : le code (≈ 300 Ko) passe à ≈ 80 Ko sur le réseau
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain application/javascript text/javascript application/json application/manifest+json application/gpx+xml image/svg+xml
+</IfModule>
+
+# Cache : la coquille est toujours revalidée (mises à jour immédiates) ;
+# images et polices gardées une semaine
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html|js|css|webmanifest|gpx)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+  <FilesMatch "\.(webp|png|jpg|woff2|svg)$">
+    Header set Cache-Control "public, max-age=604800"
+  </FilesMatch>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>

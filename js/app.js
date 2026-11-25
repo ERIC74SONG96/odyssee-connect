@@ -242,7 +242,7 @@
     return `<div class="pile" role="radiogroup" aria-label="Distance">${C.distances.map((d) => {
       const [fond, enc] = couleurDist[d.couleur] || couleurDist.vert; const on = d.id === choisi;
       return `<button type="button" class="dist-ligne${on ? ' on' : ''}" data-action="${action}" data-id="${d.id}" role="radio" aria-checked="${on}" style="background:${fond};--c:${enc}">
-        <img class="dist-ico" src="images/coureur-vert.png" alt="">
+        <img class="dist-ico" src="images/coureur-vert.webp" alt="">
         <span class="pile" style="gap:0;flex:1;text-align:left"><b>${esc(d.km.toUpperCase())} – ${esc(d.nom)}</b><span>${esc(d.public)}</span></span>
         <span class="radio-o${on ? ' on' : ''}" style="--c:${enc}"></span></button>`;
     }).join('')}</div>`;
@@ -266,11 +266,11 @@
         <a class="rond-clair" href="#actualites" aria-label="Actualités">${I.cloche}${S.annonces.length ? '<i class="pastille-rouge"></i>' : ''}</a>
       </header>
       <section class="hero-acc" aria-label="${esc(C.evenement.nom)}">
-        <img src="images/hero-accueil.jpg" alt="Coureurs aux couleurs de L'Odyssée de l'environnement devant le monument de la Réunification" width="900" height="574">
+        <img src="images/hero-accueil.webp" alt="Coureurs aux couleurs de L'Odyssée de l'environnement devant le monument de la Réunification" width="900" height="574">
         <div class="hero-bas">
           <svg class="hero-courbe" viewBox="0 0 390 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0 60 L0 34 C120 4 260 -6 390 22 L390 60 Z" fill="#0b4d2c"/><path d="M0 40 C130 8 260 2 390 26" fill="none" stroke="#f7c51e" stroke-width="6" stroke-linecap="round"/></svg>
           <div class="hero-titre">
-            <img class="hero-coureur" src="images/coureur-blanc.png" alt="" width="336" height="338">
+            <img class="hero-coureur" src="images/coureur-blanc.webp" alt="" width="336" height="338">
             <p><span class="t-grand">10 KM</span><span class="t-moyen">de Yaoundé</span><span class="t-grand">2027</span></p>
           </div>
           <p class="hero-tag">Sport <i>•</i> Environnement <i>•</i> Solidarité</p>
@@ -281,7 +281,7 @@
       <h2 class="titre" style="margin-top:6px">Prochain événement</h2>
       <div style="padding:0 16px">
         <a class="carte prochain" href="#course">
-          <span class="vignette-course"><img src="images/coureur-blanc-petit.png" alt=""></span>
+          <span class="vignette-course"><img src="images/coureur-blanc-petit.webp" alt=""></span>
           <span class="pile" style="gap:1px;flex:1">
             <b>${esc(C.evenement.nom)}</b>
             <span>3 KM • 5 KM • 10 KM</span>
@@ -374,7 +374,7 @@
     const total = Object.values(n).reduce((a, b) => a + b, 0);
     return `
       ${entete(C.evenement.nom, 'evenements')}
-      <img src="images/hero-accueil.jpg" alt="" style="width:100%;height:170px;object-fit:cover;object-position:50% 25%">
+      <img src="images/hero-accueil.webp" alt="" style="width:100%;height:170px;object-fit:cover;object-position:50% 25%">
       <div class="pad pile">
         <div class="carte pile" style="margin-top:-40px;position:relative;box-shadow:var(--ombre);gap:8px">
           <span style="display:flex;gap:10px;align-items:center;color:var(--vert)">${I.cal}<span style="color:var(--encre)">${esc(dateCourse())}</span></span>
@@ -848,7 +848,7 @@
     sensibilisation: ['Sensibilisation', I.info], autre: ['Autre', I.info]
   };
   const MODULES = [
-    ['evenements', 'Événements', I.cal, 'vert'], ['course', 'Inscription 10 KM', '<img src="images/coureur-vert.png" alt="" class="m-coureur">', 'jaune'], ['parcours', 'Parcours', I.lieu, 'clair'],
+    ['evenements', 'Événements', I.cal, 'vert'], ['course', 'Inscription 10 KM', '<img src="images/coureur-vert.webp" alt="" class="m-coureur">', 'jaune'], ['parcours', 'Parcours', I.lieu, 'clair'],
     ['actions', 'Actions', I.feuille, 'clair'], ['communaute', 'Communauté', I.groupe, 'clair'], ['resultats', 'Résultats', I.coupe, 'clair'],
     ['impact', 'Impact', I.graphe, 'clair'], ['boutique', 'Boutique', I.sac, 'jaune'], ['partenaires', 'Partenaires', I.poignee, 'clair'],
     ['fonds', 'Solidarité', I.coeur, 'rouge'], ['formations', 'Formations', I.livre, 'clair'], ['actualites', 'Actualités', I.journal, 'clair'],
@@ -867,7 +867,7 @@
     collecte: ['#0b4d2c', '#f7c51e'], reboisement: ['#2f7a46', '#e7f3dc'], recyclage: ['#1f6b5a', '#dcf0ec'], sensibilisation: ['#7a5b00', '#fdf1c4'], autre: ['#0b4d2c', '#e3f1e6'] };
   function visuelEv(e, cls) {
     if (e.image) return `<img class="${cls}" src="${esc(e.image)}" alt="" loading="lazy">`;
-    if (e.type === 'course') return `<img class="${cls}" src="images/hero-accueil.jpg" alt="" loading="lazy">`;
+    if (e.type === 'course') return `<img class="${cls}" src="images/hero-accueil.webp" alt="" loading="lazy">`;
     const [fond, clair] = BANNIERES[e.type] || BANNIERES.autre;
     return `<span class="${cls} ev-motif" style="background:${fond};color:${clair}">${(TYPES[e.type] || TYPES.autre)[1]}</span>`;
   }

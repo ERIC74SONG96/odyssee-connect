@@ -1,7 +1,12 @@
 /* Odyssée Connect · fonctionnement hors connexion (coquille de l'appli) */
-const CACHE = 'odc-v10';
-const FICHIERS = ['./', './index.html', './css/app.css', './js/config.js', './js/data.js', './js/parcours.js', './js/app.js', './parcours/parcours-3km.gpx', './parcours/parcours-5km.gpx', './parcours/parcours-10km.gpx', './js/vendor/qrcode.min.js', './js/vendor/jsQR.js',
-  './images/coureurs.jpg', './icons/icon-192.png', './icons/icon-512.png', './manifest.webmanifest'];
+const CACHE = 'odc-v12';
+const FICHIERS = ['./', './index.html', './css/app.css', './css/polices.css', './css/polices/inter-latin.woff2',
+  './js/config.js', './js/data.js', './js/parcours.js', './js/app.js', './js/vendor/qrcode.min.js',
+  './parcours/parcours-3km.gpx', './parcours/parcours-5km.gpx', './parcours/parcours-10km.gpx',
+  './images/hero-accueil.webp', './images/coureur-blanc.webp', './images/coureur-vert.webp', './images/coureur-blanc-petit.webp',
+  './icons/icon-192.png', './icons/icon-512.png', './manifest.webmanifest'];
+// Pas de préchargement du lecteur de QR code (équipe seulement) ni de la bibliothèque Supabase :
+// ils sont mis en cache à leur premier usage.
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FICHIERS)).then(() => self.skipWaiting()));
