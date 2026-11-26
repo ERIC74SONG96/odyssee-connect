@@ -17,7 +17,10 @@ def main():
     echecs = []
     with sync_playwright() as p:
         nav = p.chromium.launch()
-        page = nav.new_page(viewport={"width": 390, "height": 844})
+        # Service worker bloqué : chaque fichier vient du réseau (donc de l'interception
+        # ci-dessous), jamais d'un cache, et le test reste reproductible.
+        contexte = nav.new_context(viewport={"width": 390, "height": 844}, service_workers="block")
+        page = contexte.new_page()
         # Le test tourne toujours en mode démonstration, même quand js/config.js
         # pointe vers la vraie base : on sert une copie de config.js sans adresse Supabase.
         def config_demo(route):
@@ -29,6 +32,10 @@ def main():
         page.on("pageerror", lambda e: erreurs.append(str(e)))
         page.goto(URL + "#accueil")
         page.wait_for_timeout(1000)
+        if page.evaluate("window.ODC_CONFIG.supabaseUrl") != "" or page.evaluate("window.ODC_DATA.creer().mode") != "demo":
+            print("ÉCHEC : le test n'est pas en mode démonstration (il toucherait la vraie base).")
+            sys.exit(1)
+        print("ok  mode démonstration (config.js servie sans adresse Supabase, service worker bloqué)")
         for ecran in ECRANS:
             erreurs.clear()
             page.goto(f"{URL}#{ecran}")
