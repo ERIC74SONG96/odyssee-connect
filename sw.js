@@ -1,5 +1,5 @@
 /* Odyssée Connect · fonctionnement hors connexion (coquille de l'appli) */
-const CACHE = 'odc-v16';
+const CACHE = 'odc-v17';
 const FICHIERS = ['./', './index.html', './css/app.css', './css/polices.css', './css/polices/inter-latin.woff2',
   './js/config.js', './js/data.js', './js/parcours.js', './js/app.js', './js/vendor/qrcode.min.js',
   './parcours/parcours-3km.gpx', './parcours/parcours-5km.gpx', './parcours/parcours-10km.gpx',

@@ -45,7 +45,9 @@ window.ODC_CONFIG = {
 
   // Paiement Mobile Money (numéros marchands de l'association, à compléter)
   mobileMoney: {
-    beneficiaire: "L'Odyssée de l'environnement au Cameroun",
+    // Texte affiché entre parenthèses après le numéro : le nom que le coureur verra
+    // au moment d'envoyer l'argent doit y figurer, sinon il risque d'abandonner.
+    beneficiaire: "nom affiché : Tchuisseu Gedeon, pour L'Odyssée de l'environnement",
     mtn:    { nom: 'MTN Mobile Money', numero: '', code: '*126#' },
     orange: { nom: 'Orange Money',     numero: '697 89 47 34', code: '#150#' }
   },
