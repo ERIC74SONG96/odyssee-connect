@@ -4,9 +4,12 @@
  * Laisser supabaseUrl vide = mode démonstration (données gardées dans le navigateur).
  */
 window.ODC_CONFIG = {
-  // Connexion à la base (Supabase > Project Settings > API)
-  supabaseUrl: '',
-  supabaseAnonKey: '',
+  // Connexion à la base (Supabase > Project Settings > API Keys)
+  // Projet créé le 26/11/2026, région Londres (eu-west-2), offre gratuite.
+  // Clé « publishable » : publique par nature, protégée par les règles de la base.
+  // Ne JAMAIS mettre ici la clé secrète (sb_secret_… / service_role).
+  supabaseUrl: 'https://nuqmvkutljogqjuhtqrj.supabase.co',
+  supabaseAnonKey: 'sb_publishable_HcVLS83NEdSiaev6IiArvw_asLVlSkg',
 
   // Événement
   evenement: {

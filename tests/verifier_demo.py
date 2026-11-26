@@ -4,6 +4,7 @@ Lancer depuis la racine du dépôt :
     python3 -m http.server 8765 &
     python3 tests/verifier_demo.py
 """
+import re
 import sys
 from playwright.sync_api import sync_playwright
 
@@ -17,6 +18,13 @@ def main():
     with sync_playwright() as p:
         nav = p.chromium.launch()
         page = nav.new_page(viewport={"width": 390, "height": 844})
+        # Le test tourne toujours en mode démonstration, même quand js/config.js
+        # pointe vers la vraie base : on sert une copie de config.js sans adresse Supabase.
+        def config_demo(route):
+            texte = route.fetch().text()
+            texte = re.sub(r"supabaseUrl:\s*'[^']*'", "supabaseUrl: ''", texte)
+            route.fulfill(body=texte, content_type="application/javascript")
+        page.route("**/js/config.js*", config_demo)
         erreurs = []
         page.on("pageerror", lambda e: erreurs.append(str(e)))
         page.goto(URL + "#accueil")
