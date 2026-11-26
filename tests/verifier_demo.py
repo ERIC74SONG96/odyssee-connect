@@ -82,6 +82,17 @@ def main():
                     echecs.append("inscription d'un mineur : accord parental, horodatage ou ville mal enregistrés")
                 else:
                     print("ok  inscription d'un mineur avec accord parental")
+                # Écran de paiement : seuls les opérateurs dont le numéro est connu sont proposés
+                ops = page.eval_on_selector_all('button.op-choix', 'bs => bs.map(b => b.dataset.op)')
+                cfg = page.evaluate("({mtn: ODC_CONFIG.mobileMoney.mtn.numero, orange: ODC_CONFIG.mobileMoney.orange.numero})")
+                attendus = [k for k in ("mtn", "orange") if cfg[k]] or ["mtn", "orange"]
+                etapes = page.inner_text("ol.etp")
+                if ops != attendus:
+                    echecs.append(f"paiement : opérateurs proposés {ops}, attendus {attendus}")
+                elif any(cfg[k] and cfg[k] not in etapes for k in attendus[:1]):
+                    echecs.append("paiement : le numéro de l'association n'est pas affiché")
+                else:
+                    print(f"ok  paiement : opérateurs proposés {ops}, numéro affiché")
         # Anti-doublons (#28) : un même envoi répété ne crée qu'une inscription ; même personne refusée
         res = page.evaluate("""async () => {
           const E = window.ODC_DATA.creer();

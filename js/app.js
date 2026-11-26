@@ -202,19 +202,24 @@
   }
 
   function blocPaiement(type, ref, tel, montant) {
-    const mm = C.mobileMoney; const o = mm[S.op];
+    const mm = C.mobileMoney;
+    // On ne propose que les opérateurs dont le numéro est connu (tous si aucun ne l'est encore).
+    const avecNumero = ['mtn', 'orange'].filter((k) => mm[k] && mm[k].numero);
+    const ops = avecNumero.length ? avecNumero : ['mtn', 'orange'];
+    if (!ops.includes(S.op)) S.op = ops[0];
+    const o = mm[S.op];
     return `
       <div class="pad pile">
         <h2 class="titre-centre">${type === 'don' ? 'Montant du don' : 'Frais d’inscription'}</h2>
         <div class="frais"><span>${fcfa(montant)}</span><small>Référence <b>${esc(ref)}</b></small></div>
         <h2 class="titre-centre">Choisissez un moyen de paiement</h2>
         <div class="pile" role="radiogroup" aria-label="Moyen de paiement">
-          <div class="moyen actif" role="radio" aria-checked="true"><span class="m-ico">${I.telephone}</span><span class="pile" style="gap:0;flex:1"><b>Mobile Money</b><span>MTN, Orange</span></span><span class="radio-o on"></span></div>
+          <div class="moyen actif" role="radio" aria-checked="true"><span class="m-ico">${I.telephone}</span><span class="pile" style="gap:0;flex:1"><b>Mobile Money</b><span>${ops.map((k) => (k === 'mtn' ? 'MTN' : 'Orange')).join(', ')}</span></span><span class="radio-o on"></span></div>
           <div class="moyen bientot" role="radio" aria-checked="false" aria-disabled="true"><span class="m-ico">${I.carte}</span><span class="pile" style="gap:0;flex:1"><b>Carte bancaire</b><span>Visa, Mastercard · bientôt</span></span><span class="radio-o"></span></div>
           <div class="moyen bientot" role="radio" aria-checked="false" aria-disabled="true"><span class="m-ico">${I.banque}</span><span class="pile" style="gap:0;flex:1"><b>Paiement en agence</b><span>Partenaires agréés · bientôt</span></span><span class="radio-o"></span></div>
         </div>
         <div class="carte pile" style="gap:10px">
-          <div class="ops" role="radiogroup" aria-label="Opérateur">${['mtn', 'orange'].map((k) => `<button type="button" class="op-choix" data-action="op" data-op="${k}" role="radio" aria-checked="${S.op === k}"><span class="op ${k}">${k === 'mtn' ? 'MoMo' : 'OM'}</span>${esc(mm[k].nom)}</button>`).join('')}</div>
+          <div class="ops" role="radiogroup" aria-label="Opérateur">${ops.map((k) => `<button type="button" class="op-choix" data-action="op" data-op="${k}" role="radio" aria-checked="${S.op === k}"><span class="op ${k}">${k === 'mtn' ? 'MoMo' : 'OM'}</span>${esc(mm[k].nom)}</button>`).join('')}</div>
           <ol class="etp">
             <li>Composez <b>${esc(o.code)}</b> sur votre téléphone.</li>
             <li>Envoyez <b>${fcfa(montant)}</b> ${o.numero ? `au <b>${esc(o.numero)}</b> (${esc(mm.beneficiaire)})` : `au numéro de l'association <b>(communiqué à l'ouverture des inscriptions)</b>`}.</li>
