@@ -59,6 +59,10 @@
       dons: () => toutLire('dons'),
       commandes: () => toutLire('commandes'),
       validerPaiement: (id) => rpc('valider_paiement', { p_id: id }),
+      refuserPaiement: (id, motif) => rpc('refuser_paiement', { p_id: id, p_motif: motif }),
+      anonymiserInscriptions: () => rpc('anonymiser_inscriptions', {}),
+      reglerInscriptions: (ouvertes, quota, message) => rpc('regler_inscriptions', { p_ouvertes: ouvertes, p_quota: quota, p_message: message || null }),
+      reglerDelaiPaiement: (heures) => rpc('regler_delai_paiement', { p_heures: heures }),
       annulerInscription: (id) => rpc('annuler_inscription', { p_id: id }),
       retrait: (id, oui) => rpc('marquer_retrait', { p_id: id, p_retire: oui }),
       validerDon: (id) => rpc('valider_don', { p_id: id }),
@@ -167,8 +171,8 @@
   function exemplesPublications() {
     const t = Date.now();
     return [
-      { id: 'pub-1', created_at: new Date(t - 3600e3 * 5).toISOString(), appareil: 'equipe', auteur: 'Équipe Odyssée', ville: 'Yaoundé', categorie: 'evenement', texte: 'Exemple : séance photo pour l’affiche des 10 KM de Yaoundé 2027. Merci aux coureurs !', lieu: 'Monument de la Réunification', photo: 'images/hero-accueil.jpg', statut: 'publie' },
-      { id: 'pub-2', created_at: new Date(t - 3600e3 * 30).toISOString(), appareil: 'equipe', auteur: 'Équipe Odyssée', ville: 'Yaoundé', categorie: 'communaute', texte: 'Exemple : les maillots Odyssée sont prêts pour l’entraînement collectif.', lieu: 'Yaoundé', photo: 'images/coureurs.jpg', statut: 'publie' }
+      { id: 'pub-1', created_at: new Date(t - 3600e3 * 5).toISOString(), appareil: 'equipe', auteur: 'Équipe Odyssée', ville: 'Yaoundé', categorie: 'evenement', texte: 'Exemple : séance photo pour l’affiche des 10 KM de Yaoundé 2027. Merci aux coureurs !', lieu: 'Monument de la Réunification', photo: 'images/hero-accueil.webp', statut: 'publie' },
+      { id: 'pub-2', created_at: new Date(t - 3600e3 * 30).toISOString(), appareil: 'equipe', auteur: 'Équipe Odyssée', ville: 'Yaoundé', categorie: 'communaute', texte: 'Exemple : les maillots Odyssée sont prêts pour l’entraînement collectif.', lieu: 'Yaoundé', photo: 'images/coureurs.webp', statut: 'publie' }
     ];
   }
 
@@ -179,6 +183,7 @@
       return { inscriptions: [], dons: [], commandes: [], benevoles: [], annonces: [], resultats: {}, staff: false,
                evenements: exemplesEvenements(), participations: [], candidatures: [], groupes: [], contenus: exemplesContenus(),
                points: exemplesPoints(), publications: exemplesPublications(), commentaires: [], reactions: [], signalements: [], suivi: { actif: true },
+               reglages: { ouvertes: true, quota: 3000, message: null, delai_paiement_heures: 48 }, refuses: [],
                fonds: { objectif: C.fonds.objectif, collecte: 0, donateurs: 0, maj: new Date().toISOString() } };
     }
     function lire() {
@@ -204,35 +209,73 @@
     }
     const plages = { '10': [1, 4999], '5': [5001, 9999], '3': [10001, 19999] };
     function exigerStaff() { if (!lire().staff) throw erreur("Accès réservé à l'équipe organisatrice"); }
+    // Une inscription tient une place si elle est payée ou en vérification,
+    // ou si elle attend son paiement avant sa date limite (fixée à la création : 48 h par défaut).
+    const delaiMs = (d) => (Number(d.reglages.delai_paiement_heures) || 48) * 3600 * 1000;
+    const limite = (d, i) => i.paiement_avant || new Date(new Date(i.created_at).getTime() + delaiMs(d)).toISOString();
+    const tient = (d, i) => ['paye', 'paiement_declare'].includes(i.statut)
+      || (i.statut === 'en_attente' && new Date(limite(d, i)).getTime() > Date.now());
+    const actives = (d) => d.inscriptions.filter((i) => tient(d, i)).length;
+    function etatInscriptions(d) {
+      const r = d.reglages;
+      return { ouvertes: r.ouvertes, quota: r.quota, restantes: Math.max(0, r.quota - actives(d)), delai_paiement_heures: Number(r.delai_paiement_heures) || 48, message: r.message };
+    }
+    const norm = (t) => String(t || '').trim().toLowerCase();
+    // Un identifiant de transaction ne sert qu'une fois (inscriptions et dons confondus)
+    function transactionPrise(d, op, tx, ref) {
+      const meme = (x) => x.operateur === op && norm(x.transaction_id) === norm(tx) && x.statut !== 'annule' && x.reference !== String(ref).trim().toUpperCase();
+      return d.inscriptions.some(meme) || d.dons.some(meme) || (d.refuses || []).some((r) => r.operateur === op && r.transaction_id === norm(tx));
+    }
     function trouve(liste, id) { const x = liste.find((i) => i.id === id); if (!x) throw erreur('Introuvable'); return x; }
 
     return {
       mode: 'demo',
       etatPublic: async () => {
-        const d = lire(); const n = (k) => d.inscriptions.filter((i) => i.distance === k && i.statut !== 'annule').length;
-        return attendre({ fonds: { ...d.fonds }, inscrits: { '3': n('3'), '5': n('5'), '10': n('10') }, resultats: Object.keys(d.resultats).length });
+        const d = lire(); const n = (k) => d.inscriptions.filter((i) => i.distance === k && tient(d, i)).length;
+        return attendre({ fonds: { ...d.fonds }, inscrits: { '3': n('3'), '5': n('5'), '10': n('10') }, inscriptions: etatInscriptions(d), resultats: Object.keys(d.resultats).length });
       },
       creerInscription: async (f) => {
         const d = lire();
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(f.cle_envoi || ''))) throw erreur("Version de l'appli trop ancienne. Rechargez la page.");
         const dist = C.distances.find((x) => x.id === f.distance);
         if (!dist) throw erreur('Distance invalide');
         if (!['etudiant', 'travailleur'].includes(f.categorie)) throw erreur('Catégorie invalide');
         if (!telValide(f.telephone) || !telValide(f.urgence_tel)) throw erreur('Numéro de téléphone invalide');
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(f.email || '').trim())) throw erreur('Adresse e-mail invalide');
         if (f.consentement !== true) throw erreur('Le consentement est obligatoire');
         const ddn = new Date(f.date_naissance);
-        const limite = new Date(); limite.setFullYear(limite.getFullYear() - 10);
+        const limite = new Date(C.evenement.depart); limite.setFullYear(limite.getFullYear() - 10);
         if (isNaN(ddn) || ddn > limite || ddn < new Date('1920-01-01')) throw erreur('Date de naissance invalide');
-        if (d.inscriptions.filter((i) => chiffres(i.telephone) === chiffres(f.telephone) && i.statut !== 'annule').length >= 6)
+        const majorite = new Date(ddn); majorite.setFullYear(ddn.getFullYear() + 18);
+        const mineur = majorite > new Date(C.evenement.depart);
+        if (mineur && f.consentement_parental !== true) throw erreur("L'accord d'un parent ou représentant légal est obligatoire pour les moins de 18 ans");
+        if (f.consentement_version !== '2026-11-25') throw erreur('Version du texte de consentement inconnue. Rechargez la page.');
+        // Même envoi répété (double clic, réseau coupé) : on renvoie l'inscription déjà créée
+        const deja = d.inscriptions.find((i) => i.cle_envoi === f.cle_envoi);
+        if (deja) {
+          if (chiffres(deja.telephone) !== chiffres(f.telephone)) throw erreur('Envoi refusé. Rechargez la page et recommencez.');
+          if (norm(deja.nom) !== norm(f.nom) || norm(deja.prenom) !== norm(f.prenom) || deja.date_naissance !== f.date_naissance || deja.distance !== f.distance || deja.categorie !== f.categorie)
+            throw erreur(`Une inscription a déjà été enregistrée depuis ce formulaire (référence ${deja.reference}), avec d'autres informations. Pour la corriger, contactez l'organisation avec cette référence.`);
+          return attendre({ reference: deja.reference, montant: deja.montant, don: deja.don });
+        }
+        if (!d.reglages.ouvertes) throw erreur((d.reglages.message || '').trim() || 'Les inscriptions ne sont pas ouvertes pour le moment.');
+        if (actives(d) >= d.reglages.quota) throw erreur('Complet : toutes les places de cette vague sont prises. Suivez nos annonces pour la prochaine ouverture.');
+        if (d.inscriptions.some((i) => tient(d, i) && norm(i.nom) === norm(f.nom) && norm(i.prenom) === norm(f.prenom) && i.date_naissance === f.date_naissance))
+          throw erreur("Cette personne est déjà inscrite (même nom, prénom et date de naissance). Retrouvez l'inscription dans « Mon dossard » avec sa référence, ou contactez l'organisation.");
+        if (d.inscriptions.filter((i) => chiffres(i.telephone) === chiffres(f.telephone) && tient(d, i)).length >= 6)
           throw erreur("Trop d'inscriptions avec ce numéro. Contactez l'organisation.");
         const don = Math.max(0, Math.min(parseInt(f.don, 10) || 0, 1000000));
         const ins = {
-          id: uid(), reference: reference('ODY', d.inscriptions), created_at: new Date().toISOString(),
+          id: uid(), reference: reference('ODY', d.inscriptions), cle_envoi: f.cle_envoi, created_at: new Date().toISOString(),
           nom: texte(f, 'nom', 80, true), prenom: texte(f, 'prenom', 80, true), telephone: texte(f, 'telephone', 20, true),
-          email: texte(f, 'email', 120, false), date_naissance: f.date_naissance, sexe: f.sexe, ville: texte(f, 'ville', 80, false),
+          email: texte(f, 'email', 120, true).toLowerCase(), date_naissance: f.date_naissance, sexe: f.sexe, ville: null,
+          consentement_parental: mineur && f.consentement_parental === true, consentement_version: f.consentement_version,
+          consentement_at: new Date().toISOString(), anonymise_at: null,
           distance: f.distance, categorie: f.categorie, urgence_nom: texte(f, 'urgence_nom', 80, true),
           urgence_tel: texte(f, 'urgence_tel', 20, true), consentement: true,
           montant: dist.tarifs[f.categorie], don, statut: 'en_attente', operateur: null, transaction_id: null,
           paiement_declare_at: null, paye_at: null, dossard: null, retire: false, retire_at: null,
+          paiement_avant: new Date(Date.now() + delaiMs(d)).toISOString(),
           taille_tshirt: ['XS', 'S', 'M', 'L', 'XL', 'XXL'].includes(f.taille_tshirt) ? f.taille_tshirt : null
         };
         d.inscriptions.push(ins); ecrire();
@@ -242,15 +285,22 @@
         const i = lire().inscriptions.find((x) => x.reference === String(ref).trim().toUpperCase() && chiffres(x.telephone) === chiffres(tel));
         if (!i) return attendre(null);
         const { reference, prenom, nom, distance, categorie, montant, don, statut, dossard, retire, created_at, taille_tshirt } = i;
-        return attendre({ reference, prenom, nom, distance, categorie, montant, don, statut, dossard, retire, created_at, taille_tshirt: taille_tshirt || null });
+        return attendre({ reference, prenom, nom, distance, categorie, montant, don, statut, dossard, retire, created_at, taille_tshirt: taille_tshirt || null,
+                          paiement_avant: i.statut === 'en_attente' ? limite(lire(), i) : (i.paiement_avant || null), motif_refus: i.motif_refus || null });
       },
       declarerPaiement: async (ref, tel, op, tx) => {
         if (!['mtn', 'orange'].includes(op)) throw erreur('Opérateur invalide');
         tx = String(tx || '').trim();
         if (tx.length < 4 || tx.length > 60) throw erreur('Identifiant de transaction invalide');
-        const i = lire().inscriptions.find((x) => x.reference === String(ref).trim().toUpperCase() && chiffres(x.telephone) === chiffres(tel) && ['en_attente', 'paiement_declare'].includes(x.statut));
+        if (transactionPrise(lire(), op, tx, ref)) throw erreur("Cet identifiant de transaction est déjà déclaré pour un autre paiement. Vérifiez-le ou contactez l'organisation.");
+        const d = lire();
+        const i = d.inscriptions.find((x) => x.reference === String(ref).trim().toUpperCase() && chiffres(x.telephone) === chiffres(tel) && ['en_attente', 'paiement_declare'].includes(x.statut));
         if (!i) throw erreur('Inscription introuvable ou déjà traitée');
-        Object.assign(i, { statut: 'paiement_declare', operateur: op, transaction_id: tx, paiement_declare_at: new Date().toISOString() });
+        if (!tient(d, i) && d.inscriptions.some((x) => x !== i && tient(d, x) && norm(x.nom) === norm(i.nom) && norm(x.prenom) === norm(i.prenom) && x.date_naissance === i.date_naissance))
+          throw erreur('Le délai de paiement de cette inscription est dépassé et vous avez une inscription plus récente : payez avec sa référence (« Mon dossard »).');
+        if (!tient(d, i) && actives(d) >= d.reglages.quota)
+          throw erreur("Le délai de paiement de cette inscription est dépassé et toutes les places sont prises. Si vous avez déjà payé, contactez l'organisation avec votre référence.");
+        Object.assign(i, { statut: 'paiement_declare', operateur: op, transaction_id: tx, paiement_declare_at: new Date().toISOString(), motif_refus: null });
         ecrire(); return attendre(i.statut);
       },
       creerDon: async (f) => {
@@ -266,6 +316,7 @@
         if (!['mtn', 'orange'].includes(op)) throw erreur('Opérateur invalide');
         tx = String(tx || '').trim();
         if (tx.length < 4 || tx.length > 60) throw erreur('Identifiant de transaction invalide');
+        if (transactionPrise(lire(), op, tx, ref)) throw erreur("Cet identifiant de transaction est déjà déclaré pour un autre paiement. Vérifiez-le ou contactez l'organisation.");
         const x = lire().dons.find((o) => o.reference === String(ref).trim().toUpperCase() && chiffres(o.telephone) === chiffres(tel) && ['en_attente', 'paiement_declare'].includes(o.statut));
         if (!x) throw erreur('Don introuvable ou déjà traité');
         Object.assign(x, { statut: 'paiement_declare', operateur: op, transaction_id: tx, paiement_declare_at: new Date().toISOString() });
@@ -290,6 +341,35 @@
       inscriptions: async () => { exigerStaff(); return attendre(lire().inscriptions.slice().reverse()); },
       dons: async () => { exigerStaff(); return attendre(lire().dons.slice().reverse()); },
       commandes: async () => { exigerStaff(); return attendre(lire().commandes.slice().reverse()); },
+      reglerInscriptions: async (ouvertes, quota, message) => {
+        exigerStaff();
+        const q = Number(quota);
+        if (typeof ouvertes !== 'boolean') throw erreur('Choisissez ouvertes ou fermées');
+        if (!Number.isInteger(q) || q < 0 || q > 100000) throw erreur('Quota invalide (0 à 100 000)');
+        if (String(message || '').length > 300) throw erreur('Message trop long (300 caractères au plus)');
+        const d = lire(); d.reglages = { ...d.reglages, ouvertes, quota: q, message: String(message || '').trim() || null }; ecrire();
+        return attendre(etatInscriptions(d));
+      },
+      reglerDelaiPaiement: async (heures) => {
+        exigerStaff();
+        const h = Number(heures);
+        if (!Number.isInteger(h) || h < 1 || h > 720) throw erreur('Délai invalide (1 à 720 heures)');
+        const d = lire(); d.reglages = { ...d.reglages, delai_paiement_heures: h }; ecrire();
+        return attendre(etatInscriptions(d));
+      },
+      anonymiserInscriptions: async () => {
+        exigerStaff();
+        if (new Date() <= new Date(C.evenement.depart)) throw erreur("L'effacement n'est possible qu'après la course");
+        const d = lire(); let n = 0;
+        for (const i of d.inscriptions) {
+          if (i.anonymise_at) continue;
+          Object.assign(i, { nom: String(i.nom || '').slice(0, 1) + '.', telephone: 'efface-' + String(i.id).slice(0, 8), email: null,
+            date_naissance: String(i.date_naissance || '').slice(0, 4) + '-01-01', ville: null, urgence_nom: '', urgence_tel: '', transaction_id: null,
+            anonymise_at: new Date().toISOString() });
+          n++;
+        }
+        ecrire(); return attendre(n);
+      },
       validerPaiement: async (id) => {
         exigerStaff(); const d = lire(); const i = trouve(d.inscriptions, id);
         if (i.statut === 'paye') return i.dossard;
@@ -301,6 +381,18 @@
         Object.assign(i, { statut: 'paye', paye_at: new Date().toISOString(), dossard: num });
         if (i.don > 0) { d.fonds.collecte += i.don; d.fonds.donateurs += 1; d.fonds.maj = new Date().toISOString(); }
         ecrire(); return attendre(num);
+      },
+      refuserPaiement: async (id, motif) => {
+        exigerStaff(); const d = lire(); const i = trouve(d.inscriptions, id);
+        const m = String(motif || '').trim();
+        if (m.length < 3 || m.length > 200) throw erreur('Indiquez un motif (3 à 200 caractères)');
+        if (i.statut !== 'paiement_declare') throw erreur(`Seul un paiement déclaré peut être refusé (statut actuel : ${i.statut})`);
+        d.refuses = d.refuses || [];
+        if (!d.refuses.some((r) => r.operateur === i.operateur && r.transaction_id === norm(i.transaction_id)))
+          d.refuses.push({ operateur: i.operateur, transaction_id: norm(i.transaction_id), reference: i.reference, motif: m, refuse_at: new Date().toISOString() });
+        Object.assign(i, { statut: 'en_attente', operateur: null, transaction_id: null, paiement_declare_at: null, motif_refus: m,
+          refus_at: new Date().toISOString(), refus_nombre: (i.refus_nombre || 0) + 1, paiement_avant: new Date(Date.now() + delaiMs(d)).toISOString() });
+        ecrire(); return attendre();
       },
       annulerInscription: async (id) => {
         exigerStaff(); const i = trouve(lire().inscriptions, id);
@@ -472,10 +564,10 @@
       urlPhoto: (chemin) => chemin,
       // Fil d'actualité
       creerPublication: async (f, blob, dataUrl) => {
+        exigerStaff();   // seule l'équipe publie dans le fil
         const d = lire();
-        if ((d.publications.filter((x) => x.appareil === f.appareil && Date.now() - new Date(x.created_at) < 86400e3)).length >= 10) throw erreur('Limite de 10 publications par jour atteinte');
-        const x = { id: uid(), created_at: new Date().toISOString(), appareil: f.appareil, auteur: texte(f, 'auteur', 80, true), ville: texte(f, 'ville', 80, false),
-          categorie: f.categorie || 'communaute', evenement_id: f.evenement_id || null, texte: texte(f, 'texte', 1000, false), lieu: texte(f, 'lieu', 120, false), photo: dataUrl, statut: 'en_attente' };
+        const x = { id: uid(), created_at: new Date().toISOString(), appareil: f.appareil, auteur: texte(f, 'auteur', 80, false) || "L'Odyssée de l'environnement", ville: texte(f, 'ville', 80, false),
+          categorie: f.categorie || 'communaute', evenement_id: f.evenement_id || null, texte: texte(f, 'texte', 1000, false), lieu: texte(f, 'lieu', 120, false), photo: dataUrl, statut: 'publie' };
         d.publications.push(x);
         try { localStorage.setItem(CLE, JSON.stringify(d)); } catch (e) { d.publications.pop(); throw erreur('Mémoire du navigateur pleine : supprimez des publications de démonstration ou touchez « Tout effacer ».'); }
         return attendre(x.id);

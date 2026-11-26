@@ -1,0 +1,52 @@
+# Aperçus en ligne de l'appli, sur GitHub Pages (branche gh-pages)
+#  - chaque fusion dans develop met à jour le site de test :
+#      https://eric74song96.github.io/odyssee-connect/
+#  - chaque Pull Request a son aperçu, supprimé à la fermeture :
+#      https://eric74song96.github.io/odyssee-connect/pr-preview/pr-<numéro>/
+# L'appli y tourne en mode démonstration (supabaseUrl vide) : aucune vraie donnée.
+name: Aperçus en ligne
+
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop, main]
+    types: [opened, reopened, synchronize, closed]
+
+concurrency:
+  group: apercus-gh-pages
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  site-de-test:
+    name: Site de test (develop)
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Garder seulement les fichiers de l'appli
+        run: mkdir _site && cp -r index.html manifest.webmanifest sw.js css js images icons parcours outils _site/
+      - uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: _site
+          clean-exclude: pr-preview/
+
+  apercu-pr:
+    name: Aperçu de la Pull Request
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Garder seulement les fichiers de l'appli
+        if: github.event.action != 'closed'
+        run: mkdir _site && cp -r index.html manifest.webmanifest sw.js css js images icons parcours outils _site/
+      - uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: _site
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview

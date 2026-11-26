@@ -1,0 +1,42 @@
+# Envoie l'application sur LWS : https://inscription.odyssee-env.com/
+# Le mot de passe FTP est dans le secret LWS_FTP_PASSWORD_COM (jamais dans le code).
+# Production : seule la branche main (protégée, vérifications obligatoires) est déposée.
+# Lancement manuel possible, mais uniquement depuis main.
+name: Dépôt sur LWS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: depot-lws
+  cancel-in-progress: false
+
+jobs:
+  depot:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Préparer les fichiers publics
+        run: |
+          mkdir -p site
+          cp -r index.html manifest.webmanifest sw.js css js images icons site/
+          [ -d parcours ] && cp -r parcours site/ || true
+          mkdir -p site/outils && cp outils/*.html site/outils/
+          cp deploiement/lws.htaccess site/.htaccess
+          find site -type f | sort
+
+      - name: Envoyer sur LWS (FTP)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: 193.203.239.78
+          username: odyss2839870
+          password: ${{ secrets.LWS_FTP_PASSWORD_COM }}
+          protocol: ftps
+          local-dir: ./site/
+          server-dir: inscription.odyssee-env.com/
+          timeout: 120000

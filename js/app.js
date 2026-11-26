@@ -14,6 +14,19 @@
   const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const fcfa = (n) => (Number(n) || 0).toLocaleString('fr-FR').replace(/ | /g, ' ') + ' FCFA';
   const dateFr = (d, h) => { try { return new Date(d).toLocaleDateString('fr-FR', h ? { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' } : { day: 'numeric', month: 'long', year: 'numeric' }); } catch (e) { return ''; } };
+  // Version du texte de consentement affiché à l'inscription (enregistrée avec chaque inscription)
+  const CONSENTEMENT_VERSION = '2026-11-25';
+  const dateLimiteEffacement = () => { const j = new Date(C.evenement.depart); j.setMonth(j.getMonth() + 3); return j.toISOString().slice(0, 10); };
+  // Mineur le jour de la course ? (accord parental obligatoire)
+  // Âge minimum de 10 ans apprécié le jour de la course
+  const dateMaxNaissance = () => { const j = new Date(C.evenement.depart); j.setFullYear(j.getFullYear() - 10); return j.toISOString().slice(0, 10); };
+  const mineurLeJourJ = (ddn) => {
+    if (!ddn) return false;
+    const jour = new Date(C.evenement.depart); const n = new Date(ddn);
+    if (isNaN(n)) return false;
+    const majorite = new Date(n); majorite.setFullYear(n.getFullYear() + 18);
+    return majorite > jour;
+  };
   const distance = (id) => C.distances.find((d) => d.id === id) || C.distances[C.distances.length - 1];
   const CAT = { etudiant: 'Étudiant', travailleur: 'Travailleur' };
   const STATUT_PAR = { inscrit: 'Inscrit', present: 'Présent', absent: 'Absent', annule: 'Annulé' };
@@ -116,6 +129,41 @@
     S.moi = S.mes[0] || null; S.consult = null; stockage.ecrire('odc_mes', S.mes);
   }
 
+  // Ouverture des inscriptions (réglée par l'équipe). Sans réponse du serveur, on laisse essayer :
+  // c'est le serveur qui refuse avec un message clair.
+  function etatInscriptions() {
+    const e = S.etat && S.etat.inscriptions;
+    if (!e) return { ouvert: true, complet: false, restantes: null, message: '' };
+    return { ouvert: !!e.ouvertes, complet: e.ouvertes && e.restantes <= 0, restantes: e.restantes, quota: e.quota,
+             message: (e.message || '').trim() || "Les inscriptions ne sont pas encore ouvertes. Suivez nos annonces." };
+  }
+  function boutonInscription(d, classe) {
+    const e = etatInscriptions();
+    if (!e.ouvert) return `<button class="btn ${classe}" disabled>Inscriptions fermées</button><p class="note" style="margin:6px 0 0;text-align:center">${esc(e.message)}</p>`;
+    if (e.complet) return `<button class="btn ${classe}" disabled>Complet</button><p class="note" style="margin:6px 0 0;text-align:center">Toutes les places de cette vague sont prises. Suivez nos annonces pour la prochaine ouverture.</p>`;
+    const peu = e.restantes != null && e.restantes <= 300 ? `<p class="note" style="margin:6px 0 0;text-align:center">Plus que ${e.restantes.toLocaleString('fr-FR')} place${e.restantes > 1 ? 's' : ''} dans cette vague.</p>` : '';
+    return `<a class="btn ${classe}" href="#inscription" data-action="ins-debut">S'inscrire au ${esc(d.km)}${classe === 'vert-fonce' ? ' ' + I.fleche : ''}</a>${peu}`;
+  }
+  // Clé d'envoi : la même pour toutes les tentatives d'un même formulaire (évite les doubles inscriptions).
+  // Gardée pour la session de l'onglet : après un rechargement, les mêmes informations renvoient la même référence.
+  const CLE_ENVOI = 'odc_cle_envoi';
+  const cleSession = {
+    lire() { try { return sessionStorage.getItem(CLE_ENVOI); } catch (e) { return null; } },
+    ecrire(v) { try { sessionStorage.setItem(CLE_ENVOI, v); } catch (e) { /* stockage indisponible : mémoire seule */ } },
+    effacer() { try { sessionStorage.removeItem(CLE_ENVOI); } catch (e) { /* idem */ } }
+  };
+  function cleEnvoi() {
+    if (!S.cleEnvoi) S.cleEnvoi = cleSession.lire() || nouvelleCle();
+    cleSession.ecrire(S.cleEnvoi);
+    return S.cleEnvoi;
+  }
+  function nouvelleCle() {
+    if (crypto.randomUUID) return crypto.randomUUID();
+    const b = crypto.getRandomValues(new Uint8Array(16)); b[6] = (b[6] & 15) | 64; b[8] = (b[8] & 63) | 128;
+    const h = [...b].map((x) => x.toString(16).padStart(2, '0')).join('');
+    return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+  }
+
   async function chargerEtat() {
     try {
       const [etat, ann, evs] = await Promise.all([D.etatPublic(), D.annonces().catch(() => S.annonces), D.evenements().catch(() => S.evs || [])]);
@@ -154,19 +202,24 @@
   }
 
   function blocPaiement(type, ref, tel, montant) {
-    const mm = C.mobileMoney; const o = mm[S.op];
+    const mm = C.mobileMoney;
+    // On ne propose que les opérateurs dont le numéro est connu (tous si aucun ne l'est encore).
+    const avecNumero = ['mtn', 'orange'].filter((k) => mm[k] && mm[k].numero);
+    const ops = avecNumero.length ? avecNumero : ['mtn', 'orange'];
+    if (!ops.includes(S.op)) S.op = ops[0];
+    const o = mm[S.op];
     return `
       <div class="pad pile">
         <h2 class="titre-centre">${type === 'don' ? 'Montant du don' : 'Frais d’inscription'}</h2>
         <div class="frais"><span>${fcfa(montant)}</span><small>Référence <b>${esc(ref)}</b></small></div>
         <h2 class="titre-centre">Choisissez un moyen de paiement</h2>
         <div class="pile" role="radiogroup" aria-label="Moyen de paiement">
-          <div class="moyen actif" role="radio" aria-checked="true"><span class="m-ico">${I.telephone}</span><span class="pile" style="gap:0;flex:1"><b>Mobile Money</b><span>MTN, Orange</span></span><span class="radio-o on"></span></div>
+          <div class="moyen actif" role="radio" aria-checked="true"><span class="m-ico">${I.telephone}</span><span class="pile" style="gap:0;flex:1"><b>Mobile Money</b><span>${ops.map((k) => (k === 'mtn' ? 'MTN' : 'Orange')).join(', ')}</span></span><span class="radio-o on"></span></div>
           <div class="moyen bientot" role="radio" aria-checked="false" aria-disabled="true"><span class="m-ico">${I.carte}</span><span class="pile" style="gap:0;flex:1"><b>Carte bancaire</b><span>Visa, Mastercard · bientôt</span></span><span class="radio-o"></span></div>
           <div class="moyen bientot" role="radio" aria-checked="false" aria-disabled="true"><span class="m-ico">${I.banque}</span><span class="pile" style="gap:0;flex:1"><b>Paiement en agence</b><span>Partenaires agréés · bientôt</span></span><span class="radio-o"></span></div>
         </div>
         <div class="carte pile" style="gap:10px">
-          <div class="ops" role="radiogroup" aria-label="Opérateur">${['mtn', 'orange'].map((k) => `<button type="button" class="op-choix" data-action="op" data-op="${k}" role="radio" aria-checked="${S.op === k}"><span class="op ${k}">${k === 'mtn' ? 'MoMo' : 'OM'}</span>${esc(mm[k].nom)}</button>`).join('')}</div>
+          <div class="ops" role="radiogroup" aria-label="Opérateur">${ops.map((k) => `<button type="button" class="op-choix" data-action="op" data-op="${k}" role="radio" aria-checked="${S.op === k}"><span class="op ${k}">${k === 'mtn' ? 'MoMo' : 'OM'}</span>${esc(mm[k].nom)}</button>`).join('')}</div>
           <ol class="etp">
             <li>Composez <b>${esc(o.code)}</b> sur votre téléphone.</li>
             <li>Envoyez <b>${fcfa(montant)}</b> ${o.numero ? `au <b>${esc(o.numero)}</b> (${esc(mm.beneficiaire)})` : `au numéro de l'association <b>(communiqué à l'ouverture des inscriptions)</b>`}.</li>
@@ -194,7 +247,7 @@
     return `<div class="pile" role="radiogroup" aria-label="Distance">${C.distances.map((d) => {
       const [fond, enc] = couleurDist[d.couleur] || couleurDist.vert; const on = d.id === choisi;
       return `<button type="button" class="dist-ligne${on ? ' on' : ''}" data-action="${action}" data-id="${d.id}" role="radio" aria-checked="${on}" style="background:${fond};--c:${enc}">
-        <img class="dist-ico" src="images/coureur-vert.png" alt="">
+        <img class="dist-ico" src="images/coureur-vert.webp" alt="">
         <span class="pile" style="gap:0;flex:1;text-align:left"><b>${esc(d.km.toUpperCase())} – ${esc(d.nom)}</b><span>${esc(d.public)}</span></span>
         <span class="radio-o${on ? ' on' : ''}" style="--c:${enc}"></span></button>`;
     }).join('')}</div>`;
@@ -218,11 +271,11 @@
         <a class="rond-clair" href="#actualites" aria-label="Actualités">${I.cloche}${S.annonces.length ? '<i class="pastille-rouge"></i>' : ''}</a>
       </header>
       <section class="hero-acc" aria-label="${esc(C.evenement.nom)}">
-        <img src="images/hero-accueil.jpg" alt="Coureurs aux couleurs de L'Odyssée de l'environnement devant le monument de la Réunification" width="900" height="574">
+        <img src="images/hero-accueil.webp" alt="Coureurs aux couleurs de L'Odyssée de l'environnement devant le monument de la Réunification" width="900" height="574">
         <div class="hero-bas">
           <svg class="hero-courbe" viewBox="0 0 390 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0 60 L0 34 C120 4 260 -6 390 22 L390 60 Z" fill="#0b4d2c"/><path d="M0 40 C130 8 260 2 390 26" fill="none" stroke="#f7c51e" stroke-width="6" stroke-linecap="round"/></svg>
           <div class="hero-titre">
-            <img class="hero-coureur" src="images/coureur-blanc.png" alt="" width="336" height="338">
+            <img class="hero-coureur" src="images/coureur-blanc.webp" alt="" width="336" height="338">
             <p><span class="t-grand">10 KM</span><span class="t-moyen">de Yaoundé</span><span class="t-grand">2027</span></p>
           </div>
           <p class="hero-tag">Sport <i>•</i> Environnement <i>•</i> Solidarité</p>
@@ -233,7 +286,7 @@
       <h2 class="titre" style="margin-top:6px">Prochain événement</h2>
       <div style="padding:0 16px">
         <a class="carte prochain" href="#course">
-          <span class="vignette-course"><img src="images/coureur-blanc-petit.png" alt=""></span>
+          <span class="vignette-course"><img src="images/coureur-blanc-petit.webp" alt=""></span>
           <span class="pile" style="gap:1px;flex:1">
             <b>${esc(C.evenement.nom)}</b>
             <span>3 KM • 5 KM • 10 KM</span>
@@ -326,7 +379,7 @@
     const total = Object.values(n).reduce((a, b) => a + b, 0);
     return `
       ${entete(C.evenement.nom, 'evenements')}
-      <img src="images/hero-accueil.jpg" alt="" style="width:100%;height:170px;object-fit:cover;object-position:50% 25%">
+      <img src="images/hero-accueil.webp" alt="" style="width:100%;height:170px;object-fit:cover;object-position:50% 25%">
       <div class="pad pile">
         <div class="carte pile" style="margin-top:-40px;position:relative;box-shadow:var(--ombre);gap:8px">
           <span style="display:flex;gap:10px;align-items:center;color:var(--vert)">${I.cal}<span style="color:var(--encre)">${esc(dateCourse())}</span></span>
@@ -339,10 +392,16 @@
         <div class="carte pile" style="gap:4px"><b>Tarif ${esc(d.km)}</b><span class="note">${d.tarifs.etudiant === d.tarifs.travailleur ? `${fcfa(d.tarifs.etudiant)} pour tous` : `Étudiants ${fcfa(d.tarifs.etudiant)} · Travailleurs ${fcfa(d.tarifs.travailleur)}`}. Tarifs provisoires jusqu'à la validation de la course.</span></div>
         <a class="carte lien-carte" href="#parcours"><b>Voir le parcours</b><span>Voir</span></a>
       </div>
-      <div class="barre-bas"><a class="btn vert-fonce" href="#inscription" data-action="ins-debut">S'inscrire au ${esc(d.km)} ${I.fleche}</a></div>`;
+      <div class="barre-bas">${boutonInscription(d, 'vert-fonce')}</div>`;
   };
 
   V.inscription = () => {
+    const ei = etatInscriptions();
+    if (!ei.ouvert || ei.complet) {
+      return `${entete('Inscription', 'course')}<div class="pad pile">
+        <div class="info r">${I.info}<span>${esc(!ei.ouvert ? ei.message : 'Complet : toutes les places de cette vague sont prises. Suivez nos annonces pour la prochaine ouverture.')}</span></div>
+        <a class="btn contour" href="#dossard">Retrouver mon inscription</a><a class="btn contour" href="#actualites">Voir les annonces</a></div>`;
+    }
     const D0 = S.insData || {};
     const pf = S.profil || {};
     const val = (k, def) => esc(D0[k] != null ? D0[k] : (pf[k] != null ? pf[k] : (def || '')));
@@ -354,14 +413,11 @@
             <h2 class="titre-form">Mes informations</h2>
             <label class="champ ico-champ"><span class="i">${I.personne}</span><span class="pile" style="gap:4px;flex:1">Nom *<input name="nom" required maxlength="80" autocomplete="family-name" value="${val('nom')}"></span></label>
             <label class="champ ico-champ"><span class="i">${I.personne}</span><span class="pile" style="gap:4px;flex:1">Prénom *<input name="prenom" required maxlength="80" autocomplete="given-name" value="${val('prenom')}"></span></label>
-            <label class="champ ico-champ"><span class="i">${I.cal}</span><span class="pile" style="gap:4px;flex:1">Date de naissance *<input name="date_naissance" required type="date" max="${new Date(Date.now() - 315576e6).toISOString().slice(0, 10)}" value="${val('date_naissance')}"></span></label>
+            <label class="champ ico-champ"><span class="i">${I.cal}</span><span class="pile" style="gap:4px;flex:1">Date de naissance *<input name="date_naissance" required type="date" max="${dateMaxNaissance()}" value="${val('date_naissance')}"></span></label>
             <fieldset class="champ ico-champ" style="border:0;margin:0;padding:0"><span class="i">${I.personne}</span><span class="pile" style="gap:4px;flex:1"><span>Sexe *</span>
               <span class="radios" role="radiogroup" aria-label="Sexe">${[['M', 'Homme'], ['F', 'Femme']].map(([k, t]) => `<label><input type="radio" name="sexe" value="${k}" required ${D0.sexe === k ? 'checked' : ''}> ${t}</label>`).join('')}</span></span></fieldset>
             <label class="champ ico-champ"><span class="i">${I.telephone}</span><span class="pile" style="gap:4px;flex:1">Téléphone Mobile Money *<input name="telephone" required type="tel" inputmode="tel" autocomplete="tel" placeholder="+237 6XX XX XX XX" maxlength="20" value="${val('telephone')}"></span></label>
-            <div class="grille2">
-              <label class="champ">Ville<input name="ville" maxlength="80" value="${val('ville', 'Yaoundé')}"></label>
-              <label class="champ">E-mail <small>facultatif</small><input name="email" type="email" maxlength="120" value="${val('email')}"></label>
-            </div>
+            <label class="champ ico-champ"><span class="i">${I.info}</span><span class="pile" style="gap:4px;flex:1">E-mail *<input name="email" required type="email" inputmode="email" autocomplete="email" maxlength="120" value="${val('email')}"></span></label>
             <div class="grille2">
               <label class="champ">Contact d'urgence *<input name="urgence_nom" required maxlength="80" placeholder="Nom" value="${val('urgence_nom')}"></label>
               <label class="champ">Son téléphone *<input name="urgence_tel" required type="tel" inputmode="tel" maxlength="20" placeholder="+237" value="${val('urgence_tel')}"></label>
@@ -393,7 +449,8 @@
             <button type="button" class="puce" data-action="don-autre" aria-pressed="${autre}">Autre</button></div>
           ${autre ? `<label class="champ">Montant du don (FCFA)<input name="don_autre" type="number" min="100" max="1000000" step="100" inputmode="numeric" value="${S.choix.don || ''}"></label>` : ''}
           <label class="case"><input type="checkbox" name="reglement" required> <span>J'accepte le règlement de la course et je certifie être apte à la course à pied.</span></label>
-          <label class="case"><input type="checkbox" name="consentement" required> <span>J'accepte que L'Odyssée de l'environnement au Cameroun traite mes données pour organiser la course (loi n° 2024/017).</span></label>
+          ${mineurLeJourJ((S.insData || {}).date_naissance) ? `<label class="case"><input type="checkbox" name="consentement_parental" required> <span><b>Moins de 18 ans le jour de la course :</b> un parent ou représentant légal autorise cette inscription et le traitement de ces données.</span></label>` : ''}
+          <label class="case"><input type="checkbox" name="consentement" required> <span>J'accepte que L'Odyssée de l'environnement au Cameroun utilise mes données pour organiser la course (inscription, paiement, dossard, sécurité, résultats), conformément à la loi n° 2024/017. Elles sont hébergées sur des serveurs en Europe (Supabase). Elles ne sont jamais vendues ni louées, et ne sont communiquées qu'aux prestataires techniques nécessaires (hébergement, paiement). Mes coordonnées (nom complet, téléphone, e-mail, contact d'urgence, date de naissance précise) sont effacées au plus tard trois mois après la course. Sont alors conservés : pour les résultats, mon prénom, l'initiale de mon nom, mon année de naissance, mon sexe, mon épreuve, ma catégorie, mon dossard et mon résultat ; pour la comptabilité, la référence de l'inscription, son statut, les montants payés et leurs dates. Pour consulter, corriger ou faire supprimer mes données : contact@odyssee-env.org.</span></label>
           <p class="erreur" role="alert"></p>
           <div class="barre-bas" style="margin:0 -16px;bottom:72px">
             <div class="recap"><span>${esc(d.km)} · ${CAT[S.choix.categorie]}${S.choix.taille ? ' · ' + S.choix.taille : ''}${S.choix.don ? ' + don' : ''}</span><b data-total>${fcfa(prix + (S.choix.don || 0))}</b></div>
@@ -403,12 +460,22 @@
       </div>`;
   };
 
+  // Délai pendant lequel une inscription non payée garde sa place (réglé par l'équipe)
+  const delaiPaiementH = () => Number(S.etat && S.etat.inscriptions && S.etat.inscriptions.delai_paiement_heures) || 48;
+  const limitePaiement = (x) => new Date(x.paiement_avant || (new Date(x.created_at).getTime() + delaiPaiementH() * 3600e3));
+  const delaiDepasse = (x) => x.statut === 'en_attente' && (x.paiement_avant || x.created_at) && limitePaiement(x) < new Date();
+
   V.paiement = () => {
     if (!S.moi) return `${entete('Paiement', 'accueil')}<div class="pad pile"><p class="vide">Aucune inscription en cours sur ce téléphone.</p><a class="btn" href="#course">S'inscrire</a><a class="btn contour" href="#dossard">Retrouver mon inscription</a></div>`;
     const x = S.consult;
     if (!x) { consulterMoi().then(() => route() === 'paiement' && rendre(false)); return `${entete('Paiement', 'dossard')}<p class="vide">Chargement…</p>`; }
     if (x.statut !== 'en_attente') { location.hash = x.statut === 'paiement_declare' ? 'confirmation' : 'dossard'; return ''; }
-    return `${entete('Paiement', 'dossard')}${etapes(3)}${blocPaiement('inscription', x.reference, S.moi.telephone, x.montant + x.don)}`;
+    const lim = (x.paiement_avant || x.created_at) ? limitePaiement(x) : null;
+    const refus = x.motif_refus ? `<div class="pad" style="padding-bottom:0"><div class="info r">${I.info}<span><b>Votre paiement n'a pas été retrouvé par l'équipe :</b> ${esc(x.motif_refus)}. Vérifiez l'identifiant de transaction dans le SMS de confirmation Mobile Money et déclarez-le à nouveau ci-dessous.</span></div></div>` : '';
+    const avis = !lim ? '' : delaiDepasse(x)
+      ? `<div class="pad" style="padding-bottom:0"><div class="info r">${I.info}<span>Le délai de paiement est dépassé : votre place n'est plus réservée. Vous pouvez encore payer s'il reste des places.</span></div></div>`
+      : `<div class="pad" style="padding-bottom:0"><div class="info">${I.info}<span>Votre place est réservée jusqu'au ${esc(lim.toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }))}.</span></div></div>`;
+    return `${entete('Paiement', 'dossard')}${etapes(3)}${refus}${avis}${blocPaiement('inscription', x.reference, S.moi.telephone, x.montant + x.don)}`;
   };
 
   V.confirmation = () => {
@@ -487,7 +554,8 @@
             <span class="note">Référence <span class="ref">${esc(x.reference)}</span></span>
             <span class="note">Montant : ${fcfa(x.montant + x.don)}${x.don ? ` dont ${fcfa(x.don)} de don` : ''}</span>
           </div>
-          ${x.statut === 'en_attente' ? `<a class="btn j" href="#paiement">Payer maintenant</a>` : ''}
+          ${x.statut === 'en_attente' && x.motif_refus ? `<div class="info r">${I.info}<span><b>Paiement non retrouvé :</b> ${esc(x.motif_refus)}. Déclarez à nouveau le bon identifiant de transaction.</span></div>` : ''}
+          ${x.statut === 'en_attente' ? `<a class="btn j" href="#paiement">${x.motif_refus ? 'Déclarer à nouveau mon paiement' : 'Payer maintenant'}</a>` : ''}
           ${x.statut === 'paiement_declare' ? `<div class="info">${I.info}<span>Votre paiement est en cours de vérification. Revenez plus tard : votre numéro de dossard s'affichera ici.</span></div><button class="btn contour" data-action="recharger">Actualiser</button>` : ''}
           ${x.statut === 'annule' ? `<div class="info r">${I.info}<span>Cette inscription a été annulée. Contactez l'organisation si c'est une erreur.</span></div>` : ''}
           ${oublier}
@@ -796,7 +864,7 @@
     sensibilisation: ['Sensibilisation', I.info], autre: ['Autre', I.info]
   };
   const MODULES = [
-    ['evenements', 'Événements', I.cal, 'vert'], ['course', 'Inscription 10 KM', '<img src="images/coureur-vert.png" alt="" class="m-coureur">', 'jaune'], ['parcours', 'Parcours', I.lieu, 'clair'],
+    ['evenements', 'Événements', I.cal, 'vert'], ['course', 'Inscription 10 KM', '<img src="images/coureur-vert.webp" alt="" class="m-coureur">', 'jaune'], ['parcours', 'Parcours', I.lieu, 'clair'],
     ['actions', 'Actions', I.feuille, 'clair'], ['communaute', 'Communauté', I.groupe, 'clair'], ['resultats', 'Résultats', I.coupe, 'clair'],
     ['impact', 'Impact', I.graphe, 'clair'], ['boutique', 'Boutique', I.sac, 'jaune'], ['partenaires', 'Partenaires', I.poignee, 'clair'],
     ['fonds', 'Solidarité', I.coeur, 'rouge'], ['formations', 'Formations', I.livre, 'clair'], ['actualites', 'Actualités', I.journal, 'clair'],
@@ -815,7 +883,7 @@
     collecte: ['#0b4d2c', '#f7c51e'], reboisement: ['#2f7a46', '#e7f3dc'], recyclage: ['#1f6b5a', '#dcf0ec'], sensibilisation: ['#7a5b00', '#fdf1c4'], autre: ['#0b4d2c', '#e3f1e6'] };
   function visuelEv(e, cls) {
     if (e.image) return `<img class="${cls}" src="${esc(e.image)}" alt="" loading="lazy">`;
-    if (e.type === 'course') return `<img class="${cls}" src="images/hero-accueil.jpg" alt="" loading="lazy">`;
+    if (e.type === 'course') return `<img class="${cls}" src="images/hero-accueil.webp" alt="" loading="lazy">`;
     const [fond, clair] = BANNIERES[e.type] || BANNIERES.autre;
     return `<span class="${cls} ev-motif" style="background:${fond};color:${clair}">${(TYPES[e.type] || TYPES.autre)[1]}</span>`;
   }
@@ -1041,7 +1109,7 @@
         <a class="btn contour" href="#carte">${I.lieu} Voir sur la carte</a>
         <a class="btn contour" href="parcours/parcours-${esc(d.id)}km.gpx" download>Télécharger le tracé (GPX)</a>` : `
         <button class="btn vert-fonce" ${infos.detail ? `data-action="lien" data-url="${esc(infos.detail)}"` : 'disabled'}>Voir le détail du parcours</button>`}
-        <a class="btn j" href="#inscription" data-action="ins-debut">S'inscrire au ${esc(d.km)}</a>
+        ${boutonInscription(d, 'j')}
       </div>`;
   };
 
@@ -1255,7 +1323,8 @@
       }
       const L = window.L;
       const m = L.map(zone, { zoomControl: true, attributionControl: true }).setView(CARTE.centre, CARTE.zoom);
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© contributeurs OpenStreetMap' }).addTo(m);
+      const fc = C.carte || {};
+      L.tileLayer(fc.tuiles || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: fc.zoomMax || 19, attribution: fc.attribution || '© contributeurs OpenStreetMap' }).addTo(m);
       carteEtat.leaflet = m; carteEtat.calques = L.layerGroup().addTo(m); const coureurs = L.layerGroup().addTo(m);
       const tr = (window.ODC_TRACES || {})['10'];
       if (tr && S.couches.evenements) {
@@ -1379,16 +1448,18 @@
 
   V.fil = () => {
     if (!S.fil && !S.filCharge) { S.filCharge = true; chargerFil(); }
-    return `<header class="barre-acc"><a class="rond-clair" href="#communaute" aria-label="Retour">${I.retour}</a><h1>Fil d'actualité</h1><a class="rond-clair" href="#publier" aria-label="Publier une photo">${I.plus}</a></header>
+    return `<header class="barre-acc"><a class="rond-clair" href="#communaute" aria-label="Retour">${I.retour}</a><h1>Fil d'actualité</h1>${S.staff ? `<a class="rond-clair" href="#publier" aria-label="Publier une photo">${I.plus}</a>` : '<span style="width:40px"></span>'}</header>
       <div class="cats" role="group" aria-label="Catégories">${CATS.map(([k, t]) => `<button type="button" data-action="fil-cat" data-k="${k}" aria-pressed="${S.filCat === k}">${t}</button>`).join('')}</div>
       <div class="pile fil-liste">
-        <a class="publier-cta" href="#publier"><span class="pub-av">${esc((prenomActuel() || '+').charAt(0).toUpperCase())}</span><span>Partagez une photo de votre action…</span>${I.appareil}</a>
+        ${S.staff ? `<a class="publier-cta" href="#publier"><span class="pub-av">O</span><span>Publier une photo au nom de L'Odyssée…</span>${I.appareil}</a>`
+          : `<p class="note" style="margin:0">Les photos sont publiées par l'équipe de L'Odyssée de l'environnement. Aimez-les et commentez-les !</p>`}
         ${!S.fil ? '<p class="vide">Chargement…</p>' : S.filErr ? `<div class="info r">${I.info}<span>${esc(S.filErr)}</span></div>` : S.fil.length ? S.fil.map(cartePublication).join('') : '<p class="vide">Aucune publication dans cette catégorie pour l’instant.</p>'}
       </div>`;
   };
 
   V.publier = () => {
-    if (S.pubFaite) return `${entete('Publier', 'fil')}<div class="pad pile"><div class="info">${I.ok}<span>Merci ! Votre photo est envoyée. Elle apparaîtra dans le fil dès que l'équipe l'aura validée.</span></div><a class="btn" href="#fil" data-action="pub-retour">Retour au fil</a></div>`;
+    if (!S.staff) return `${entete('Publier une photo', 'fil')}<div class="pad pile"><div class="info">${I.info}<span>Seule l'équipe de L'Odyssée de l'environnement publie des photos dans le fil. Vous avez une belle photo d'une action ? Envoyez-la à l'équipe, elle pourra la partager.</span></div><a class="btn" href="#fil">Retour au fil</a></div>`;
+    if (S.pubFaite) return `${entete('Publier', 'fil')}<div class="pad pile"><div class="info">${I.ok}<span>Photo publiée dans le fil.</span></div><a class="btn" href="#fil" data-action="pub-retour">Voir le fil</a></div>`;
     const evs = (S.evs || []).filter((e) => !passe(e) || e.bilan);
     return `${entete('Publier une photo', 'fil')}
       <div class="pad">
@@ -1407,7 +1478,7 @@
           </div>
           ${evs.length ? `<label class="champ">Événement ou action <small>facultatif</small><select name="evenement_id"><option value="">Aucun</option>${evs.map((e) => `<option value="${esc(e.id)}">${esc(e.titre)}</option>`).join('')}</select></label>` : ''}
           <div class="grille2">
-            <label class="champ">Votre nom<input name="auteur" required maxlength="80" value="${esc(prenomActuel())}"></label>
+            <label class="champ">Signature<input name="auteur" required maxlength="80" value="L'Odyssée de l'environnement"></label>
             <label class="champ">Ville<input name="ville" maxlength="80" value="${esc((S.profil && S.profil.ville) || '')}"></label>
           </div>
           <label class="case"><input type="checkbox" name="accord" required> <span>Les personnes reconnaissables sur la photo sont d'accord pour être publiées. Pour un enfant, l'accord de ses parents a été donné.</span></label>
@@ -1449,15 +1520,20 @@
           </form>
         </div>`;
     }
-    const tabs = [['tableau', 'Tableau de bord'], ['evenements', 'Événements et actions'], ['participations', 'Participations'], ['inscriptions', 'Inscriptions 10 KM'], ['retrait', 'Retrait dossards'], ['dons', 'Dons'], ['commandes', 'Boutique'], ['benevoles', 'Bénévoles'], ['candidatures', 'Ambassadeurs et demandes'], ['groupes', 'Groupes locaux'], ['contenus', 'Formations'], ['fil', 'Fil et photos'], ['carte', 'Carte et suivi'], ['annonces', 'Actualités'], ['resultats', 'Résultats'], ['fonds', 'Fonds']];
     return `${entete('Espace organisateurs', 'accueil', D.mode === 'demo' ? 'Mode démonstration' : 'Connecté')}
-      <div class="onglets-adm" role="group" aria-label="Rubriques">${tabs.map(([k, t]) => `<button type="button" data-action="adm-onglet" data-k="${k}" aria-pressed="${S.adm.onglet === k}">${t}</button>`).join('')}</div>
+      <div class="onglets-adm" id="adm-onglets" role="group" aria-label="Rubriques">${ongletsAdm()}</div>
       <div class="pad pile" id="adm">${admContenu()}</div>
       <div class="pad" style="display:flex;gap:8px;flex-wrap:wrap;padding-top:0">
         <button class="btn contour petit" data-action="adm-charger">Actualiser</button>
         <button class="btn contour petit" data-action="deconnexion">Se déconnecter</button>
       </div>`;
   };
+
+  function ongletsAdm() {
+    const aVerifier = (S.adm.ins || []).filter((i) => i.statut === 'paiement_declare').length;
+    const tabs = [['tableau', 'Tableau de bord'], ['verification', `Paiements à vérifier${aVerifier ? ` (${aVerifier})` : ''}`], ['evenements', 'Événements et actions'], ['participations', 'Participations'], ['inscriptions', 'Inscriptions 10 KM'], ['retrait', 'Retrait dossards'], ['dons', 'Dons'], ['commandes', 'Boutique'], ['benevoles', 'Bénévoles'], ['candidatures', 'Ambassadeurs et demandes'], ['groupes', 'Groupes locaux'], ['contenus', 'Formations'], ['fil', 'Fil et photos'], ['carte', 'Carte et suivi'], ['annonces', 'Actualités'], ['resultats', 'Résultats'], ['fonds', 'Fonds']];
+    return tabs.map(([k, t]) => `<button type="button" data-action="adm-onglet" data-k="${k}" aria-pressed="${S.adm.onglet === k}">${t}</button>`).join('');
+  }
 
   function admContenu() {
     const A = S.adm;
@@ -1468,7 +1544,26 @@
       const payes = ins.filter((i) => i.statut === 'paye');
       const par = (k) => `${payes.filter((i) => i.distance === k).length} / ${actifs.filter((i) => i.distance === k).length}`;
       const stat = (v, t) => `<div class="stat"><b>${v}</b><span>${t}</span></div>`;
-      return `
+      const enRetard = ins.filter((i) => i.statut === 'paiement_declare' && Date.now() - new Date(i.paiement_declare_at).getTime() > 24 * 3600e3).length;
+      const alerteVerif = enRetard ? `<div class="info r" style="margin-bottom:12px">${I.info}<span><b>${enRetard} paiement${enRetard > 1 ? 's' : ''} déclaré${enRetard > 1 ? 's' : ''} depuis plus de 24 h</b> attend${enRetard > 1 ? 'ent' : ''} une vérification. <button class="lien" type="button" data-action="adm-onglet" data-k="verification">Les vérifier</button></span></div>` : '';
+      const ei = (S.etat && S.etat.inscriptions) || null;
+      const expirees = ins.filter(delaiDepasse).length;
+      const reglages = ei ? `
+        <form data-form="reglages" class="carte pile" novalidate style="gap:6px;margin-bottom:12px">
+          <b>Ouverture des inscriptions</b>
+          <span class="note">${ei.ouvertes ? '<b style="color:var(--vert)">Ouvertes</b>' : '<b style="color:var(--rouge)">Fermées</b>'} · ${(ei.quota - ei.restantes).toLocaleString('fr-FR')} places tenues sur ${ei.quota.toLocaleString('fr-FR')} · ${ei.restantes.toLocaleString('fr-FR')} restantes${expirees ? ` · ${expirees.toLocaleString('fr-FR')} inscription${expirees > 1 ? 's' : ''} non payée${expirees > 1 ? 's' : ''} hors délai (place libérée)` : ''}.</span>
+          ${actifs.length > ei.quota ? `<div class="info r">${I.info}<span>Le quota est inférieur au nombre d'inscriptions déjà faites (${actifs.length.toLocaleString('fr-FR')}) : aucune nouvelle inscription ne passera, celles déjà faites sont conservées.</span></div>` : ''}
+          <span class="radios" role="radiogroup" aria-label="Inscriptions">
+            <label><input type="radio" name="ouvertes" value="oui" ${ei.ouvertes ? 'checked' : ''}> Ouvertes</label>
+            <label><input type="radio" name="ouvertes" value="non" ${ei.ouvertes ? '' : 'checked'}> Fermées</label></span>
+          <label class="champ">Quota de la vague (places, annulées non comptées)<input name="quota" type="number" min="0" max="100000" step="1" inputmode="numeric" required value="${esc(ei.quota)}"></label>
+          <label class="champ">Délai pour payer (heures) <span class="note">au-delà, une inscription non payée libère sa place</span><input name="delai" type="number" min="1" max="720" step="1" inputmode="numeric" required value="${esc(ei.delai_paiement_heures || 48)}"></label>
+          <label class="champ">Message affiché quand c'est fermé <span class="note">facultatif</span><textarea name="message" maxlength="300" rows="2" placeholder="Ex. : Inscriptions suspendues pour maintenance, reprise à 18 h.">${esc(ei.message || '')}</textarea></label>
+          <p class="note">En cas d'incident (paiements anormaux, panne), fermer ici suspend aussitôt les nouvelles inscriptions ; celles déjà faites restent consultables et payables.</p>
+          <p class="erreur" role="alert"></p>
+          <button class="btn petit" type="submit">Enregistrer</button>
+        </form>` : '';
+      return `${alerteVerif}${reglages}
         <div class="stats">
           ${stat(actifs.length, 'inscriptions (hors annulées)')}
           ${stat(payes.length, 'validées, dossard attribué')}
@@ -1498,6 +1593,15 @@
           <p class="note">Le fichier s'ouvre dans Excel ou Google Sheets.</p>
         </div>`;
     }
+    if (A.onglet === 'verification') {
+      return `
+        <div class="info">${I.info}<span>Pour chaque paiement déclaré, retrouvez l'identifiant de transaction sur le relevé Mobile Money de l'association (MTN ou Orange) et vérifiez le montant. <b>Trouvé et juste</b> : Valider (le dossard est attribué). <b>Introuvable ou montant faux</b> : Refuser avec un motif ; le coureur le voit et peut déclarer le bon identifiant.</span></div>
+        <div class="filtres">
+          <input type="search" data-filtre="vq" placeholder="Identifiant de transaction, référence, téléphone" value="${esc(A.vq || '')}" aria-label="Rechercher un paiement">
+          <select data-filtre="vop" aria-label="Opérateur"><option value="">MTN et Orange</option><option value="mtn" ${A.vop === 'mtn' ? 'selected' : ''}>MTN</option><option value="orange" ${A.vop === 'orange' ? 'selected' : ''}>Orange</option></select>
+        </div>
+        <div id="adm-liste" class="pile">${admVerification()}</div>`;
+    }
     if (A.onglet === 'inscriptions') {
       return `
         <div class="filtres">
@@ -1505,7 +1609,12 @@
           <select data-filtre="statut" aria-label="Statut"><option value="">Tous les statuts</option>${['paiement_declare', 'en_attente', 'paye', 'annule'].map((s) => `<option value="${s}" ${A.statut === s ? 'selected' : ''}>${STATUT[s]}</option>`).join('')}</select>
           <select data-filtre="dist" aria-label="Distance"><option value="">Toutes distances</option>${C.distances.map((d) => `<option value="${d.id}" ${A.dist === d.id ? 'selected' : ''}>${d.km}</option>`).join('')}</select>
         </div>
-        <div id="adm-liste" class="pile">${admListe()}</div>`;
+        <div id="adm-liste" class="pile">${admListe()}</div>
+        <div class="carte pile" style="gap:6px;margin-top:12px"><b>Après la course : effacer les coordonnées</b>
+          <span class="note">Efface noms complets, téléphones, e-mails, contacts d'urgence, dates de naissance précises et identifiants de transaction. Garde, pour les résultats : prénom, initiale du nom, année de naissance, sexe, épreuve, catégorie, dossard et résultat ; pour la comptabilité : référence, statut, montants et dates. Irréversible. Possible seulement après le jour de la course ; à faire <b>au plus tard le ${esc(dateFr(dateLimiteEffacement()))}</b> (fait automatiquement ce jour-là si la planification est activée dans Supabase).</span>
+          ${A.anonConfirm ? `<div class="info r">${I.info}<span>Confirmer l'effacement des coordonnées de toutes les inscriptions ? Cette action ne peut pas être annulée.</span></div>
+          <div style="display:flex;gap:8px"><button class="btn petit" data-action="adm-anonymiser-ok">Oui, effacer</button><button class="btn contour petit" data-action="adm-anonymiser-non">Annuler</button></div>`
+          : `<button class="btn contour petit" data-action="adm-anonymiser" ${new Date() <= new Date(C.evenement.depart) ? 'disabled' : ''}>Effacer les coordonnées…</button>`}</div>`;
     }
     if (A.onglet === 'retrait') {
       return `
@@ -1653,9 +1762,10 @@
 
     if (A.onglet === 'fil') {
       const l = A.pubs || [];
-      if (!l.length) return '<p class="vide">Aucune publication pour l’instant.</p>';
+      const bouton = '<a class="btn petit" href="#publier" style="align-self:flex-start;margin-bottom:8px">Publier une photo</a>';
+      if (!l.length) return bouton + '<p class="vide">Aucune publication pour l’instant.</p>';
       const LIB = { en_attente: 'À valider', publie: 'Publiée', masque: 'Masquée' };
-      return `<p class="note">${l.filter((x) => x.statut === 'en_attente').length} photo(s) à valider. Vérifiez qu'aucun enfant n'est reconnaissable sans accord et que le contenu respecte la charte.</p>` + l.map((x) => `
+      return bouton + `<p class="note">Avant de publier : pas d'enfant reconnaissable sans l'accord de ses parents, personnes d'accord pour être prises en photo, contenu conforme à la charte.</p>` + l.map((x) => `
         <div class="carte ligne-adm">
           <div class="haut"><b>${esc(x.auteur)}${x.ville ? ' · ' + esc(x.ville) : ''}</b><span class="statut ${x.statut === 'publie' ? 's-paye' : x.statut === 'masque' ? 's-annule' : 's-en_attente'}">${LIB[x.statut]}</span></div>
           <img src="${esc(D.urlPhoto(x.photo))}" alt="" style="width:100%;max-height:260px;object-fit:cover;border-radius:12px">
@@ -1750,7 +1860,7 @@
     if (i.statut === 'paye') actions.push(i.retire ? `<button class="btn contour petit" data-action="retrait" data-id="${esc(i.id)}" data-v="0">Annuler le retrait</button>` : `<button class="btn ${retrait ? 'j' : ''} petit" data-action="retrait" data-id="${esc(i.id)}" data-v="1">Remettre le dossard</button>`);
     return `
       <div class="carte ligne-adm">
-        <div class="haut"><b>${esc(i.prenom)} ${esc(i.nom)}</b><span class="statut s-${esc(i.statut)}">${esc(STATUT[i.statut] || i.statut)}</span></div>
+        <div class="haut"><b>${esc(i.prenom)} ${esc(i.nom)}</b><span class="statut s-${esc(i.statut)}">${esc(STATUT[i.statut] || i.statut)}${delaiDepasse(i) ? ' · délai dépassé' : ''}</span></div>
         ${i.dossard ? `<span style="font-size:${retrait ? 40 : 20}px;font-weight:800;line-height:1.1">Dossard ${esc(i.dossard)}${i.retire ? ' · retiré' : ''}</span>` : ''}
         <span class="meta">${esc(i.reference)} · ${esc(d.km)} · ${CAT[i.categorie] || ''} · ${fcfa(i.montant)}${i.don ? ` + don ${fcfa(i.don)}` : ''}</span>
         <span class="meta">${esc(i.telephone)} · ${i.sexe === 'F' ? 'Femme' : 'Homme'} · né(e) le ${dateFr(i.date_naissance)} · urgence : ${esc(i.urgence_nom)} ${esc(i.urgence_tel)}</span>
@@ -1766,6 +1876,44 @@
       `${i.nom} ${i.prenom} ${i.reference}`.toLowerCase().includes(q) || (qn && (window.ODC_DATA.chiffres(i.telephone).includes(qn) || String(i.dossard || '') === qn))));
     if (!res.length) return `<p class="vide">${A.ins.length ? 'Aucun résultat.' : 'Aucune inscription pour l’instant.'}</p>`;
     return `<p class="note">${res.length} résultat${res.length > 1 ? 's' : ''}${res.length > 200 ? ' · 200 premiers affichés' : ''}</p>` + res.slice(0, 200).map((i) => carteInscription(i)).join('');
+  }
+
+  // Paiements déclarés, du plus ancien au plus récent (les plus urgents d'abord)
+  function admVerification() {
+    const A = S.adm; const q = String(A.vq || '').trim().toLowerCase(); const qn = window.ODC_DATA.chiffres(q);
+    const tous = A.ins.filter((i) => i.statut === 'paiement_declare');
+    const res = tous.filter((i) => (!A.vop || i.operateur === A.vop) && (!q || String(i.transaction_id || '').toLowerCase().includes(q)
+        || String(i.reference || '').toLowerCase().includes(q) || (qn.length >= 6 && window.ODC_DATA.chiffres(i.telephone).includes(qn))))
+      .sort((a, b) => String(a.paiement_declare_at || '').localeCompare(String(b.paiement_declare_at || '')));
+    if (!tous.length) return '<p class="vide">Aucun paiement à vérifier. Tout est à jour.</p>';
+    if (!res.length) return '<p class="vide">Aucun paiement ne correspond.</p>';
+    const vieux = tous.filter((i) => Date.now() - new Date(i.paiement_declare_at).getTime() > 24 * 3600e3).length;
+    return `<p class="note">${res.length} paiement${res.length > 1 ? 's' : ''} à vérifier${vieux ? ` · <b style="color:var(--rouge)">${vieux} en attente depuis plus de 24 h</b>` : ''}</p>`
+      + res.slice(0, 200).map((i) => {
+        const d = distance(i.distance); const age = Date.now() - new Date(i.paiement_declare_at).getTime();
+        const ageTxt = age < 3600e3 ? `il y a ${Math.max(1, Math.round(age / 60000))} min` : age < 48 * 3600e3 ? `il y a ${Math.round(age / 3600e3)} h` : `il y a ${Math.round(age / 86400e3)} jours`;
+        const refus = A.refus === i.id;
+        return `
+        <div class="carte ligne-adm">
+          <div class="haut"><b>${esc(i.prenom)} ${esc(i.nom)}</b><span class="statut s-paiement_declare"${age > 24 * 3600e3 ? ' style="background:#fde2e1;color:var(--rouge)"' : ''}>${ageTxt}</span></div>
+          <span><b style="font-size:17px">${fcfa((i.montant || 0) + (i.don || 0))}</b> · ${esc(i.operateur === 'orange' ? 'Orange Money' : 'MTN MoMo')} · transaction <span class="ref">${esc(i.transaction_id || '')}</span></span>
+          <span class="note">Réf. ${esc(i.reference)} · ${esc(d ? d.km : i.distance)} · ${esc(i.telephone || '')}${i.refus_nombre ? ` · déjà refusé ${i.refus_nombre} fois` : ''}</span>
+          ${refus ? `
+          <form data-form="refus" data-id="${esc(i.id)}" class="pile" style="gap:6px" novalidate>
+            <label class="champ">Motif (le coureur le verra)
+              <select name="motif">
+                <option>Identifiant de transaction introuvable sur notre relevé</option>
+                <option>Montant reçu différent du montant à payer</option>
+                <option>Paiement reçu sur un autre numéro que celui de l'association</option>
+                <option value="autre">Autre motif…</option>
+              </select></label>
+            <label class="champ">Autre motif <span class="note">si « Autre motif »</span><input name="autre" maxlength="200"></label>
+            <p class="erreur" role="alert"></p>
+            <div style="display:flex;gap:8px"><button class="btn petit" type="submit">Confirmer le refus</button><button class="btn contour petit" type="button" data-action="refus-non">Annuler</button></div>
+          </form>` : `
+          <div class="actions"><button class="btn petit" data-action="valider" data-id="${esc(i.id)}">Valider le paiement</button><button class="btn contour petit" data-action="refus" data-id="${esc(i.id)}">Refuser…</button></div>`}
+        </div>`;
+      }).join('');
   }
 
   function admRetrait() {
@@ -1787,7 +1935,10 @@
     } catch (e) { S.adm.erreur = e.message; }
     S.adm.chargement = false; majAdm();
   }
-  function majAdm() { const el = document.getElementById('adm'); if (el) el.innerHTML = admContenu(); else if (route() === 'admin') rendre(false); }
+  function majAdm() {
+    const el = document.getElementById('adm'); if (el) el.innerHTML = admContenu(); else if (route() === 'admin') rendre(false);
+    const o = document.getElementById('adm-onglets'); if (o) o.innerHTML = ongletsAdm();
+  }
 
 
   // Quiz : format texte de l'espace organisateurs
@@ -2046,8 +2197,16 @@
     else if (a === 'nouvelle-commande') { S.commandeFaite = null; S.panier = {}; rendre(true); }
     else if (a === 'adm-onglet') { if (scan) arreterScan(); S.adm.onglet = b.dataset.k; rendre(false); }
     else if (a === 'adm-charger') admCharger();
+    else if (a === 'adm-anonymiser') { S.adm.anonConfirm = true; majAdm(); }
+    else if (a === 'adm-anonymiser-non') { S.adm.anonConfirm = false; majAdm(); }
+    else if (a === 'adm-anonymiser-ok') {
+      S.adm.anonConfirm = false;
+      D.anonymiserInscriptions().then((n) => { toast(`Coordonnées effacées pour ${n} inscription(s).`); admCharger(); }).catch((e) => { toast(e.message); majAdm(); });
+    }
     else if (a === 'deconnexion') { await D.deconnexion(); S.staff = false; S.adm.ins = []; rendre(true); }
     else if (a === 'csv') csv(b.dataset.k);
+    else if (a === 'refus') { S.adm.refus = b.dataset.id; document.getElementById('adm-liste').innerHTML = admVerification(); }
+    else if (a === 'refus-non') { S.adm.refus = null; document.getElementById('adm-liste').innerHTML = admVerification(); }
     else if (['valider', 'annuler', 'retrait', 'valider-don', 'annuler-don'].includes(a)) {
       b.disabled = true;
       try {
@@ -2066,6 +2225,7 @@
   document.addEventListener('input', (ev) => {
     const t = ev.target;
     if (t.dataset.filtre === 'retrait') { S.adm.r = t.value; document.getElementById('adm-liste').innerHTML = admRetrait(); return; }
+    if (t.dataset.filtre === 'vq' || t.dataset.filtre === 'vop') { S.adm[t.dataset.filtre] = t.value; document.getElementById('adm-liste').innerHTML = admVerification(); return; }
     if (t.dataset.filtre === 'parEv' || t.dataset.filtre === 'candType') return;
     if (t.dataset.filtre) { S.adm[t.dataset.filtre] = t.value; document.getElementById('adm-liste').innerHTML = admListe(); return; }
     if (t.name === 'nom_attestation') { S.nomAttestation = t.value.slice(0, 80); const n = document.querySelector('[data-nom-attestation]'); if (n) n.textContent = S.nomAttestation || 'Votre nom'; return; }
@@ -2126,18 +2286,20 @@
     try {
       if (type === 'ins1') {
         if (!window.ODC_DATA.telValide(v.telephone) || !window.ODC_DATA.telValide(v.urgence_tel)) return echec('Vérifiez les numéros de téléphone (8 à 15 chiffres).');
-        if (v.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email)) return echec("L'adresse e-mail n'est pas valide.");
-        S.insData = v; S.insEtape = 2; rendre(true); return;
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email || '')) return echec("L'adresse e-mail n'est pas valide.");
+        S.insData = v; S.insEtape = 2; cleEnvoi(); rendre(true); return;
       }
       if (type === 'inscription') {
         const don = v.don_autre !== undefined ? Math.max(0, parseInt(v.don_autre, 10) || 0) : S.choix.don;
         const P = S.insData || {};
         if (!P.nom) { S.insEtape = 1; rendre(true); return; }
         const r = await D.creerInscription({
-          nom: P.nom, prenom: P.prenom, telephone: P.telephone, email: P.email, date_naissance: P.date_naissance, sexe: P.sexe, ville: P.ville,
-          distance: S.choix.distance, categorie: S.choix.categorie, urgence_nom: P.urgence_nom, urgence_tel: P.urgence_tel, consentement: true, don,
-          taille_tshirt: S.choix.taille
+          nom: P.nom, prenom: P.prenom, telephone: P.telephone, email: P.email, date_naissance: P.date_naissance, sexe: P.sexe,
+          distance: S.choix.distance, categorie: S.choix.categorie, urgence_nom: P.urgence_nom, urgence_tel: P.urgence_tel, consentement: true,
+          consentement_parental: v.consentement_parental === 'on', consentement_version: CONSENTEMENT_VERSION, don,
+          taille_tshirt: S.choix.taille, cle_envoi: cleEnvoi()
         });
+        S.cleEnvoi = null; cleSession.effacer();
         ajouterMoi({ reference: r.reference, telephone: P.telephone, prenom: P.prenom });
         S.insData = null; S.insEtape = 1;
         S.choix.don = 0;
@@ -2236,11 +2398,30 @@
         await D.enregistrerContenu(p); S.adm.ctEdit = null; S.contenus = null; toast('Enregistré'); await admCharger();
       } else if (type === 'connexion') {
         await D.connexion(v.email, v.mdp); S.staff = true; rendre(true); admCharger();
+      } else if (type === 'refus') {
+        const motif = v.motif === 'autre' ? String(v.autre || '').trim() : v.motif;
+        if (!motif || motif.length < 3) return echec('Indiquez le motif du refus.');
+        await D.refuserPaiement(f.dataset.id, motif); S.adm.refus = null;
+        toast('Paiement refusé · le coureur verra le motif'); await admCharger();
+      } else if (type === 'reglages') {
+        const quota = parseInt(v.quota, 10);
+        if (!Number.isInteger(quota) || quota < 0 || quota > 100000) return echec('Le quota doit être un nombre entre 0 et 100 000.');
+        const delai = parseInt(v.delai, 10);
+        if (!Number.isInteger(delai) || delai < 1 || delai > 720) return echec('Le délai pour payer doit être entre 1 et 720 heures.');
+        let e = await D.reglerInscriptions(v.ouvertes === 'oui', quota, v.message);
+        if (delai !== (e.delai_paiement_heures || 48)) e = await D.reglerDelaiPaiement(delai);
+        if (S.etat) S.etat.inscriptions = e;
+        toast(e.ouvertes ? `Inscriptions ouvertes · ${e.restantes.toLocaleString('fr-FR')} places restantes` : 'Inscriptions fermées');
+        await admCharger();
       } else if (type === 'fonds') {
         await D.majFonds(Math.max(0, parseInt(v.collecte, 10) || 0), Math.max(0, parseInt(v.donateurs, 10) || 0));
         toast('Fonds mis à jour'); await admCharger();
       }
-    } catch (e) { return echec(e.message || 'Une erreur est survenue. Réessayez.'); }
+    } catch (e) {
+      let m = e.message || 'Une erreur est survenue. Réessayez.';
+      if (type === 'inscription' && /^Connexion impossible/.test(m)) m += " Vous pouvez renvoyer sans crainte : l'inscription ne sera pas créée deux fois.";
+      return echec(m);
+    }
     if (btn) btn.disabled = false; f.classList.remove('charge');
   });
 

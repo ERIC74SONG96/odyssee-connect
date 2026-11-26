@@ -4,9 +4,12 @@
  * Laisser supabaseUrl vide = mode démonstration (données gardées dans le navigateur).
  */
 window.ODC_CONFIG = {
-  // Connexion à la base (Supabase > Project Settings > API)
-  supabaseUrl: '',
-  supabaseAnonKey: '',
+  // Connexion à la base (Supabase > Project Settings > API Keys)
+  // Projet créé le 26/11/2026, région Londres (eu-west-2), offre gratuite.
+  // Clé « publishable » : publique par nature, protégée par les règles de la base.
+  // Ne JAMAIS mettre ici la clé secrète (sb_secret_… / service_role).
+  supabaseUrl: 'https://nuqmvkutljogqjuhtqrj.supabase.co',
+  supabaseAnonKey: 'sb_publishable_HcVLS83NEdSiaev6IiArvw_asLVlSkg',
 
   // Événement
   evenement: {
@@ -22,6 +25,15 @@ window.ODC_CONFIG = {
   // Pour afficher une image à la place, par exemple '10': { image: 'images/parcours-10km.jpg' }
   parcours: {},
 
+  // Fond de carte (écran Carte). OpenStreetMap convient aux essais, mais sa politique d'usage
+  // interdit un trafic important : pour le jour J, mettre ici l'adresse d'un fournisseur
+  // choisi par l'association (issue #8), avec sa clé publique si besoin, et son attribution.
+  carte: {
+    tuiles: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '© contributeurs OpenStreetMap',
+    zoomMax: 19
+  },
+
   // Tarifs affichés (les montants réellement facturés sont fixés dans la base, table tarifs)
   distances: [
     // Tarif du 3 km : provisoire (même montant que le 5 km), à confirmer par l'association
@@ -33,9 +45,11 @@ window.ODC_CONFIG = {
 
   // Paiement Mobile Money (numéros marchands de l'association, à compléter)
   mobileMoney: {
-    beneficiaire: "L'Odyssée de l'environnement au Cameroun",
+    // Texte affiché entre parenthèses après le numéro : le nom que le coureur verra
+    // au moment d'envoyer l'argent doit y figurer, sinon il risque d'abandonner.
+    beneficiaire: "nom affiché : Tchuisseu Gedeon, pour L'Odyssée de l'environnement",
     mtn:    { nom: 'MTN Mobile Money', numero: '', code: '*126#' },
-    orange: { nom: 'Orange Money',     numero: '', code: '#150#' }
+    orange: { nom: 'Orange Money',     numero: '697 89 47 34', code: '#150#' }
   },
 
   // Fonds de solidarité environnementale

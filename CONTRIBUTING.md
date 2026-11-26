@@ -3,6 +3,7 @@
 Ce guide dit comment l'équipe s'organise : branches, commits, revues, base de données et mises en production.
 Pour savoir **où en est le projet**, lire [`ROADMAP.md`](ROADMAP.md) et le tableau du projet sur GitHub.
 Pour savoir **ce qui a changé**, lire [`CHANGELOG.md`](CHANGELOG.md).
+Pour les **choix d'architecture**, lire [`docs/decisions/`](docs/decisions/) ; pour **travailler avec les assistants d'IA**, lire [`docs/equipe/`](docs/equipe/).
 
 ## 1. Lancer l'appli sur son ordinateur
 
@@ -18,6 +19,16 @@ Ouvrir http://localhost:8765. Avec `supabaseUrl` vide dans `js/config.js`, l'app
 les données restent dans le navigateur, rien n'est envoyé. C'est le mode à utiliser pour développer.
 
 > Ne jamais mettre dans un commit les clés du projet Supabase de **production** ni de vraies données de participants.
+
+### Voir l'appli en ligne, sans rien installer
+
+| Quoi | Adresse | Mis à jour |
+|---|---|---|
+| Site de test (`develop`) | https://eric74song96.github.io/odyssee-connect/ | à chaque fusion dans `develop` |
+| Aperçu d'une Pull Request | https://eric74song96.github.io/odyssee-connect/pr-preview/pr-NUMÉRO/ | à chaque commit poussé sur la PR ; lien posté en commentaire dans la PR ; supprimé à sa fermeture |
+
+Ces adresses tournent en **mode démonstration** (données gardées dans le navigateur). Pour voir l'appli comme sur un téléphone depuis un ordinateur : Chrome, **F12** puis **Ctrl + Maj + M** (choisir le modèle, et « No throttling » → « 3G » pour une connexion lente).
+Workflow : `.github/workflows/apercus.yml`. Seules les PR ouvertes depuis ce dépôt ont un aperçu (pas celles venant d'un *fork*).
 
 ## 2. Les branches
 
