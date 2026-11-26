@@ -47,7 +47,7 @@ window.ODC_CONFIG = {
   mobileMoney: {
     beneficiaire: "L'Odyssée de l'environnement au Cameroun",
     mtn:    { nom: 'MTN Mobile Money', numero: '', code: '*126#' },
-    orange: { nom: 'Orange Money',     numero: '', code: '#150#' }
+    orange: { nom: 'Orange Money',     numero: '697 89 47 34', code: '#150#' }
   },
 
   // Fonds de solidarité environnementale
