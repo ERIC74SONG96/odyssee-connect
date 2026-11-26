@@ -4,6 +4,7 @@ Lancer depuis la racine du dépôt :
     python3 -m http.server 8765 &
     python3 tests/verifier_demo.py
 """
+import re
 import sys
 from playwright.sync_api import sync_playwright
 
@@ -16,11 +17,25 @@ def main():
     echecs = []
     with sync_playwright() as p:
         nav = p.chromium.launch()
-        page = nav.new_page(viewport={"width": 390, "height": 844})
+        # Service worker bloqué : chaque fichier vient du réseau (donc de l'interception
+        # ci-dessous), jamais d'un cache, et le test reste reproductible.
+        contexte = nav.new_context(viewport={"width": 390, "height": 844}, service_workers="block")
+        page = contexte.new_page()
+        # Le test tourne toujours en mode démonstration, même quand js/config.js
+        # pointe vers la vraie base : on sert une copie de config.js sans adresse Supabase.
+        def config_demo(route):
+            texte = route.fetch().text()
+            texte = re.sub(r"supabaseUrl:\s*'[^']*'", "supabaseUrl: ''", texte)
+            route.fulfill(body=texte, content_type="application/javascript")
+        page.route("**/js/config.js*", config_demo)
         erreurs = []
         page.on("pageerror", lambda e: erreurs.append(str(e)))
         page.goto(URL + "#accueil")
         page.wait_for_timeout(1000)
+        if page.evaluate("window.ODC_CONFIG.supabaseUrl") != "" or page.evaluate("window.ODC_DATA.creer().mode") != "demo":
+            print("ÉCHEC : le test n'est pas en mode démonstration (il toucherait la vraie base).")
+            sys.exit(1)
+        print("ok  mode démonstration (config.js servie sans adresse Supabase, service worker bloqué)")
         for ecran in ECRANS:
             erreurs.clear()
             page.goto(f"{URL}#{ecran}")
