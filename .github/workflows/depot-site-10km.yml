@@ -1,0 +1,31 @@
+# Publie le site du 10 KM de Yaoundé 2027 sur https://10km.odyssee-env.com (LWS).
+# Ne touche pas à l'application : dossier et branche séparés.
+# Mot de passe FTP : secret LWS_FTP_PASSWORD_COM (jamais dans le code).
+name: Site 10 KM (LWS)
+
+on:
+  push:
+    branches: [site-10km]
+    paths: ['site-10km/**', '.github/workflows/depot-site-10km.yml']
+  workflow_dispatch:
+
+concurrency:
+  group: depot-site-10km
+  cancel-in-progress: false
+
+jobs:
+  depot:
+    if: github.ref == 'refs/heads/site-10km'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Envoyer sur LWS (FTPS)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: 193.203.239.78
+          username: odyss2839870
+          password: ${{ secrets.LWS_FTP_PASSWORD_COM }}
+          protocol: ftps
+          local-dir: ./site-10km/
+          server-dir: 10km.odyssee-env.com/
+          timeout: 120000

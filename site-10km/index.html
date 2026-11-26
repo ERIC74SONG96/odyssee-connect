@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>10 KM de Yaoundé 2027</title>
+<meta name="description" content="10 KM de Yaoundé 2027 : une course de 10 km pour soutenir les veuves, les enfants et les familles frappés par la destruction de l'environnement, organisée par L'Odyssée de l'environnement au Cameroun.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="10 KM de Yaoundé 2027 — course solidaire">
+<meta property="og:description" content="Une course de 10 km au profit des veuves, des enfants et des familles frappés par la destruction de l'environnement. Organisée par L'Odyssée de l'environnement au Cameroun.">
+<meta property="og:image" content="hero-20km.jpg">
+<meta name="theme-color" content="#0c4a26">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23f7c51e'/%3E%3Cpath d='M27 74C24 46 46 26 76 25 78 52 58 74 27 74Z' fill='%230c4a26'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: an event poster — loud, proud, sunny, but tidy like an official race site.
+   IDEA: the race bib — the hero is a giant dossard pinned over Yaoundé's seven hills.
+   PICTURE: layered green hills, the 10 km route as a red ribbon with yellow km flags, the bib in front.
+   COLOUR and TYPE: Cameroon green dominant, sun yellow support, red accent; Barlow Condensed for numbers and titles, Barlow for text.
+   LAYOUT: full-bleed bands — green hero, white sections, yellow call to action, deep green footer. */
+:root{color-scheme:light dark;
+  --bg:light-dark(#ffffff,#0b1d13);--ink:light-dark(#13261a,#eef5ef);--muted:light-dark(#4d6455,#a9c0b0);
+  --green:#14713b;--green-d:#0c4a26;--yellow:#f7c51e;--red:#d62f2f;
+  --soft:light-dark(#eef6f0,#12291b);--line:light-dark(#d6e6da,#21402c);--card:light-dark(#ffffff,#102619)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 Barlow,system-ui,sans-serif;overflow-x:clip}
+a{color:inherit}
+h1,h2,h3{font-family:"Barlow Condensed",Barlow,sans-serif;line-height:1.05;margin:0;text-wrap:balance}
+h2{font-size:clamp(32px,4.5vw,48px);font-weight:800}
+h3{font-size:22px;font-weight:600}
+p{margin:0 0 12px;max-width:68ch}
+.wrap{max-width:1240px;margin:0 auto}
+.band{padding:clamp(40px,6vw,88px) max(5vw,16px)}
+.lead{font-size:18px;color:var(--muted);margin-top:14px}
+.btn{display:inline-flex;align-items:center;gap:8px;min-height:48px;padding:0 22px;border-radius:999px;font-weight:600;text-decoration:none;border:2px solid transparent;cursor:pointer;font-size:16px;font-family:inherit}
+.btn.y{background:var(--yellow);color:#13261a}
+.btn.o{border-color:currentColor;background:transparent;color:inherit}
+.btn:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
+
+/* nav */
+header.top{position:sticky;top:0;z-index:20;background:var(--green-d);color:#fff}
+.nav{display:flex;align-items:center;gap:18px;padding:10px max(5vw,16px);max-width:1240px;margin:0 auto;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:22px;line-height:1}
+.logo small{display:block;font:500 12px Barlow,sans-serif;opacity:.8}
+.links{display:flex;gap:4px 16px;flex-wrap:wrap;margin-left:auto;font-size:14.5px}
+@media(min-width:861px){.nav{flex-wrap:nowrap}.links{flex-wrap:nowrap}.links a{white-space:nowrap}}
+.links a{text-decoration:none;opacity:.9;padding:6px 0}
+.links a:hover{opacity:1;text-decoration:underline;text-underline-offset:4px}
+.nav .btn{min-height:42px}
+@media(max-width:860px){.links{order:3;width:100%;margin:0;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px}.links a{flex:none}.nav .btn{margin-left:auto}}
+
+/* hero */
+.hero{position:relative;background:var(--green);color:#fff;overflow:hidden}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:32px;align-items:center;padding:clamp(36px,5vw,72px) max(5vw,16px) 0;position:relative;z-index:2}
+.hero h1{font-size:clamp(52px,8vw,104px);font-weight:800;letter-spacing:-.01em}
+.hero h1 span{color:var(--yellow)}
+.hero .tag{font-size:clamp(18px,2vw,22px);margin:16px 0 8px;color:#e6f3ea}
+.hero .meta{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 26px}
+.chip{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:6px 14px;font-size:15px;white-space:nowrap}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:28px}
+.scene{position:relative;height:clamp(300px,38vw,470px)}
+.scene svg{position:absolute;inset:0;width:100%;height:100%}
+.bib{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%) rotate(-4deg);width:min(78%,380px);background:#fff;color:#13261a;border-radius:14px;padding:18px 22px 16px;box-shadow:0 22px 40px rgba(0,0,0,.28);text-align:center}
+.bib::before,.bib::after{content:"";position:absolute;top:12px;width:12px;height:12px;border-radius:50%;background:#c9d3cc;box-shadow:inset 0 2px 2px rgba(0,0,0,.25)}
+.bib::before{left:12px}.bib::after{right:12px}
+.bib .t{font:800 18px "Barlow Condensed",sans-serif;color:var(--green);display:flex;justify-content:center;gap:8px}
+.bib .n{font:800 clamp(72px,9vw,112px)/1 "Barlow Condensed",sans-serif;letter-spacing:.02em;margin:4px 0}
+.bib .b{display:flex;height:10px;border-radius:5px;overflow:hidden;margin-top:8px}
+.bib .b i{flex:1}
+.hills{position:relative;z-index:1;height:70px;margin-top:-1px}
+.hills svg{display:block;width:100%;height:100%}
+@media(max-width:760px){.hero .wrap{grid-template-columns:1fr}.scene{order:2}}
+
+/* figures */
+.figs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-top:-34px;position:relative;z-index:3}
+.figs div{background:var(--card);padding:20px 22px}
+.figs b{display:block;font:800 clamp(34px,4vw,46px)/1 "Barlow Condensed",sans-serif;color:var(--green)}
+:root[data-theme=dark] .figs b{color:var(--yellow)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .figs b{color:var(--yellow)}}
+.figs span{color:var(--muted);font-size:15px}
+@media(max-width:700px){.figs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* grids & cards */
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,4vw,56px);align-items:start}
+@media(max-width:820px){.two{grid-template-columns:1fr}}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:16px;margin-top:28px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}
+.card p{color:var(--muted);margin:6px 0 0;font-size:15.5px}
+.ico{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--soft);margin-bottom:12px}
+.ico svg{width:24px;height:24px;stroke:var(--green);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+:root[data-theme=dark] .ico svg{stroke:var(--yellow)}
+.pillars{display:grid;gap:14px;margin-top:24px}
+.pillar{display:flex;gap:16px;align-items:flex-start;padding:16px 18px;border-radius:14px;background:var(--soft)}
+.pillar b{font:800 30px/1 "Barlow Condensed",sans-serif;color:var(--red);width:28px;flex:none}
+.pillar h3{font-size:20px}.pillar p{margin:4px 0 0;color:var(--muted)}
+.soft{background:var(--soft)}
+
+/* tables */
+table{width:100%;border-collapse:collapse;background:var(--card);border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+th,td{padding:13px 16px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--green-d);color:#fff;font-weight:600;font-size:15px}
+tr:last-child td{border-bottom:0}
+td.r,th.r{text-align:right;white-space:nowrap}
+.price{font:800 24px "Barlow Condensed",sans-serif;color:var(--green);white-space:nowrap}
+.free{color:var(--red)}
+.note{margin-top:14px;padding:12px 16px;border-left:4px solid var(--yellow);background:var(--soft);border-radius:0 10px 10px 0;font-size:15px;color:var(--muted)}
+.scroll{overflow-x:auto}
+@media(max-width:600px){table{font-size:14px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px;border-bottom:1px solid var(--line)}.stack td{display:flow-root;border:0;padding:3px 16px;padding-inline-start:9em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:8em;margin-inline-start:-8.5em;font-weight:600;color:var(--muted)}.stack td:empty{display:none}}
+
+/* route */
+.route{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px}
+.route svg{width:100%;height:auto;display:block}
+.tr-tabs{display:flex;gap:8px;margin:0 0 10px}.tr-tabs button{flex:1;min-height:42px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font:800 16px Barlow,sans-serif;cursor:pointer;color:#13261a}
+.tr-tabs button[aria-pressed="true"]{color:#fff;border-color:transparent}.tr-tabs .t3[aria-pressed="true"]{background:#14713b}.tr-tabs .t5[aria-pressed="true"]{background:#e0a800;color:#13261a}.tr-tabs .t10[aria-pressed="true"]{background:#c62828}
+.tr-leg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;margin:8px 2px 0}.tr-leg i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.tr-info{font-size:13px;color:#4a5a4f;margin:8px 2px 0}
+.tr-etapes{list-style:none;margin:10px 0 0;padding:0 0 0 6px}.tr-etapes li{display:flex;gap:12px;padding:6px 0 6px 14px;border-left:3px solid #f7c51e;position:relative;font-size:14px}
+.tr-etapes li::before{content:"";position:absolute;left:-8px;top:10px;width:13px;height:13px;border-radius:50%;background:#fff;border:3px solid #0b4d2c}
+.tr-etapes li.dep::before{background:#0b4d2c}.tr-etapes li.arr::before{background:#c62828;border-color:#c62828}
+.tr-etapes .km{flex:none;width:62px;font-weight:800;color:#0b4d2c;font-variant-numeric:tabular-nums}.tr-etapes small{display:block;color:#5b6b5f}
+.tr-dl{display:inline-flex;align-items:center;gap:6px;margin-top:10px;font-weight:700;color:#0b4d2c;text-decoration:underline}
+
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:14px;color:var(--muted);padding:6px 8px 2px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+
+/* app */
+.app img{width:100%;height:auto;border-radius:18px;display:block;box-shadow:0 18px 40px rgba(0,0,0,.18)}
+ul.list{padding:0;margin:16px 0 0;list-style:none}
+ul.list li{padding:9px 0 9px 30px;border-bottom:1px solid var(--line);position:relative}
+ul.list li::before{content:"";position:absolute;left:4px;top:15px;width:12px;height:12px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px var(--soft)}
+
+/* partners */
+.levels{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-top:24px}
+.lvl{border-radius:14px;padding:18px;background:var(--card);border:1px solid var(--line);border-top:6px solid var(--c)}
+.lvl b{display:block;font:800 26px "Barlow Condensed",sans-serif;white-space:nowrap}
+.lvl span{font-size:14px;color:var(--muted)}
+@media(max-width:820px){.levels{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.sun{background:var(--yellow);color:#13261a}
+.sun .lead{color:#3d3a1c}
+.sun .btn.g{background:var(--green-d);color:#fff}
+
+footer{background:var(--green-d);color:#d8eadf;font-size:15px}
+footer .cols{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:28px}
+footer h3{color:#fff;font-size:20px;margin-bottom:8px}
+footer a{display:block;text-decoration:none;padding:3px 0;opacity:.9}
+footer a:hover{text-decoration:underline}
+footer .fine{border-top:1px solid rgba(255,255,255,.15);margin-top:28px;padding-top:16px;font-size:13.5px;opacity:.8}
+@media(max-width:760px){footer .cols{grid-template-columns:1fr}}
+
+/* ---- pages (hash routing) ---- */
+.view{display:none}.view.on{display:block}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}.hero-photo{padding:0;background:var(--green-d)}.hero-photo picture,.hero-photo .hero-img{display:block;width:100%}.hero-photo .hero-img{height:auto;max-height:78vh;object-fit:cover;object-position:center}.hero-band{background:var(--green-d);color:#fff;padding:18px max(5vw,16px) 46px}.hero-band .hb{display:flex;align-items:center;justify-content:space-between;gap:16px 28px;flex-wrap:wrap}.hero-band .tag{margin:0;font-size:clamp(17px,1.8vw,21px);max-width:60ch;color:#e6f3ea}.hero-band .cta{margin:0}.cd{flex:1 1 100%;display:flex;align-items:center;justify-content:space-between;gap:12px 24px;flex-wrap:wrap;padding-bottom:16px;margin-bottom:4px;border-bottom:1px solid rgba(255,255,255,.16)}.cdd{margin:0;font:800 clamp(20px,2.4vw,28px) "Barlow Condensed",sans-serif;color:var(--yellow);letter-spacing:.01em}.cdr{display:flex;gap:10px}.cdb{min-width:72px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:8px 10px;text-align:center}.cdb b{display:block;font:800 clamp(26px,3vw,36px)/1 "Barlow Condensed",sans-serif;color:#fff}.cdb span{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#cfe3d5}@media(max-width:520px){.cdb{min-width:0;flex:1}.cdr{width:100%}}.gauge{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:16px;padding:16px 18px;margin-top:18px}.gauge .gtop{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}.gauge .gnum{font:800 30px "Barlow Condensed",sans-serif;color:var(--yellow)}.gauge .gof{font-size:14px;opacity:.9}.gauge .bar{height:14px;border-radius:7px;background:rgba(255,255,255,.18);overflow:hidden;margin:10px 0 6px}.gauge .bar i{display:block;height:100%;background:var(--yellow);border-radius:7px;width:0;transition:width .8s}.gauge .gnote{font-size:13.5px;opacity:.85;margin:0}.gauge.light{background:var(--card);border-color:var(--line);color:var(--ink)}.gauge.light .gnum{color:var(--green)}.gauge.light .bar{background:var(--soft)}.gauge.light .bar i{background:var(--green)}tr.race td{background:var(--yellow)!important;color:#13261a;font-weight:600}.plan th:first-child,.plan td:first-child{width:70px}.social .slinks{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}.social .slinks a{display:inline-flex;align-items:center;min-height:40px;padding:0 14px;border-radius:999px;border:1.5px solid currentColor;text-decoration:none;font-weight:600}.legal h2{font-size:28px;margin-top:28px}.legal h3{margin-top:18px}.legal p,.legal li{color:var(--muted);max-width:75ch}.todo{background:#fde3c4;color:#8a4a0c;padding:0 6px;border-radius:4px;font-style:italic}
+.hero .scene{align-self:end;height:clamp(320px,40vw,520px);margin-bottom:-2px}
+.hero .scene svg{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 14%,#000 96%,transparent 100%);mask-image:linear-gradient(to right,transparent 0,#000 14%,#000 96%,transparent 100%)}
+@media(max-width:760px){.hero .scene svg{-webkit-mask-image:none;mask-image:none}}
+
+.pagehead{background:var(--green);color:#fff;padding:clamp(36px,5vw,64px) max(5vw,16px) clamp(28px,4vw,48px)}
+.pagehead h1{font-size:clamp(40px,6vw,64px);font-weight:800}
+.pagehead p{color:#e6f3ea;font-size:18px;margin-top:12px;max-width:62ch}
+.crumb{font-size:14px;opacity:.85;margin-bottom:10px}
+.crumb a{text-decoration:none}.crumb a:hover{text-decoration:underline}
+.links a[aria-current=page]{opacity:1;text-decoration:underline;text-underline-offset:6px;text-decoration-color:var(--yellow);text-decoration-thickness:3px}
+.burger{display:none;margin-left:auto;background:transparent;border:2px solid rgba(255,255,255,.4);color:#fff;border-radius:10px;min-height:44px;padding:0 14px;font:600 15px Barlow,sans-serif;cursor:pointer}
+@media(max-width:1180px){
+  .nav{flex-wrap:wrap}
+  .burger{display:inline-flex;align-items:center}
+  .nav .btn{display:none}
+  .links{display:none;order:3;width:100%;flex-direction:column;gap:0;overflow:visible;padding:6px 0 10px}
+  .links.open{display:flex}
+  .links a{padding:12px 0;border-top:1px solid rgba(255,255,255,.12);font-size:17px}
+}
+.teasers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:28px}
+@media(max-width:820px){.teasers{grid-template-columns:1fr}}
+.teaser{display:block;text-decoration:none;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;transition:transform .15s}
+.teaser:hover{transform:translateY(-2px)}
+.teaser .k{font:800 15px "Barlow Condensed",sans-serif;color:var(--red)}
+.teaser h3{margin:6px 0 8px;font-size:26px}
+.teaser p{color:var(--muted);margin:0}
+.teaser .go{display:inline-block;margin-top:12px;font-weight:600;color:var(--green)}
+.cause{background:var(--green-d);color:#fff;border-radius:22px;padding:clamp(24px,4vw,44px);display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:28px;align-items:center}
+.cause h2{color:#fff}.cause p{color:#d8eadf}
+.cause .big{font:800 clamp(54px,8vw,92px)/1 "Barlow Condensed",sans-serif;color:var(--yellow)}
+.cause .big small{display:block;font:500 16px Barlow,sans-serif;color:#d8eadf;margin-top:6px}
+@media(max-width:760px){.cause{grid-template-columns:1fr}}
+.steps{counter-reset:s;display:grid;gap:12px;margin-top:20px;padding:0;list-style:none}
+.steps li{counter-increment:s;display:grid;grid-template-columns:44px minmax(0,1fr);gap:14px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.steps li::before{content:counter(s);width:44px;height:44px;border-radius:50%;background:var(--yellow);color:#13261a;display:grid;place-items:center;font:800 22px "Barlow Condensed",sans-serif}
+.steps b{display:block;font-size:17px}
+.steps span{color:var(--muted)}
+details{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:10px}
+summary{cursor:pointer;padding:16px 18px;font-weight:600;font-size:17px;list-style:none;display:flex;justify-content:space-between;gap:12px;min-height:44px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font:800 24px/1 "Barlow Condensed",sans-serif;color:var(--green)}
+details[open] summary::after{content:"–"}
+details>div{padding:0 18px 16px;color:var(--muted)}
+.faqcat{font:800 22px "Barlow Condensed",sans-serif;margin:28px 0 12px}
+.contactgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:24px}
+@media(max-width:820px){.contactgrid{grid-template-columns:1fr}}
+.copy{margin-top:10px;min-height:44px;border-radius:999px;border:2px solid var(--green);background:transparent;color:var(--ink);padding:0 18px;font:600 15px Barlow,sans-serif;cursor:pointer}
+.mail{font-weight:600;word-break:break-all}
+.prov{display:inline-block;font-size:13px;background:var(--yellow);color:#13261a;border-radius:999px;padding:2px 10px;margin-left:6px;vertical-align:middle;font-weight:600}
+
+/* ---- design v2 ---- */
+.sechead{display:flex;align-items:end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+.eyebrow2{display:inline-block;font:700 14px Barlow,sans-serif;color:var(--red);margin-bottom:8px}
+.dist{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:26px}
+@media(max-width:860px){.dist{grid-template-columns:1fr}}
+.dcard{position:relative;border-radius:22px;overflow:hidden;background:var(--card);border:1px solid var(--line);display:flex;flex-direction:column;box-shadow:0 10px 30px rgba(12,74,38,.08)}
+.dcard .top{padding:22px 22px 18px;color:#fff;background:var(--c);position:relative}
+.dcard .top::after{content:"";position:absolute;right:-30px;bottom:-40px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.12)}
+.dcard .km{font:800 64px/0.9 "Barlow Condensed",sans-serif;letter-spacing:-.01em}
+.dcard .km small{font-size:28px;margin-left:4px}
+.dcard .nm{font:600 18px Barlow,sans-serif;margin-top:6px;opacity:.95}
+.dcard.y .top{color:#13261a}
+.dcard .body{padding:18px 22px 22px;display:flex;flex-direction:column;gap:10px;flex:1}
+.dcard .body p{margin:0;color:var(--muted)}
+.dcard .meta{display:flex;flex-wrap:wrap;gap:6px}
+.dcard .meta span{font-size:13.5px;font-weight:600;background:var(--soft);border-radius:999px;padding:4px 10px}
+.dcard .price{font:800 26px "Barlow Condensed",sans-serif;color:var(--ink);margin-top:auto}
+.dcard .price small{font:500 14px Barlow,sans-serif;color:var(--muted)}
+.appband{background:linear-gradient(135deg,#0c4a26 0%,#14713b 60%,#1e8a4a 100%);color:#fff;border-radius:28px;padding:clamp(26px,4vw,52px);display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:28px;align-items:center;overflow:hidden;position:relative}
+.appband::before{content:"";position:absolute;left:-80px;top:-80px;width:260px;height:260px;border-radius:50%;background:rgba(247,197,30,.15)}
+.appband h2{color:#fff}.appband p{color:#d8eadf}
+.appband .feat{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 18px;margin:18px 0 22px;padding:0;list-style:none}
+.appband .feat li{display:flex;gap:10px;align-items:flex-start;font-size:15.5px}
+.appband .feat li::before{content:"";flex:none;width:20px;height:20px;border-radius:50%;background:var(--yellow);box-shadow:inset 0 0 0 5px #0c4a26;margin-top:2px}
+.appband img{width:100%;max-width:360px;justify-self:center;border-radius:28px;box-shadow:0 30px 60px rgba(0,0,0,.35);transform:rotate(3deg)}.appband img.wide{max-width:none;transform:none;border-radius:20px}.appband .sig{font:italic 600 19px Barlow,sans-serif;color:var(--yellow);margin:6px 0 4px}.shot1{margin:24px 0 0;background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden}.shot1 img{display:block;width:100%;height:auto}.shot1 figcaption{padding:12px 16px;font-size:14px;color:var(--muted)}
+@media(max-width:820px){.appband{grid-template-columns:1fr}.appband .feat{grid-template-columns:1fr}.appband img{max-width:280px}}
+.badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.3);border-radius:12px;padding:8px 14px;font-size:14px;margin:0 8px 8px 0}
+.featgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:26px}
+@media(max-width:860px){.featgrid{grid-template-columns:1fr}}
+.feature{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px}
+.feature .tagv{display:inline-block;font-size:12.5px;font-weight:700;border-radius:999px;padding:3px 10px;margin-bottom:10px;background:var(--green);color:#fff}
+.feature .tagv.soon{background:var(--yellow);color:#13261a}
+.feature p{color:var(--muted);margin:6px 0 0}
+.shots{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:18px;margin-top:26px;align-items:start}
+.shots figure{margin:0;background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.shots img{display:block;width:100%;height:auto}
+.shots figcaption{padding:12px 16px;font-size:14px;color:var(--muted)}
+@media(max-width:820px){.shots{grid-template-columns:1fr}}
+.teasers .teaser{box-shadow:0 8px 24px rgba(12,74,38,.06)}
+.band h2{letter-spacing:-.005em}
+.nav .links a.shoplink{color:var(--yellow);font-weight:700}
+.shopband{display:flex;align-items:center;justify-content:space-between;gap:20px 32px;flex-wrap:wrap;border:2px solid var(--yellow);border-radius:24px;padding:clamp(22px,3.5vw,40px);background:linear-gradient(120deg,rgba(247,197,30,.14),transparent 60%)}
+.shopband .lead{margin-bottom:0;max-width:60ch}
+.logo span{white-space:nowrap}.links{gap:4px 14px}.lang{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.5);border-radius:8px;min-height:34px;min-width:44px;font:700 13px Barlow,sans-serif;cursor:pointer;margin-left:6px}.lang:hover{background:rgba(255,255,255,.12)}@media(max-width:1180px){.lang{align-self:flex-start;margin:10px 0 0}}</style><script>new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i+=p.colSpan;c.dataset.l=c.closest('table').rows[0].cells[i]?.textContent||''}}).observe(document,{childList:true,subtree:true})</script>
+</head>
+<body>
+<div id="root"></div>
+<template id="tpl-fr">
+<header class="top">
+  <nav class="nav" aria-label="Navigation principale">
+    <a class="logo" href="#accueil"><svg width="38" height="38" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="50" fill="#f7c51e"/><path d="M27 74C24 46 46 26 76 25 78 52 58 74 27 74Z" fill="#0c4a26"/><path d="M29 72 66 36" stroke="#f7c51e" stroke-width="3.5" stroke-linecap="round"/></svg><span>10 KM de Yaoundé<small>L'Odyssée de l'environnement</small></span></a>
+    <button class="burger" id="burger" aria-expanded="false" aria-controls="menu">Menu</button>
+    <div class="links" id="menu">
+      <a href="#cause">Notre cause</a><a href="#course">La course</a><a href="#inscriptions">Inscriptions</a><a href="#application">L'appli</a><a href="#infos">Infos</a><a href="#benevoles">Bénévoles</a><a href="#partenaires">Partenaires</a><a href="#faq">FAQ</a><a href="#contact">Contact</a>
+      <button class="lang" data-lang="en" aria-label="English version">EN</button>
+    </div>
+    <a class="btn y" href="#inscriptions">S'inscrire</a>
+  </nav>
+</header>
+
+<main>
+<!-- ============ ACCUEIL ============ -->
+<div class="view" id="accueil">
+<section class="hero hero-photo" id="top-accueil">
+  <h1 class="sr">10 KM de Yaoundé 2027</h1>
+  <picture>
+    <source media="(max-width:700px)" srcset="hero-20km-mobile.jpg">
+    <img class="hero-img" src="hero-20km.jpg" alt="Coureurs du 10 KM de Yaoundé 2027 aux couleurs de L'Odyssée de l'environnement, avec le drapeau du Cameroun">
+  </picture>
+  <div class="hero-band">
+    <div class="wrap hb">
+      <div class="cd" role="timer" data-cd="2027-07-10T08:00:00+01:00"><p class="cdd">Samedi 10 juillet 2027 · départ à 8&nbsp;h · date provisoire</p><div class="cdr"><div class="cdb"><b data-u="j">–</b><span>Jours</span></div><div class="cdb"><b data-u="h">–</b><span>Heures</span></div><div class="cdb"><b data-u="m">–</b><span>Min</span></div><div class="cdb"><b data-u="s">–</b><span>Sec</span></div></div></div>
+      <p class="tag">Nous courons pour les veuves, les enfants et les familles frappés par la destruction de l'environnement.</p>
+      <div class="cta"><a class="btn y" href="#inscriptions">Courir pour eux</a><a class="btn o" href="#cause">Le Fonds de solidarité</a></div>
+    </div>
+  </div>
+</section>
+<div class="wrap" style="padding:0 max(5vw,16px)">
+  <div class="figs">
+    <div><b>10 km</b><span>du boulevard du 20 Mai au Musée national</span></div>
+    <div><b>10 000</b><span>participants visés, par paliers</span></div>
+    <div><b>5 M</b><span>FCFA : objectif du Fonds de solidarité</span></div>
+    <div><b>7,5 M</b><span>FCFA pour l'environnement</span></div>
+  </div>
+</div>
+<section class="band">
+  <div class="wrap">
+    <div class="sechead"><div><span class="eyebrow2">Choisissez votre course</span><h2>Trois distances, un seul élan</h2></div><a class="btn o" style="color:var(--green)" href="#course">Voir le détail des courses →</a></div>
+    <div class="dist"><article class="dcard " style="--c:#14713b"><div class="top"><div class="km">3<small>km</small></div><div class="nm">Marche écologique et familiale</div></div><div class="body"><p>Accessible au plus grand nombre : enfants, familles, aînés. On marche à son rythme.</p><div class="meta"><span>Ouverte à tous</span><span>Médaille pour chacun</span></div><div class="price">500 FCFA <small>pour tous</small></div></div></article><article class="dcard y" style="--c:#f7c51e"><div class="top"><div class="km">5<small>km</small></div><div class="nm">Course populaire</div></div><div class="body"><p>Adaptée aux débutants et aux étudiants, pour une première course en ville.</p><div class="meta"><span>Ouverte à tous</span><span>Médaille pour chacun</span></div><div class="price">500 FCFA <small>pour tous</small></div></div></article><article class="dcard " style="--c:#d62f2f"><div class="top"><div class="km">10<small>km</small></div><div class="nm">Défi sportif</div></div><div class="body"><p>Pour les coureurs plus entraînés, du boulevard du 20 Mai au Musée national.</p><div class="meta"><span>Chronométrée</span><span>2,5 M FCFA de prix</span></div><div class="price">500 / 1 000 FCFA <small>étudiants / travailleurs</small></div></div></article></div>
+  </div>
+</section>
+<section class="band">
+  <div class="wrap">
+    <div class="cause">
+      <div>
+        <h2>Pourquoi nous courons</h2>
+        <p class="lead" style="color:#d8eadf">Le 10 KM de Yaoundé est organisé pour venir en aide aux veuves, aux enfants et aux familles frappés par la destruction de l'environnement : inondations, glissements de terrain, pollution.</p>
+        <div class="cta" style="margin:18px 0 0"><a class="btn y" href="#cause">Découvrir le Fonds de solidarité</a></div>
+        <div class="gauge"><div class="gtop"><span class="gnum">0 FCFA</span><span class="gof"></span></div><div class="bar"><i></i></div><p class="gnote"></p></div>
+      </div>
+      <div class="big">5 000 000<small>FCFA : objectif du Fonds de solidarité environnementale pour la première édition</small></div>
+    </div>
+    <div class="teasers">
+      <a class="teaser" href="#course"><span class="k">3 km · 5 km · 10 km · zéro déchet</span><h3>La course</h3><p>Trois distances, le programme environnemental et le parcours à travers la ville aux sept collines.</p><span class="go">En savoir plus →</span></a>
+      <a class="teaser" href="#inscriptions"><span class="k">À partir de 500 FCFA</span><h3>Inscriptions</h3><p>Tarifs, prix et récompenses, et l'application officielle pour s'inscrire et payer par mobile money.</p><span class="go">Voir les tarifs →</span></a>
+      <a class="teaser" href="#benevoles"><span class="k">Rejoignez l'équipe</span><h3>Bénévoles</h3><p>Accueil, ravitaillement, collecte des déchets : donnez de votre temps pour la cause.</p><span class="go">Devenir bénévole →</span></a>
+    </div>
+  </div>
+</section>
+<section class="band">
+  <div class="wrap">
+    <div class="appband">
+      <div>
+        <span class="eyebrow2" style="color:var(--yellow)">L'application du réseau Odyssée</span>
+        <h2>Odyssée Connect</h2>
+        <p class="sig">Ensemble, agissons pour un avenir durable.</p>
+        <p class="lead">Le 10 KM de Yaoundé est le premier événement hébergé dans Odyssée Connect, l'application qui rassemble citoyens, associations, entreprises et partenaires du réseau Odyssée.</p>
+        <ul class="feat"><li>Inscription au 10 KM en quelques minutes</li><li>Paiement Orange Money et MTN MoMo</li><li>Dossard numérique et QR code</li><li>Parcours, infos et notifications</li><li>Résultats et classements</li><li>Bientôt : actions environnementales et bénévolat</li></ul>
+        <a class="btn y" href="#application">Découvrir Odyssée Connect</a>
+      </div>
+      <img class="wide" src="connect-presentation.jpg" alt="Odyssée Connect : écran d'accueil et page du 10 KM de Yaoundé 2027">
+    </div>
+  </div>
+</section>
+<section class="band"><div class="wrap"><div class="shopband"><div><span class="eyebrow2">La collection officielle</span><h2>Portez les couleurs d'Odyssée</h2><p class="lead">T-shirts, polos, joggings, casquettes et sacs aux couleurs de L'Odyssée de l'environnement. Pour courir, encourager et soutenir la cause.</p></div><span class="btn y" style="cursor:default;opacity:.85">Bientôt disponible</span></div></div></section>
+<section class="band sun">
+  <div class="wrap">
+    <h2>Entreprises : courez pour la cause</h2>
+    <p class="lead">Inscrivez une équipe de 10 coureurs, devenez partenaire ou affectez votre soutien au Fonds de solidarité.</p>
+    <div class="cta" style="margin:18px 0 0"><a class="btn g" href="#partenaires">Devenir partenaire</a></div>
+  </div>
+</section>
+</div>
+
+<!-- ============ NOTRE CAUSE ============ -->
+<div class="view" id="cause">
+<div class="pagehead"><div class="wrap"><div class="crumb"><a href="#accueil">Accueil</a> › Notre cause</div><h1>Notre cause</h1><p>Le Fonds de solidarité environnementale, raison d'être du 10 KM de Yaoundé : soutenir les personnes frappées par la destruction de l'environnement.</p></div></div>
+<section class="band">
+  <div class="wrap">
+    <h2>Qui le Fonds soutient-il ?</h2>
+    <p class="lead">Une partie des fonds collectés, issus des inscriptions payantes et des contributions des partenaires, alimente le <strong>Fonds de solidarité environnementale</strong>. Pour la première édition, son objectif est de <strong>5 000 000 FCFA</strong>, réunis grâce aux inscriptions, aux dons et aux contributions des partenaires.</p>
+    <div class="gauge light"><div class="gtop"><span class="gnum">0 FCFA</span><span class="gof"></span></div><div class="bar"><i></i></div><p class="gnote"></p></div>
+    <div class="cards" id="benefCards"></div>
+  </div>
+</section>
+<section class="band soft">
+  <div class="wrap two">
+    <div>
+      <h2>Comment le Fonds est géré</h2>
+      <p class="lead">Chaque franc confié au Fonds doit arriver à ceux qui en ont besoin, de façon vérifiable.</p>
+    </div>
+    <ol class="steps">
+      <li><div><b>Des critères publiés</b><span>Les conditions d'éligibilité sont rendues publiques avant toute attribution.</span></div></li>
+      <li><div><b>Une identification concertée</b><span>Les situations sont identifiées avec des structures locales reconnues et en concertation avec les administrations compétentes.</span></div></li>
+      <li><div><b>Un comité de sélection</b><span>Ses membres déclarent leurs conflits d'intérêts ; chaque décision est documentée.</span></div></li>
+      <li><div><b>Un suivi distinct</b><span>Les sommes du Fonds sont suivies à part et la remise effective des aides est vérifiée.</span></div></li>
+      <li><div><b>Un bilan public</b><span>Montants attribués et nombre de bénéficiaires publiés, sans exposer l'identité des personnes aidées.</span></div></li>
+    </ol>
+  </div>
+</section>
+<section class="band">
+  <div class="wrap">
+    <h2>Comment contribuer</h2>
+    <div class="teasers">
+      <a class="teaser" href="#inscriptions"><span class="k">Coureurs</span><h3>Courir</h3><p>Une partie de chaque inscription payante va au Fonds.</p><span class="go">S'inscrire →</span></a>
+      <a class="teaser" href="#partenaires"><span class="k">Entreprises</span><h3>Soutenir</h3><p>Affectez tout ou partie de votre contribution au Fonds de solidarité.</p><span class="go">Devenir partenaire →</span></a>
+      <a class="teaser" href="#benevoles"><span class="k">Bénévoles</span><h3>Donner du temps</h3><p>Rejoignez l'équipe qui fait vivre la course et le village.</p><span class="go">Devenir bénévole →</span></a>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- ============ LA COURSE ============ -->
+<div class="view" id="course">
+<div class="pagehead"><div class="wrap"><div class="crumb"><a href="#accueil">Accueil</a> › La course</div><h1>La course</h1><p>Trois distances — 3 km de marche écologique et familiale, 5 km de course populaire et 10 km de défi sportif — solidaires et zéro déchet, le samedi 10 juillet 2027 (date provisoire).</p></div></div>
+<section class="band">
+  <div class="wrap two">
+    <div>
+      <h2>Une course pour toute la ville</h2>
+      <p class="lead">Le 10 KM de Yaoundé pourra réunir jusqu'à 10 000 participants sur trois distances : le <strong>3 km</strong>, marche écologique et familiale accessible au plus grand nombre, le <strong>5 km</strong>, course populaire adaptée aux débutants et aux étudiants, et le <strong>10 km</strong>, défi sportif pour les coureurs plus entraînés. La date officielle sera annoncée après validation des parcours par les autorités.</p>
+      <p>Elle est organisée par <strong>L'Odyssée de l'environnement au Cameroun</strong>, association déclarée à Yaoundé. Le réseau Odyssée a organisé le Green Hackathon Yaoundé 2026 et prépare sa deuxième édition pour juillet 2027.</p>
+    </div>
+    <div class="pillars">
+      <div class="pillar"><b>1</b><div><h3>Solidarité</h3><p>La raison d'être de la course : soutenir les victimes de la destruction de l'environnement.</p></div></div>
+      <div class="pillar"><b>2</b><div><h3>Environnement</h3><p>Une course zéro déchet, un parcours nettoyé et des déchets collectés, triés et comptés.</p></div></div>
+      <div class="pillar"><b>3</b><div><h3>Sport</h3><p>Un rendez-vous annuel ouvert à tous : étudiants, travailleurs, familles, équipes d'entreprise.</p></div></div>
+    </div>
+  </div>
+</section>
+<section class="band soft">
+  <div class="wrap">
+    <h2>Chaque kilomètre compte pour l'environnement</h2>
+    <p class="lead">7 500 000 FCFA sont consacrés au volet environnemental, trois fois plus qu'aux prix sportifs. Ses résultats seront mesurés et publiés après la course.</p>
+    <div class="cards" id="envCards"></div>
+  </div>
+</section>
+<section class="band" id="parcours">
+  <div class="wrap two">
+    <div>
+      <h2>Le parcours <span class="prov">provisoire</span></h2>
+      <p class="lead">Le 10 km part du boulevard du 20 Mai et arrive au Musée national, où se tient le village de l'Odyssée. Il passe par le rond-point Nlongkak, Elig-Essono et le carrefour Warda. Le 5 km part d'Elig-Essono et le 3 km de l'avenue Ahmadou-Ahidjo, sur la fin du même parcours. C'est une proposition : la distance sera mesurée officiellement et le tracé validé par les autorités municipales et les services de sécurité.</p>
+      <ul class="list">
+        <li>Points d'hydratation sans bouteilles jetables lorsque c'est possible</li>
+        <li>Postes de secours répartis sur le parcours</li>
+        <li>Un « kilomètre vert » de sensibilisation avec point de collecte</li>
+        <li>Le 5 km et le 3 km empruntent la fin du parcours et arrivent aussi au Musée national</li>
+        <li>Village de l'Odyssée à l'arrivée, au Musée national</li>
+      </ul>
+    </div>
+    <figure class="route" style="margin:0" data-trace-lang="fr">
+      <svg viewBox="0 0 520 360" role="img" aria-label="Tracé proposé du 10 km, du boulevard du 20 Mai au Musée national">
+        <rect x="0" y="0" width="520" height="360" rx="12" fill="var(--soft)"/>
+        <path d="M211.9 240.6 L209.8 236.9 L209.4 235.7 L203.5 215.3 L202.8 212.0 L202.4 209.8 L201.6 206.5 L201.4 205.2 L201.5 204.2 L201.6 203.1 L202.1 201.5 L202.9 200.4 L203.6 199.1 L204.8 196.5 L205.5 194.8 L205.8 193.9 L206.3 191.6 L206.5 189.9 L206.7 187.6 L206.9 185.0 L206.9 184.6 L207.0 184.4 L208.0 182.2 L208.8 180.8 L209.4 179.8 L208.1 176.7 L206.5 172.6 L206.9 171.3 L207.2 167.3 L208.5 148.0 L208.7 145.2 L209.1 141.0 L210.2 128.6 L210.3 128.1 L210.6 126.2 L211.1 124.0 L211.7 121.1 L212.3 118.1 L212.5 117.4 L215.0 108.0 L217.1 99.3 L220.3 86.5 L222.0 79.8 L222.9 76.1 L223.1 75.5 L223.5 73.0 L224.2 72.3 L224.8 70.3 L225.8 66.1 L226.6 65.3 L226.9 64.5 L227.4 62.2 L228.0 58.7 L228.6 55.5 L229.1 51.9 L229.7 48.6 L229.9 47.9 L230.1 47.1 L230.4 46.5 L230.8 45.9 L231.4 44.9 L233.0 44.4 L234.0 43.9 L234.8 43.1 L235.9 41.1 L236.2 40.1 L236.2 39.0 L236.0 38.0 L235.3 36.4 L234.5 35.5 L233.6 34.8 L232.6 34.3 L231.4 34.0 L230.2 34.0 L228.8 34.3 L227.6 35.0 L226.5 36.0 L225.6 37.6 L225.3 39.4 L225.5 41.0 L226.2 42.5 L227.3 43.7 L227.5 44.8 L227.6 45.6 L227.5 46.5 L227.0 49.5 L226.7 52.3 L226.4 53.9 L222.6 52.2 L222.0 52.8 L221.3 53.5 L220.7 54.1 L220.2 54.8 L220.2 54.8 L220.7 54.1 L221.3 53.5 L222.0 52.8 L222.6 52.2 L226.4 53.9 L226.0 57.0 L225.4 60.2 L224.7 63.8 L224.6 64.8 L224.8 65.9 L224.2 68.0 L223.9 69.4 L223.2 72.1 L223.5 73.0 L223.1 75.5 L222.9 76.1 L223.7 76.7 L224.3 77.4 L224.9 78.8 L228.7 89.8 L235.0 106.2 L235.1 106.5 L235.8 108.6 L237.1 111.9 L238.3 115.5 L238.5 117.7 L238.6 118.6 L240.2 123.2 L244.6 135.5 L244.9 137.2 L245.0 138.9 L244.7 142.0 L244.1 145.1 L243.3 148.3 L242.2 148.7 L241.7 148.9 L241.1 149.1 L240.1 149.6 L238.9 150.5 L238.8 152.1 L240.4 155.8 L241.0 157.4 L241.4 158.4 L243.0 162.2 L244.0 163.1 L245.2 163.5 L246.6 163.2 L247.4 164.9 L252.7 176.9 L253.9 177.8 L254.0 178.1 L257.0 185.6 L257.4 186.4 L257.7 187.3 L258.3 188.9 L261.8 196.9 L262.6 198.6 L264.7 203.5 L265.6 205.5 L266.2 206.9 L272.2 220.3 L273.0 222.0 L273.9 223.9 L274.7 225.5 L278.9 234.6 L280.9 238.9 L283.0 241.7 L285.1 243.0 L285.0 243.5 L285.0 243.9 L285.2 244.2 L285.4 244.5 L285.7 244.8 L286.0 244.9 L286.4 245.0 L287.0 244.9 L287.3 244.7 L287.6 244.3 L287.8 244.1 L287.9 243.6 L287.9 243.2 L287.7 242.8 L287.4 242.4 L297.9 228.5 L301.0 224.5 L308.3 214.3 L315.5 204.0 L320.6 197.2 L327.5 187.7 L328.8 187.0 L329.7 186.5 L330.9 185.7 L331.3 186.0 L331.8 186.3 L332.4 186.3 L332.9 186.1 L333.2 186.0 L333.5 185.6 L333.7 185.2 L333.8 184.6 L333.7 184.0 L333.4 183.5 L334.4 180.3 L334.3 178.9 L334.5 178.5 L334.8 178.0 L336.3 174.3 L344.2 171.6 L346.5 170.9 L351.1 169.4 L352.7 169.0 L356.5 167.8 L360.8 166.2 L361.4 165.9 L361.9 167.6 L361.8 168.4 L362.3 169.2 L362.7 170.3 L363.0 171.2 L363.1 171.6 L363.3 172.6 L363.4 172.8 L359.5 182.3 L358.0 186.0 L357.3 187.6 L356.9 188.7 L354.6 193.8 L354.1 194.6 L353.0 196.8 L351.9 197.9 L350.0 199.4 L348.6 202.1 L346.8 205.2 L345.3 202.2 L344.4 200.6 L342.3 197.4 L336.9 189.1 L336.2 187.8 L335.4 186.6 L334.7 185.8 L333.7 185.2 L333.8 184.6 L333.7 184.0 L333.4 183.5 L332.8 183.1 L332.2 183.0 L331.6 183.1 L331.1 183.4 L330.8 183.8 L330.6 184.3 L329.1 185.5 L328.3 186.5 L327.5 187.7 L320.6 197.2 L315.5 204.0 L308.3 214.3 L301.0 224.5 L297.9 228.5 L287.4 242.4 L286.9 242.2 L286.4 242.1 L285.7 242.3 L285.4 242.6 L285.1 243.0 L285.0 243.5 L285.0 243.9 L283.3 245.4 L269.6 260.5 L265.0 265.4 L264.2 266.0 L263.3 266.4 L255.7 267.3 L250.6 262.4 L244.8 256.5 L243.9 255.4 L240.4 247.6 L236.5 239.2 L235.6 235.1 L235.7 234.7 L235.7 234.4 L235.5 233.9 L235.1 233.5 L234.7 233.4 L234.2 233.3 L233.7 232.7 L233.0 231.8 L232.9 231.6 L227.8 220.2 L221.2 205.5 L221.0 205.1 L219.1 201.1 L215.6 193.7 L215.0 192.3 L213.1 187.7 L212.8 186.6 L210.7 182.5 L209.4 179.8 L208.1 176.7 L206.5 172.6 L205.7 170.3 L204.9 168.2 L200.9 157.9 L200.4 156.4 L199.5 154.8 L198.9 153.9 L196.9 151.1 L195.1 148.7 L193.8 147.0 L187.9 139.6 L186.9 139.2 L184.2 136.1 L182.2 133.8 L178.5 129.4 L176.3 126.7 L174.4 124.4 L173.6 123.4 L172.2 123.9 L170.7 124.3 L168.6 124.7 L166.6 125.1 L160.5 125.6 L158.9 125.7 L158.7 126.9 L158.5 129.3 L157.8 133.2 L156.6 140.4 L157.7 140.7 L158.3 137.7 L159.7 129.7 L160.2 127.1 L161.8 126.8 L167.7 126.0 L169.6 125.7 L171.6 125.3 L174.4 124.4 L176.3 126.7 L178.5 129.4 L182.2 133.8 L184.2 136.1 L186.9 139.2 L186.9 140.4 L192.6 147.5 L193.8 149.2 L196.4 152.3 L197.7 154.2 L198.7 156.1 L199.4 157.8 L199.7 158.7 L205.1 171.9 L205.2 173.1 L205.3 174.1 L205.4 175.5 L205.5 175.9 L205.9 178.2 L206.4 181.1 L206.9 184.6 L206.9 185.0 L206.7 187.6 L206.5 189.9 L206.3 191.6 L205.8 193.9 L205.5 194.8 L202.7 198.7 L200.4 201.3 L199.8 202.7 L199.8 203.7 L199.8 204.6 L199.9 205.3 L200.3 206.8 L201.3 209.8 L203.5 215.3 L209.4 235.7 L209.8 236.9 L210.6 241.5 L210.6 243.8 L210.1 244.7 L210.0 245.4 L209.9 246.1 L209.9 246.6 L210.0 247.8 L210.2 248.8 L210.6 249.8 L211.3 250.9 L212.5 252.4 L213.2 256.0 L213.1 259.7 L212.6 271.7 L212.5 272.9 L212.1 274.1 L211.2 274.9 L210.0 275.7 L207.2 276.7 L206.0 276.8 L205.5 276.9 L204.9 277.0 L202.8 278.0 L202.4 277.8 L202.0 277.8 L201.5 277.9 L201.0 278.2 L200.8 278.7 L200.7 279.2 L200.9 279.8 L201.4 280.2 L202.0 280.4 L202.6 280.2 L204.3 281.5 L206.1 282.5 L210.3 287.0 L212.5 289.2 L216.8 293.5 L219.2 295.7 L225.8 301.6 L234.1 309.1 L234.4 309.4 L235.7 310.4 L234.7 311.7 L233.3 313.4 L227.0 321.0 L226.3 321.9 L225.4 322.9 L224.1 324.5 L222.9 325.9 L222.9 326.0" fill="none" stroke="#fff" stroke-width="11" stroke-linejoin="round" stroke-linecap="round"/>
+        <path d="M211.9 240.6 L209.8 236.9 L209.4 235.7 L203.5 215.3 L202.8 212.0 L202.4 209.8 L201.6 206.5 L201.4 205.2 L201.5 204.2 L201.6 203.1 L202.1 201.5 L202.9 200.4 L203.6 199.1 L204.8 196.5 L205.5 194.8 L205.8 193.9 L206.3 191.6 L206.5 189.9 L206.7 187.6 L206.9 185.0 L206.9 184.6 L207.0 184.4 L208.0 182.2 L208.8 180.8 L209.4 179.8 L208.1 176.7 L206.5 172.6 L206.9 171.3 L207.2 167.3 L208.5 148.0 L208.7 145.2 L209.1 141.0 L210.2 128.6 L210.3 128.1 L210.6 126.2 L211.1 124.0 L211.7 121.1 L212.3 118.1 L212.5 117.4 L215.0 108.0 L217.1 99.3 L220.3 86.5 L222.0 79.8 L222.9 76.1 L223.1 75.5 L223.5 73.0 L224.2 72.3 L224.8 70.3 L225.8 66.1 L226.6 65.3 L226.9 64.5 L227.4 62.2 L228.0 58.7 L228.6 55.5 L229.1 51.9 L229.7 48.6 L229.9 47.9 L230.1 47.1 L230.4 46.5 L230.8 45.9 L231.4 44.9 L233.0 44.4 L234.0 43.9 L234.8 43.1 L235.9 41.1 L236.2 40.1 L236.2 39.0 L236.0 38.0 L235.3 36.4 L234.5 35.5 L233.6 34.8 L232.6 34.3 L231.4 34.0 L230.2 34.0 L228.8 34.3 L227.6 35.0 L226.5 36.0 L225.6 37.6 L225.3 39.4 L225.5 41.0 L226.2 42.5 L227.3 43.7 L227.5 44.8 L227.6 45.6 L227.5 46.5 L227.0 49.5 L226.7 52.3 L226.4 53.9 L222.6 52.2 L222.0 52.8 L221.3 53.5 L220.7 54.1 L220.2 54.8 L220.2 54.8 L220.7 54.1 L221.3 53.5 L222.0 52.8 L222.6 52.2 L226.4 53.9 L226.0 57.0 L225.4 60.2 L224.7 63.8 L224.6 64.8 L224.8 65.9 L224.2 68.0 L223.9 69.4 L223.2 72.1 L223.5 73.0 L223.1 75.5 L222.9 76.1 L223.7 76.7 L224.3 77.4 L224.9 78.8 L228.7 89.8 L235.0 106.2 L235.1 106.5 L235.8 108.6 L237.1 111.9 L238.3 115.5 L238.5 117.7 L238.6 118.6 L240.2 123.2 L244.6 135.5 L244.9 137.2 L245.0 138.9 L244.7 142.0 L244.1 145.1 L243.3 148.3 L242.2 148.7 L241.7 148.9 L241.1 149.1 L240.1 149.6 L238.9 150.5 L238.8 152.1 L240.4 155.8 L241.0 157.4 L241.4 158.4 L243.0 162.2 L244.0 163.1 L245.2 163.5 L246.6 163.2 L247.4 164.9 L252.7 176.9 L253.9 177.8 L254.0 178.1 L257.0 185.6 L257.4 186.4 L257.7 187.3 L258.3 188.9 L261.8 196.9 L262.6 198.6 L264.7 203.5 L265.6 205.5 L266.2 206.9 L272.2 220.3 L273.0 222.0 L273.9 223.9 L274.7 225.5 L278.9 234.6 L280.9 238.9 L283.0 241.7 L285.1 243.0 L285.0 243.5 L285.0 243.9 L285.2 244.2 L285.4 244.5 L285.7 244.8 L286.0 244.9 L286.4 245.0 L287.0 244.9 L287.3 244.7 L287.6 244.3 L287.8 244.1 L287.9 243.6 L287.9 243.2 L287.7 242.8 L287.4 242.4 L297.9 228.5 L301.0 224.5 L308.3 214.3 L315.5 204.0 L320.6 197.2 L327.5 187.7 L328.8 187.0 L329.7 186.5 L330.9 185.7 L331.3 186.0 L331.8 186.3 L332.4 186.3 L332.9 186.1 L333.2 186.0 L333.5 185.6 L333.7 185.2 L333.8 184.6 L333.7 184.0 L333.4 183.5 L334.4 180.3 L334.3 178.9 L334.5 178.5 L334.8 178.0 L336.3 174.3 L344.2 171.6 L346.5 170.9 L351.1 169.4 L352.7 169.0 L356.5 167.8 L360.8 166.2 L361.4 165.9 L361.9 167.6 L361.8 168.4 L362.3 169.2 L362.7 170.3 L363.0 171.2 L363.1 171.6 L363.3 172.6 L363.4 172.8 L359.5 182.3 L358.0 186.0 L357.3 187.6 L356.9 188.7 L354.6 193.8 L354.1 194.6 L353.0 196.8 L351.9 197.9 L350.0 199.4 L348.6 202.1 L346.8 205.2 L345.3 202.2 L344.4 200.6 L342.3 197.4 L336.9 189.1 L336.2 187.8 L335.4 186.6 L334.7 185.8 L333.7 185.2 L333.8 184.6 L333.7 184.0 L333.4 183.5 L332.8 183.1 L332.2 183.0 L331.6 183.1 L331.1 183.4 L330.8 183.8 L330.6 184.3 L329.1 185.5 L328.3 186.5 L327.5 187.7 L320.6 197.2 L315.5 204.0 L308.3 214.3 L301.0 224.5 L297.9 228.5 L287.4 242.4 L286.9 242.2 L286.4 242.1 L285.7 242.3 L285.4 242.6 L285.1 243.0 L285.0 243.5 L285.0 243.9 L283.3 245.4 L269.6 260.5 L265.0 265.4 L264.2 266.0 L263.3 266.4 L255.7 267.3 L250.6 262.4 L244.8 256.5 L243.9 255.4 L240.4 247.6 L236.5 239.2 L235.6 235.1 L235.7 234.7 L235.7 234.4 L235.5 233.9 L235.1 233.5 L234.7 233.4 L234.2 233.3 L233.7 232.7 L233.0 231.8 L232.9 231.6 L227.8 220.2 L221.2 205.5 L221.0 205.1 L219.1 201.1 L215.6 193.7 L215.0 192.3 L213.1 187.7 L212.8 186.6 L210.7 182.5 L209.4 179.8 L208.1 176.7 L206.5 172.6 L205.7 170.3 L204.9 168.2 L200.9 157.9 L200.4 156.4 L199.5 154.8 L198.9 153.9 L196.9 151.1 L195.1 148.7 L193.8 147.0 L187.9 139.6 L186.9 139.2 L184.2 136.1 L182.2 133.8 L178.5 129.4 L176.3 126.7 L174.4 124.4 L173.6 123.4 L172.2 123.9 L170.7 124.3 L168.6 124.7 L166.6 125.1 L160.5 125.6 L158.9 125.7 L158.7 126.9 L158.5 129.3 L157.8 133.2 L156.6 140.4 L157.7 140.7 L158.3 137.7 L159.7 129.7 L160.2 127.1 L161.8 126.8 L167.7 126.0 L169.6 125.7 L171.6 125.3 L174.4 124.4 L176.3 126.7 L178.5 129.4 L182.2 133.8 L184.2 136.1 L186.9 139.2 L186.9 140.4 L192.6 147.5 L193.8 149.2 L196.4 152.3 L197.7 154.2 L198.7 156.1 L199.4 157.8 L199.7 158.7 L205.1 171.9 L205.2 173.1 L205.3 174.1 L205.4 175.5 L205.5 175.9 L205.9 178.2 L206.4 181.1 L206.9 184.6 L206.9 185.0 L206.7 187.6 L206.5 189.9 L206.3 191.6 L205.8 193.9 L205.5 194.8 L202.7 198.7 L200.4 201.3 L199.8 202.7 L199.8 203.7 L199.8 204.6 L199.9 205.3 L200.3 206.8 L201.3 209.8 L203.5 215.3 L209.4 235.7 L209.8 236.9 L210.6 241.5 L210.6 243.8 L210.1 244.7 L210.0 245.4 L209.9 246.1 L209.9 246.6 L210.0 247.8 L210.2 248.8 L210.6 249.8 L211.3 250.9 L212.5 252.4 L213.2 256.0 L213.1 259.7 L212.6 271.7 L212.5 272.9 L212.1 274.1 L211.2 274.9 L210.0 275.7 L207.2 276.7 L206.0 276.8 L205.5 276.9 L204.9 277.0 L202.8 278.0 L202.4 277.8 L202.0 277.8 L201.5 277.9 L201.0 278.2 L200.8 278.7 L200.7 279.2 L200.9 279.8 L201.4 280.2 L202.0 280.4 L202.6 280.2 L204.3 281.5 L206.1 282.5 L210.3 287.0 L212.5 289.2 L216.8 293.5 L219.2 295.7 L225.8 301.6 L234.1 309.1 L234.4 309.4 L235.7 310.4 L234.7 311.7 L233.3 313.4 L227.0 321.0 L226.3 321.9 L225.4 322.9 L224.1 324.5 L222.9 325.9 L222.9 326.0" fill="none" stroke="#d62f2f" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+        <g font-family="Barlow Condensed" font-weight="800" font-size="14" text-anchor="middle">
+          <g><circle cx="220.7" cy="54.1" r="13" fill="#f7c51e"/><text x="220.7" y="58.6" fill="#13261a">2</text></g><g><circle cx="302.3" cy="222.6" r="13" fill="#f7c51e"/><text x="302.3" y="227.1" fill="#13261a">4</text></g><g><circle cx="350.8" cy="198.7" r="13" fill="#2f86d6"/><text x="350.8" y="203.2" fill="#fff">5</text></g><g><circle cx="210.7" cy="182.4" r="13" fill="#f7c51e"/><text x="210.7" y="186.9" fill="#13261a">7</text></g>
+          <g><circle cx="211.9" cy="240.6" r="16" fill="#14713b"/><text x="211.9" y="245.6" fill="#fff">D</text></g>
+          <g><circle cx="222.9" cy="326.0" r="16" fill="#0c4a26" stroke="#f7c51e" stroke-width="3"/><text x="222.9" y="331.0" fill="#fff">A</text></g>
+        </g>
+        <text x="504" y="324" text-anchor="end" font-family="Barlow" font-size="14" fill="var(--muted)">Proposition de tracé</text>
+        <text x="504" y="342" text-anchor="end" font-family="Barlow" font-size="14" fill="var(--muted)">à mesurer et à faire valider</text>
+        <text x="16" y="346" font-family="Barlow" font-size="11" fill="var(--muted)">Données © contributeurs OpenStreetMap</text>
+      </svg>
+      <div class="legend"><span><i style="background:#14713b"></i>Départ · boulevard du 20 Mai</span><span><i style="background:#0c4a26;border:2px solid #f7c51e"></i>Arrivée · Musée national, village</span><span><i style="background:#f7c51e"></i>Repère kilométrique</span><span><i style="background:#2f86d6"></i>Ravitaillement (km 5)</span></div>
+    </figure>
+  </div>
+</section>
+</div>
+
+<!-- ============ INSCRIPTIONS ============ -->
+<div class="view" id="inscriptions">
+<div class="pagehead"><div class="wrap"><div class="crumb"><a href="#accueil">Accueil</a> › Inscriptions</div><h1>Inscriptions</h1><p>Ouverture des inscriptions le 1er décembre 2026, en ligne et dans l'application officielle.</p></div></div>
+<section class="band">
+  <div class="wrap two">
+    <div>
+      <h2>Tarifs</h2>
+      <table class="stack" style="margin-top:18px">
+        <thead><tr><th>Épreuve et public</th><th class="r">Tarif</th><th>Précision</th></tr></thead>
+        <tbody>
+          <tr><td><strong>10 km · Étudiants</strong></td><td class="r"><span class="price">500 FCFA</span></td><td>Défi sportif, chronométré, prix étudiants</td></tr>
+          <tr><td><strong>10 km · Travailleurs</strong></td><td class="r"><span class="price">1 000 FCFA</span></td><td>Défi sportif, chronométré</td></tr>
+          <tr><td><strong>5 km · Course populaire</strong></td><td class="r"><span class="price">500 FCFA</span></td><td>Pour tous, adaptée aux débutants et aux étudiants</td></tr>
+          <tr><td><strong>3 km · Marche écologique et familiale</strong></td><td class="r"><span class="price">500 FCFA</span></td><td>Pour tous, accessible au plus grand nombre</td></tr>
+          <tr><td><strong>Entreprises</strong></td><td class="r"><span class="price">100 000 FCFA</span></td><td>Par équipe de 10 coureurs, sur la distance de leur choix, avec un challenge entreprises</td></tr>
+        </tbody>
+      </table>
+      <p class="note">Paiement par Orange Money ou MTN MoMo. Une partie des inscriptions payantes alimente le Fonds de solidarité. Les places sont ouvertes par tranches : une première tranche de 3 000 places, puis de nouvelles places au fil des inscriptions. Ouverture : 1er décembre 2026.</p>
+    </div>
+    <div>
+      <h2 id="prix">Prix et récompenses</h2>
+      <p class="lead">2 500 000 FCFA de prix sur le 10 km, répartis pour récompenser aussi les étudiants. Le 5 km et la marche de 3 km n'ont pas de classement : chaque participant reçoit sa médaille.</p>
+      <div class="scroll">
+      <table>
+        <thead><tr><th>Catégorie</th><th class="r">1er</th><th class="r">2e</th><th class="r">3e</th><th class="r">4e–10e</th></tr></thead>
+        <tbody id="prizeRows"></tbody>
+      </table>
+      </div>
+      <p class="note">Montants en FCFA, sous réserve du règlement officiel. Carte d'étudiant exigée pour recevoir un prix étudiant.</p>
+    </div>
+  </div>
+</section>
+<section class="band soft">
+  <div class="wrap two">
+    <div><h2>S'inscrire avec Odyssée Connect</h2><p class="lead">Inscription, paiement par mobile money et dossard numérique : tout se fait dans Odyssée Connect, l'application du réseau Odyssée.</p><div class="cta" style="margin-top:16px"><a class="btn y" href="#application">Découvrir Odyssée Connect</a></div></div>
+    <img src="connect-ecrans.jpg" alt="Écrans réels de l'application : accueil, inscription, paiement, dossard, parcours, Fonds de solidarité, actions et profil" loading="lazy" style="width:100%;border-radius:18px">
+  </div>
+</section>
+</div>
+
+<!-- ============ INFOS PRATIQUES ============ -->
+
+<div class="view" id="application">
+<div class="pagehead"><div class="wrap"><div class="crumb"><a href="#accueil">Accueil</a> › Application</div><h1>Odyssée Connect</h1><p>Ensemble, agissons pour un avenir durable. L'application du réseau Odyssée, et la porte d'entrée du 10 KM de Yaoundé.</p></div></div>
+<section class="band">
+  <div class="wrap two">
+    <div><h2>Une application, toute une communauté</h2><p class="lead">Odyssée Connect rassemble citoyens, associations, entreprises et partenaires autour des actions du réseau Odyssée. Elle n'est pas limitée à un seul événement : le 10 KM de Yaoundé 2027 est le premier événement qu'elle accueille, et d'autres services et projets s'y ajouteront, dans plusieurs pays.</p></div>
+    <img src="connect-presentation.jpg" alt="Odyssée Connect : accueil de la communauté et page du 10 KM de Yaoundé 2027." style="width:100%;border-radius:20px;box-shadow:0 18px 40px rgba(0,0,0,.15)">
+  </div>
+</section>
+<section class="band soft">
+  <div class="wrap">
+    <h2>Pour le 10 KM de Yaoundé</h2>
+    <div class="featgrid"><article class="feature"><span class="tagv ">Disponible à l'ouverture</span><h3>S'inscrire au 10 KM</h3><p>Avec votre numéro de téléphone et un code reçu par SMS. Choisissez votre distance : 3, 5 ou 10 km.</p></article><article class="feature"><span class="tagv ">Disponible à l'ouverture</span><h3>Payer par mobile money</h3><p>Orange Money ou MTN MoMo, en toute sécurité. Inscription confirmée dès la validation du paiement.</p></article><article class="feature"><span class="tagv ">Disponible à l'ouverture</span><h3>Recevoir son dossard numérique</h3><p>Un numéro et un QR code à présenter au retrait de votre dossard.</p></article><article class="feature"><span class="tagv ">Disponible à l'ouverture</span><h3>Parcours et informations</h3><p>Parcours des trois distances, règlement, horaires, consignes de santé et zéro déchet, notifications.</p></article><article class="feature"><span class="tagv ">Le jour J</span><h3>Consulter ses résultats</h3><p>Votre temps et les classements par distance et par catégorie, dès leur validation.</p></article><article class="feature"><span class="tagv soon">Bientôt</span><h3>Suivre la course en direct</h3><p>Position des coureurs sur la carte, points d'eau et postes de secours, avec votre accord.</p></article></div>
+  </div>
+</section>
+<section class="band">
+  <div class="wrap">
+    <h2>Aperçu de l'application</h2>
+    <figure class="shot1"><img src="connect-ecrans.jpg" alt="Le parcours du coureur : inscription, choix de la distance, paiement, dossard, parcours, Fonds de solidarité, actions et profil." loading="lazy"><figcaption>Le parcours du coureur : inscription, choix de la distance, paiement, dossard, parcours, classement et profil.</figcaption></figure>
+    <p class="note" style="margin-top:20px">Odyssée Connect sera d'abord une application web installable sur Android et sur iPhone, disponible à l'ouverture des inscriptions au 10 KM. Les écrans présentés sont des maquettes ; noms, temps et montants y sont fictifs.</p>
+  </div>
+</section>
+<section class="band soft">
+  <div class="wrap">
+    <h2>Et demain, au-delà de la course</h2>
+    <div class="featgrid"><article class="feature"><span class="tagv soon">À venir</span><h3>Événements sportifs</h3><p>Le 10 KM, d'autres courses et des défis, dans plusieurs villes.</p></article><article class="feature"><span class="tagv soon">À venir</span><h3>Actions environnementales</h3><p>Collectes, recyclage, reboisement : trouvez une action près de chez vous et participez.</p></article><article class="feature"><span class="tagv soon">À venir</span><h3>Communauté et bénévolat</h3><p>Devenez ambassadeur Odyssée et rejoignez les équipes de bénévoles.</p></article><article class="feature"><span class="tagv soon">À venir</span><h3>Actualités et projets</h3><p>Les nouvelles du réseau et des projets soutenus.</p></article><article class="feature"><span class="tagv soon">À venir</span><h3>Suivi d'impact</h3><p>Les résultats environnementaux et sociaux des actions, publiés et vérifiables.</p></article></div>
+    <div class="cta" style="margin-top:22px"><a class="btn y" href="#inscriptions">Voir les tarifs du 10 KM</a></div>
+  </div>
+</section>
+</div>
+<div class="view" id="infos">
+<div class="pagehead"><div class="wrap"><div class="crumb"><a href="#accueil">Accueil</a> › Infos pratiques</div><h1>Infos pratiques</h1><p>Tout ce qu'il faut savoir avant le jour J. Les détails seront complétés à l'ouverture des inscriptions.</p></div></div>
+<section class="band">
+  <div class="wrap">
+    <h2>Pour les coureurs</h2>
+    <div class="cards" id="infoCards"></div>
+    <p class="note" style="margin-top:20px">Première fois sur 10 km ? Suivez notre <a href="#entrainement"><strong>plan d'entraînement de 8 semaines</strong></a>.</p>
+  </div>
+</section>
+<section class="band soft">
+  <div class="wrap two">
+    <div>
+      <h2>Le déroulé du jour J <span class="prov">horaires à venir</span></h2>
+      <p class="lead">Les horaires précis seront publiés avec le règlement officiel.</p>
+    </div>
+    <ol class="steps">
+      <li><div><b>Accueil et derniers retraits de dossards</b><span>Ouverture du site de départ.</span></div></li>
+      <li><div><b>Échauffement collectif</b><span>Pour partir en douceur.</span></div></li>
+      <li><div><b>Départ du 10 km sur le boulevard du 20 Mai</b><span>Défi sportif, chronométré.</span></div></li>
+      <li><div><b>Départs du 5 km puis du 3 km</b><span>Échelonnés après le 10 km, à Elig-Essono puis sur l'avenue Ahmadou-Ahidjo ; le 3 km est une marche, pour tous les âges.</span></div></li>
+      <li><div><b>Arrivée au Musée national et village de l'Odyssée</b><span>Ravitaillement, stands, collecte et tri des déchets.</span></div></li>
+      <li><div><b>Remise des prix et du Fonds de solidarité</b><span>Les lauréats sportifs, puis les premiers bénéficiaires du Fonds.</span></div></li>
+    </ol>
+  </div>
+</section>
+<section class="band">
+  <div class="wrap">
+    <h2>Règlement</h2>
+    <p class="lead">Le règlement officiel (conditions d'âge, catégories, chronométrage, réclamations, sécurité) sera publié ici à l'ouverture des inscriptions. En vous inscrivant, vous l'accepterez.</p>
+  </div>
+</section>
+</div>
+
+<!-- ============ BÉNÉVOLES ============ -->
+<div class="view" id="benevoles">
+<div class="pagehead"><div class="wrap"><div class="crumb"><a href="#accueil">Accueil</a> › Bénévoles</div><h1>Bénévoles</h1><p>Sans bénévoles, pas de course. Rejoignez l'équipe qui fait vivre le 10 KM de Yaoundé et sa cause.</p></div></div>
+<section class="band">
+  <div class="wrap">
+    <h2>Les missions</h2>
+    <div class="cards" id="volCards"></div>
+  </div>
+</section>
+<section class="band soft">
+  <div class="wrap two">
+    <div>
+      <h2>Comment nous rejoindre</h2>
+      <p class="lead">Écrivez-nous en indiquant votre nom, votre téléphone, votre quartier et la mission qui vous intéresse. Nous reviendrons vers vous avant la course.</p>
+    </div>
+    <div class="card">
+      <h3>Candidature bénévole</h3>
+      <p class="mail">contact@odyssee-env.org</p>
+      <p>Objet du message : « Bénévole 10 KM de Yaoundé »</p>
+      <button class="copy" data-copy="contact@odyssee-env.org">Copier l’adresse</button>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- ============ PARTENAIRES ============ -->
+<div class="view" id="partenaires">
+<div class="pagehead"><div class="wrap"><div class="crumb"><a href="#accueil">Accueil</a> › Partenaires</div><h1>Partenaires</h1><p>Associez votre entreprise à une course solidaire, environnementale et sportive, avec des contreparties claires et un bilan chiffré.</p></div></div>
+<section class="band">
+  <div class="wrap">
+    <h2>Les niveaux de partenariat</h2>
+    <p class="lead">Cinq niveaux, chacun doublant le précédent. Une seule formule Partenaire titre est ouverte.</p>
+    <div class="levels" id="levels"></div>
+    <p style="margin-top:18px">Partenaires techniques et médias bienvenus : eau et boissons non alcoolisées, équipements, transport, santé, chronométrage, couverture médiatique. Tout ou partie d'une contribution peut être affectée au Fonds de solidarité.</p>
+  </div>
+</section>
+<section class="band soft">
+  <div class="wrap two">
+    <div>
+      <h2>Nos partenaires</h2>
+      <p class="lead">Les partenaires de la première édition seront présentés ici dès la signature des conventions. Aucun logo n'est publié sans accord écrit.</p>
+    </div>
+    <div class="card">
+      <h3>Recevoir le dossier de partenariat</h3>
+      <p class="mail">contact@odyssee-env.org</p>
+      <p>Objet du message : « Partenariat 10 KM de Yaoundé »</p>
+      <button class="copy" data-copy="contact@odyssee-env.org">Copier l’adresse</button>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- ============ FAQ ============ -->
+<div class="view" id="faq">
+<div class="pagehead"><div class="wrap"><div class="crumb"><a href="#accueil">Accueil</a> › FAQ</div><h1>Questions fréquentes</h1><p>Les réponses aux questions les plus courantes sur la course, les inscriptions et le Fonds de solidarité.</p></div></div>
+<section class="band"><div class="wrap" style="max-width:860px" id="faqList"></div></section>
+</div>
+
+
+<!-- ============ PRESSE ============ -->
+<div class="view" id="presse">
+<div class="pagehead"><div class="wrap"><div class="crumb"><a href="#accueil">Accueil</a> › Presse</div><h1>Presse et médias</h1><p>Communiqué, informations clés et contact presse du 10 KM de Yaoundé 2027.</p></div></div>
+<section class="band">
+  <div class="wrap two">
+    <div>
+      <h2>Communiqué de lancement</h2>
+      <div class="card" id="cpFr" style="margin-top:18px">
+        <p><strong>Yaoundé accueillera en 2027 la première édition du 10 KM de Yaoundé, une course solidaire au profit des victimes de la destruction de l'environnement</strong></p>
+        <p>L'association L'Odyssée de l'environnement au Cameroun annonce la première édition du 10 KM de Yaoundé, une course à pied de 10 kilomètres prévue le samedi 10 juillet 2027 (date provisoire) dans la capitale.</p>
+        <p>La course a une raison d'être : venir en aide aux veuves, aux enfants et orphelins, aux familles sinistrées et aux personnes malades frappés par la destruction de l'environnement. Une partie des fonds collectés alimente un Fonds de solidarité environnementale, dont l'objectif est de 5 000 000 FCFA pour la première édition. Ses bénéficiaires seront désignés selon des critères publics et son emploi fera l'objet d'un bilan public.</p>
+        <p>Organisée selon des règles « zéro déchet », la course pourra réunir jusqu'à 10 000 participants sur trois distances : une marche écologique et familiale de 3 km, une course populaire de 5 km et un défi sportif de 10 km, du boulevard du 20 Mai au Musée national. L'inscription sera de 500 FCFA pour les étudiants, pour le 5 km et pour le 3 km, et de 1 000 FCFA pour les travailleurs sur le 10 km.</p>
+        <p>La date officielle et le parcours seront annoncés après validation par les autorités compétentes. Informations : contact@odyssee-env.org.</p>
+      </div>
+      <button class="copy" data-copytarget="cpFr">Copier le communiqué</button>
+    </div>
+    <div>
+      <h2>En bref</h2>
+      <table style="margin-top:18px">
+        <tbody>
+          <tr><td><strong>Événement</strong></td><td>10 KM de Yaoundé, première édition</td></tr>
+          <tr><td><strong>Date</strong></td><td>Samedi 10 juillet 2027, départ à 8 h (date provisoire, à confirmer par les autorités)</td></tr>
+          <tr><td><strong>Lieu</strong></td><td>Yaoundé, Cameroun</td></tr>
+          <tr><td><strong>Cause</strong></td><td>Fonds de solidarité environnementale : objectif de 5 000 000 FCFA</td></tr>
+          <tr><td><strong>Participants</strong></td><td>Jusqu'à 10 000 sur trois distances : 3 km, 5 km et 10 km</td></tr>
+          <tr><td><strong>Organisateur</strong></td><td>L'Odyssée de l'environnement au Cameroun</td></tr>
+        </tbody>
+      </table>
+      <div class="card" style="margin-top:18px">
+        <h3>Contact presse</h3>
+        <p>Interviews, accréditations, visuels en haute définition.</p>
+        <p class="mail">contact@odyssee-env.org</p>
+        <p>Objet du message : « Presse 10 KM de Yaoundé »</p>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+
+
+<!-- ============ ENTRAÎNEMENT ============ -->
+<div class="view" id="entrainement">
+<div class="pagehead"><div class="wrap"><div class="crumb"><a href="#accueil">Accueil</a> › Entraînement</div><h1>Mon premier 10 km</h1><p>Un plan de 8 semaines pour passer de 30 minutes de course à la ligne d'arrivée du 10 KM de Yaoundé.</p></div></div>
+<section class="band">
+  <div class="wrap two">
+    <div>
+      <h2>Avant de commencer</h2>
+      <p class="lead">Ce plan s'adresse à celles et ceux qui peuvent déjà courir environ 30 minutes sans s'arrêter. Trois séances par semaine suffisent.</p>
+      <ul class="list">
+        <li><strong>Footing</strong> : une allure où vous pouvez parler sans être essoufflé.</li>
+        <li><strong>Soutenu</strong> : une allure où vous ne pouvez dire que quelques mots.</li>
+        <li><strong>Côtes</strong> : Yaoundé est la ville aux sept collines, profitez-en. Montée rapide, descente en marchant.</li>
+        <li><strong>Sortie longue</strong> : toujours lente, c'est elle qui vous amène aux 10 km.</li>
+      </ul>
+      <p class="note">Consultez un médecin avant de commencer si vous n'avez pas fait de sport depuis longtemps ou si vous avez un doute sur votre santé. Courez tôt le matin ou en fin de journée, et buvez régulièrement.</p>
+    </div>
+    <div class="scroll">
+      <table class="plan stack">
+        <thead><tr><th>Semaine</th><th>Séance 1</th><th>Séance 2</th><th>Sortie longue</th></tr></thead>
+        <tbody id="planRows"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- ============ MENTIONS LÉGALES ============ -->
+<div class="view" id="mentions">
+<div class="pagehead"><div class="wrap"><div class="crumb"><a href="#accueil">Accueil</a> › Mentions légales</div><h1>Mentions légales et confidentialité</h1><p>Qui édite ce site, et comment nous protégeons vos données personnelles.</p></div></div>
+<section class="band legal">
+  <div class="wrap" style="max-width:860px">
+    <h2>Éditeur du site</h2>
+    <p>L'Odyssée de l'environnement au Cameroun, association déclarée à Yaoundé. Récépissé de déclaration n° <span class="todo">à compléter</span>. Siège : <span class="todo">adresse à compléter</span>. Contact : contact@odyssee-env.org.</p>
+    <p>Responsable de la publication : <span class="todo">nom du président de l'association</span>.</p>
+    <h2>Hébergement</h2>
+    <p>Hébergeur : <span class="todo">à préciser lors de la mise en ligne</span>.</p>
+    <h2>Propriété intellectuelle</h2>
+    <p>Les textes, illustrations et le nom « 10 KM de Yaoundé » appartiennent à l'association. Toute reproduction demande son accord écrit. Les logos des partenaires restent la propriété de leurs titulaires.</p>
+    <h2>Protection des données personnelles</h2>
+    <p>Nous traitons les données personnelles dans le respect de la loi n° 2024/017 du 23 décembre 2024 relative à la protection des données à caractère personnel au Cameroun.</p>
+    <h3>Ce site</h3>
+    <p>Le site ne dépose aucun cookie publicitaire et n'utilise aucun outil de mesure d'audience. Il retient uniquement, dans votre navigateur, la langue que vous avez choisie.</p>
+    <h3>Les inscriptions à la course</h3>
+    <ul class="list">
+      <li><strong>Données recueillies</strong> : nom, prénom, sexe, date de naissance, téléphone, ville, contact d'urgence et, pour les étudiants, l'établissement (facultatif).</li>
+      <li><strong>Finalités</strong> : gérer votre inscription et votre paiement, attribuer votre dossard, assurer votre sécurité le jour de la course, publier les résultats.</li>
+      <li><strong>Destinataires</strong> : l'équipe d'organisation, le prestataire de chronométrage, les secours pour le contact d'urgence, l'opérateur de paiement mobile.</li>
+      <li><strong>Résultats</strong> : nom, catégorie et temps sont publiés dans les classements. Vous pouvez demander à apparaître sous vos seules initiales.</li>
+      <li><strong>Durée de conservation</strong> : au plus 12 mois après la course, sauf les pièces comptables conservées selon la loi.</li>
+      <li><strong>Géolocalisation</strong> : uniquement dans une version future de l'application, avec votre accord explicite et pendant la course seulement.</li>
+    </ul>
+    <h3>Le Fonds de solidarité</h3>
+    <p>Les informations sur les bénéficiaires du Fonds sont strictement confidentielles, réservées au comité de sélection, et ne sont jamais publiées de façon nominative.</p>
+    <h3>Vos droits</h3>
+    <p>Vous pouvez demander l'accès à vos données, leur rectification ou leur suppression en écrivant à contact@odyssee-env.org. Vous pouvez aussi saisir l'Autorité de protection des données à caractère personnel du Cameroun.</p>
+    <p class="small" style="margin-top:18px">Dernière mise à jour : novembre 2026.</p>
+  </div>
+</section>
+</div>
+
+<!-- ============ CONTACT ============ -->
+<div class="view" id="contact">
+<div class="pagehead"><div class="wrap"><div class="crumb"><a href="#accueil">Accueil</a> › Contact</div><h1>Contact</h1><p>Une question, une proposition de partenariat, une envie d'aider ? Écrivez-nous.</p></div></div>
+<section class="band">
+  <div class="wrap">
+    <div class="contactgrid">
+      <div class="card"><h3>Coureurs</h3><p>Inscriptions, règlement, retrait des dossards.</p><p class="mail">contact@odyssee-env.org</p></div>
+      <div class="card"><h3>Partenaires et médias</h3><p>Dossier de partenariat, accréditations presse. <a href="#presse">Espace presse</a></p><p class="mail">contact@odyssee-env.org</p></div>
+      <div class="card"><h3>Bénévoles</h3><p>Missions et candidatures.</p><p class="mail">contact@odyssee-env.org</p></div>
+    </div>
+    <button class="copy" data-copy="contact@odyssee-env.org" style="margin-top:18px">Copier l’adresse</button>
+    <div class="card" style="margin-top:24px">
+      <h3>L'organisateur</h3>
+      <p>L'Odyssée de l'environnement au Cameroun, association déclarée à Yaoundé, membre du réseau L'Odyssée de l'environnement.</p>
+      <p>Site du réseau : <a href="https://www.odyssee-env.org/">www.odyssee-env.org</a></p>
+      <div class="social" hidden><strong>Nos réseaux</strong><div class="slinks"></div></div>
+    </div>
+  </div>
+</section>
+</div>
+</main>
+
+<footer class="band">
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <h3>10 KM de Yaoundé</h3>
+        <p>Une course de 10 km au profit des veuves, des enfants et des familles frappés par la destruction de l'environnement.</p>
+        <p>L'Odyssée de l'environnement au Cameroun · contact@odyssee-env.org</p>
+        <div class="social" hidden><strong>Suivez-nous</strong><div class="slinks"></div></div>
+      </div>
+      <div>
+        <h3>La course</h3>
+        <a href="#cause">Notre cause</a><a href="#course">Présentation</a><a href="#parcours">Parcours</a><a href="#infos">Infos pratiques</a><a href="#entrainement">Entraînement</a><a href="#faq">FAQ</a>
+      </div>
+      <div>
+        <h3>Participer</h3>
+        <a href="#inscriptions">Inscriptions</a><a href="#application">Application</a><a href="#benevoles">Bénévoles</a><a href="#partenaires">Partenaires</a><a href="#presse">Presse</a><a href="#contact">Contact</a>
+      </div>
+    </div>
+    <div class="fine"><a href="#mentions" style="display:inline;text-decoration:underline">Mentions légales et confidentialité</a> · 10 KM de Yaoundé 2027 · Les informations de ce site (date, parcours, tarifs, prix) sont provisoires et seront confirmées après validation par les autorités.</div>
+  </div>
+</footer>
+</template>
+<template id="tpl-en">
+<header class="top">
+  <nav class="nav" aria-label="Main navigation">
+    <a class="logo" href="#accueil"><svg width="38" height="38" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="50" fill="#f7c51e"/><path d="M27 74C24 46 46 26 76 25 78 52 58 74 27 74Z" fill="#0c4a26"/><path d="M29 72 66 36" stroke="#f7c51e" stroke-width="3.5" stroke-linecap="round"/></svg><span>Yaoundé 10 KM<small>L'Odyssée de l'environnement</small></span></a>
+    <button class="burger" id="burger" aria-expanded="false" aria-controls="menu">Menu</button>
+    <div class="links" id="menu">
+      <a href="#cause">Our cause</a><a href="#course">The race</a><a href="#inscriptions">Registration</a><a href="#application">App</a><a href="#infos">Info</a><a href="#benevoles">Volunteers</a><a href="#partenaires">Partners</a><a href="#faq">FAQ</a><a href="#contact">Contact</a>
+      <button class="lang" data-lang="fr" aria-label="Version française">FR</button>
+    </div>
+    <a class="btn y" href="#inscriptions">Register</a>
+  </nav>
+</header>
+
+<main>
+<div class="view" id="accueil">
+<section class="hero hero-photo" id="top-accueil">
+  <h1 class="sr">Yaoundé 10 KM 2027</h1>
+  <picture>
+    <source media="(max-width:700px)" srcset="hero-20km-mobile.jpg">
+    <img class="hero-img" src="hero-20km.jpg" alt="Runners of the Yaoundé 10 KM 2027 in L'Odyssée de l'environnement colours, with the flag of Cameroon">
+  </picture>
+  <div class="hero-band">
+    <div class="wrap hb">
+      <div class="cd" role="timer" data-cd="2027-07-10T08:00:00+01:00"><p class="cdd">Saturday 10 July 2027 · start at 8&nbsp;a.m. · provisional date</p><div class="cdr"><div class="cdb"><b data-u="j">–</b><span>Days</span></div><div class="cdb"><b data-u="h">–</b><span>Hours</span></div><div class="cdb"><b data-u="m">–</b><span>Min</span></div><div class="cdb"><b data-u="s">–</b><span>Sec</span></div></div></div>
+      <p class="tag">We run for the widows, children and families struck by the destruction of the environment.</p>
+      <div class="cta"><a class="btn y" href="#inscriptions">Run for them</a><a class="btn o" href="#cause">The Solidarity Fund</a></div>
+    </div>
+  </div>
+</section>
+<div class="wrap" style="padding:0 max(5vw,16px)">
+  <div class="figs">
+    <div><b>10 km</b><span>from the Boulevard du 20 Mai to the National Museum</span></div>
+    <div><b>10,000</b><span>participants targeted, in stages</span></div>
+    <div><b>5 M</b><span>CFA francs: Solidarity Fund target</span></div>
+    <div><b>7.5 M</b><span>CFA francs for the environment</span></div>
+  </div>
+</div>
+<section class="band">
+  <div class="wrap">
+    <div class="sechead"><div><span class="eyebrow2">Choose your race</span><h2>Three distances, one movement</h2></div><a class="btn o" style="color:var(--green)" href="#course">See race details →</a></div>
+    <div class="dist"><article class="dcard " style="--c:#14713b"><div class="top"><div class="km">3<small>km</small></div><div class="nm">Eco family walk</div></div><div class="body"><p>Open to as many people as possible: children, families, elders. Walk at your own pace.</p><div class="meta"><span>Open to all</span><span>Medal for everyone</span></div><div class="price">500 CFA <small>for everyone</small></div></div></article><article class="dcard y" style="--c:#f7c51e"><div class="top"><div class="km">5<small>km</small></div><div class="nm">Popular run</div></div><div class="body"><p>Suited to beginners and students, for a first race in the city.</p><div class="meta"><span>Open to all</span><span>Medal for everyone</span></div><div class="price">500 CFA <small>for everyone</small></div></div></article><article class="dcard " style="--c:#d62f2f"><div class="top"><div class="km">10<small>km</small></div><div class="nm">Sports challenge</div></div><div class="body"><p>For more trained runners, from the Boulevard du 20 Mai to the National Museum.</p><div class="meta"><span>Timed</span><span>2.5 M CFA in prizes</span></div><div class="price">500 / 1,000 CFA <small>students / workers</small></div></div></article></div>
+  </div>
+</section>
+<section class="band">
+  <div class="wrap">
+    <div class="cause">
+      <div>
+        <h2>Why we run</h2>
+        <p class="lead" style="color:#d8eadf">The Yaoundé 10 KM exists to help widows, children and families struck by the destruction of the environment: floods, landslides, pollution.</p>
+        <div class="cta" style="margin:18px 0 0"><a class="btn y" href="#cause">Discover the Solidarity Fund</a></div>
+        <div class="gauge"><div class="gtop"><span class="gnum">0 FCFA</span><span class="gof"></span></div><div class="bar"><i></i></div><p class="gnote"></p></div>
+      </div>
+      <div class="big">5,000,000<small>CFA francs: Environmental Solidarity Fund target for the first edition</small></div>
+    </div>
+    <div class="teasers">
+      <a class="teaser" href="#course"><span class="k">3 km · 5 km · 10 km · zero waste</span><h3>The race</h3><p>Three distances, the environmental programme and the route through the city of seven hills.</p><span class="go">Learn more →</span></a>
+      <a class="teaser" href="#inscriptions"><span class="k">From 500 CFA</span><h3>Registration</h3><p>Fees, prizes and the official app to register and pay by mobile money.</p><span class="go">See fees →</span></a>
+      <a class="teaser" href="#benevoles"><span class="k">Join the team</span><h3>Volunteers</h3><p>Welcome desk, water stations, waste collection: give your time to the cause.</p><span class="go">Volunteer →</span></a>
+    </div>
+  </div>
+</section>
+<section class="band">
+  <div class="wrap">
+    <div class="appband">
+      <div>
+        <span class="eyebrow2" style="color:var(--yellow)">The Odyssée network app</span>
+        <h2>Odyssée Connect</h2>
+        <p class="sig">Together, let's act for a sustainable future.</p>
+        <p class="lead">The Yaoundé 10 KM is the first event hosted in Odyssée Connect, the app that brings together citizens, associations, companies and partners of the Odyssée network.</p>
+        <ul class="feat"><li>Register for the 10 KM in minutes</li><li>Pay with Orange Money and MTN MoMo</li><li>Digital bib and QR code</li><li>Routes, info and notifications</li><li>Results and rankings</li><li>Coming soon: environmental actions and volunteering</li></ul>
+        <a class="btn y" href="#application">Discover Odyssée Connect</a>
+      </div>
+      <img class="wide" src="connect-presentation.jpg" alt="Odyssée Connect: home screen and the Yaoundé 10 KM 2027 page">
+    </div>
+  </div>
+</section>
+<section class="band"><div class="wrap"><div class="shopband"><div><span class="eyebrow2">The official collection</span><h2>Wear the Odyssée colours</h2><p class="lead">T-shirts, polos, tracksuits, caps and bags in the colours of L'Odyssée de l'environnement. To run, cheer and support the cause.</p></div><span class="btn y" style="cursor:default;opacity:.85">Coming soon</span></div></div></section>
+<section class="band sun">
+  <div class="wrap">
+    <h2>Companies: run for the cause</h2>
+    <p class="lead">Enter a team of 10 runners, become a partner or allocate your support to the Solidarity Fund.</p>
+    <div class="cta" style="margin:18px 0 0"><a class="btn g" href="#partenaires">Become a partner</a></div>
+  </div>
+</section>
+</div>
+
+<div class="view" id="cause">
+<div class="pagehead"><div class="wrap"><div class="crumb"><a href="#accueil">Home</a> › Our cause</div><h1>Our cause</h1><p>The Environmental Solidarity Fund, the reason the Yaoundé 10 KM exists: supporting people struck by the destruction of the environment.</p></div></div>
+<section class="band">
+  <div class="wrap">
+    <h2>Who does the Fund support?</h2>
+    <p class="lead">Part of the funds raised, from paid registrations and partner contributions, goes to the <strong>Environmental Solidarity Fund</strong>. For the first edition, its target is <strong>5,000,000 CFA francs</strong>, raised through registrations, donations and partner contributions.</p>
+    <div class="gauge light"><div class="gtop"><span class="gnum">0 FCFA</span><span class="gof"></span></div><div class="bar"><i></i></div><p class="gnote"></p></div>
+    <div class="cards" id="benefCards"></div>
+  </div>
+</section>
+<section class="band soft">
+  <div class="wrap two">
+    <div>
+      <h2>How the Fund is managed</h2>
+      <p class="lead">Every franc entrusted to the Fund must reach those who need it, in a way that can be checked.</p>
+    </div>
+    <ol class="steps">
+      <li><div><b>Published criteria</b><span>Eligibility conditions are made public before any award.</span></div></li>
+      <li><div><b>Joint identification</b><span>Situations are identified with recognised local organisations and in consultation with the relevant authorities.</span></div></li>
+      <li><div><b>A selection committee</b><span>Its members declare any conflict of interest; every decision is documented.</span></div></li>
+      <li><div><b>Separate accounts</b><span>Fund money is tracked separately and actual delivery of aid is verified.</span></div></li>
+      <li><div><b>A public report</b><span>Amounts awarded and number of beneficiaries are published, without revealing anyone's identity.</span></div></li>
+    </ol>
+  </div>
+</section>
+<section class="band">
+  <div class="wrap">
+    <h2>How to contribute</h2>
+    <div class="teasers">
+      <a class="teaser" href="#inscriptions"><span class="k">Runners</span><h3>Run</h3><p>Part of every paid registration goes to the Fund.</p><span class="go">Register →</span></a>
+      <a class="teaser" href="#partenaires"><span class="k">Companies</span><h3>Support</h3><p>Allocate all or part of your contribution to the Solidarity Fund.</p><span class="go">Become a partner →</span></a>
+      <a class="teaser" href="#benevoles"><span class="k">Volunteers</span><h3>Give your time</h3><p>Join the team that brings the race and the village to life.</p><span class="go">Volunteer →</span></a>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="view" id="course">
+<div class="pagehead"><div class="wrap"><div class="crumb"><a href="#accueil">Home</a> › The race</div><h1>The race</h1><p>Three distances — a 3 km eco family walk, a 5 km popular run and a 10 km sports challenge — for charity and zero waste, on Saturday 10 July 2027 (provisional date).</p></div></div>
+<section class="band">
+  <div class="wrap two">
+    <div>
+      <h2>A race for the whole city</h2>
+      <p class="lead">The Yaoundé 10 KM can bring together up to 10,000 participants over three distances: the <strong>3 km</strong> eco family walk, open to as many people as possible, the <strong>5 km</strong> popular run, suited to beginners and students, and the <strong>10 km</strong> sports challenge for more trained runners. The official date will be announced once the authorities have approved the routes.</p>
+      <p>It is organised by <strong>L'Odyssée de l'environnement au Cameroun</strong>, an association registered in Yaoundé. The Odyssée network organised the Green Hackathon Yaoundé 2026 and is preparing its second edition for July 2027.</p>
+    </div>
+    <div class="pillars">
+      <div class="pillar"><b>1</b><div><h3>Solidarity</h3><p>The reason the race exists: supporting the victims of environmental destruction.</p></div></div>
+      <div class="pillar"><b>2</b><div><h3>Environment</h3><p>A zero-waste race, a cleaned-up route, and waste collected, sorted and counted.</p></div></div>
+      <div class="pillar"><b>3</b><div><h3>Sport</h3><p>A yearly event open to all: students, workers, families, company teams.</p></div></div>
+    </div>
+  </div>
+</section>
+<section class="band soft">
+  <div class="wrap">
+    <h2>Every kilometre counts for the environment</h2>
+    <p class="lead">7,500,000 CFA francs go to the environmental programme, three times more than to sports prizes. Its results will be measured and published after the race.</p>
+    <div class="cards" id="envCards"></div>
+  </div>
+</section>
+<section class="band" id="parcours">
+  <div class="wrap two">
+    <div>
+      <h2>The route <span class="prov">provisional</span></h2>
+      <p class="lead">The 10 km starts on the Boulevard du 20 Mai and finishes at the National Museum, home of the Odyssée village. It runs through the Nlongkak roundabout, Elig-Essono and the Warda crossroads. The 5 km starts at Elig-Essono and the 3 km on Avenue Ahmadou-Ahidjo, on the last part of the same route. This is a proposal: the distance will be officially measured and the route approved by the city authorities and the security services.</p>
+      <ul class="list">
+        <li>Water stations without disposable bottles wherever possible</li>
+        <li>First-aid posts along the route</li>
+        <li>An awareness “green kilometre” with a collection point</li>
+        <li>The 5 km and 3 km use the last part of the route and also finish at the National Museum</li>
+        <li>Environmental village at the finish</li>
+      </ul>
+    </div>
+    <figure class="route" style="margin:0" data-trace-lang="en">
+      <svg viewBox="0 0 520 360" role="img" aria-label="Proposed 10 km route, from the Boulevard du 20 Mai to the National Museum">
+        <rect x="0" y="0" width="520" height="360" rx="12" fill="var(--soft)"/>
+        <path d="M211.9 240.6 L209.8 236.9 L209.4 235.7 L203.5 215.3 L202.8 212.0 L202.4 209.8 L201.6 206.5 L201.4 205.2 L201.5 204.2 L201.6 203.1 L202.1 201.5 L202.9 200.4 L203.6 199.1 L204.8 196.5 L205.5 194.8 L205.8 193.9 L206.3 191.6 L206.5 189.9 L206.7 187.6 L206.9 185.0 L206.9 184.6 L207.0 184.4 L208.0 182.2 L208.8 180.8 L209.4 179.8 L208.1 176.7 L206.5 172.6 L206.9 171.3 L207.2 167.3 L208.5 148.0 L208.7 145.2 L209.1 141.0 L210.2 128.6 L210.3 128.1 L210.6 126.2 L211.1 124.0 L211.7 121.1 L212.3 118.1 L212.5 117.4 L215.0 108.0 L217.1 99.3 L220.3 86.5 L222.0 79.8 L222.9 76.1 L223.1 75.5 L223.5 73.0 L224.2 72.3 L224.8 70.3 L225.8 66.1 L226.6 65.3 L226.9 64.5 L227.4 62.2 L228.0 58.7 L228.6 55.5 L229.1 51.9 L229.7 48.6 L229.9 47.9 L230.1 47.1 L230.4 46.5 L230.8 45.9 L231.4 44.9 L233.0 44.4 L234.0 43.9 L234.8 43.1 L235.9 41.1 L236.2 40.1 L236.2 39.0 L236.0 38.0 L235.3 36.4 L234.5 35.5 L233.6 34.8 L232.6 34.3 L231.4 34.0 L230.2 34.0 L228.8 34.3 L227.6 35.0 L226.5 36.0 L225.6 37.6 L225.3 39.4 L225.5 41.0 L226.2 42.5 L227.3 43.7 L227.5 44.8 L227.6 45.6 L227.5 46.5 L227.0 49.5 L226.7 52.3 L226.4 53.9 L222.6 52.2 L222.0 52.8 L221.3 53.5 L220.7 54.1 L220.2 54.8 L220.2 54.8 L220.7 54.1 L221.3 53.5 L222.0 52.8 L222.6 52.2 L226.4 53.9 L226.0 57.0 L225.4 60.2 L224.7 63.8 L224.6 64.8 L224.8 65.9 L224.2 68.0 L223.9 69.4 L223.2 72.1 L223.5 73.0 L223.1 75.5 L222.9 76.1 L223.7 76.7 L224.3 77.4 L224.9 78.8 L228.7 89.8 L235.0 106.2 L235.1 106.5 L235.8 108.6 L237.1 111.9 L238.3 115.5 L238.5 117.7 L238.6 118.6 L240.2 123.2 L244.6 135.5 L244.9 137.2 L245.0 138.9 L244.7 142.0 L244.1 145.1 L243.3 148.3 L242.2 148.7 L241.7 148.9 L241.1 149.1 L240.1 149.6 L238.9 150.5 L238.8 152.1 L240.4 155.8 L241.0 157.4 L241.4 158.4 L243.0 162.2 L244.0 163.1 L245.2 163.5 L246.6 163.2 L247.4 164.9 L252.7 176.9 L253.9 177.8 L254.0 178.1 L257.0 185.6 L257.4 186.4 L257.7 187.3 L258.3 188.9 L261.8 196.9 L262.6 198.6 L264.7 203.5 L265.6 205.5 L266.2 206.9 L272.2 220.3 L273.0 222.0 L273.9 223.9 L274.7 225.5 L278.9 234.6 L280.9 238.9 L283.0 241.7 L285.1 243.0 L285.0 243.5 L285.0 243.9 L285.2 244.2 L285.4 244.5 L285.7 244.8 L286.0 244.9 L286.4 245.0 L287.0 244.9 L287.3 244.7 L287.6 244.3 L287.8 244.1 L287.9 243.6 L287.9 243.2 L287.7 242.8 L287.4 242.4 L297.9 228.5 L301.0 224.5 L308.3 214.3 L315.5 204.0 L320.6 197.2 L327.5 187.7 L328.8 187.0 L329.7 186.5 L330.9 185.7 L331.3 186.0 L331.8 186.3 L332.4 186.3 L332.9 186.1 L333.2 186.0 L333.5 185.6 L333.7 185.2 L333.8 184.6 L333.7 184.0 L333.4 183.5 L334.4 180.3 L334.3 178.9 L334.5 178.5 L334.8 178.0 L336.3 174.3 L344.2 171.6 L346.5 170.9 L351.1 169.4 L352.7 169.0 L356.5 167.8 L360.8 166.2 L361.4 165.9 L361.9 167.6 L361.8 168.4 L362.3 169.2 L362.7 170.3 L363.0 171.2 L363.1 171.6 L363.3 172.6 L363.4 172.8 L359.5 182.3 L358.0 186.0 L357.3 187.6 L356.9 188.7 L354.6 193.8 L354.1 194.6 L353.0 196.8 L351.9 197.9 L350.0 199.4 L348.6 202.1 L346.8 205.2 L345.3 202.2 L344.4 200.6 L342.3 197.4 L336.9 189.1 L336.2 187.8 L335.4 186.6 L334.7 185.8 L333.7 185.2 L333.8 184.6 L333.7 184.0 L333.4 183.5 L332.8 183.1 L332.2 183.0 L331.6 183.1 L331.1 183.4 L330.8 183.8 L330.6 184.3 L329.1 185.5 L328.3 186.5 L327.5 187.7 L320.6 197.2 L315.5 204.0 L308.3 214.3 L301.0 224.5 L297.9 228.5 L287.4 242.4 L286.9 242.2 L286.4 242.1 L285.7 242.3 L285.4 242.6 L285.1 243.0 L285.0 243.5 L285.0 243.9 L283.3 245.4 L269.6 260.5 L265.0 265.4 L264.2 266.0 L263.3 266.4 L255.7 267.3 L250.6 262.4 L244.8 256.5 L243.9 255.4 L240.4 247.6 L236.5 239.2 L235.6 235.1 L235.7 234.7 L235.7 234.4 L235.5 233.9 L235.1 233.5 L234.7 233.4 L234.2 233.3 L233.7 232.7 L233.0 231.8 L232.9 231.6 L227.8 220.2 L221.2 205.5 L221.0 205.1 L219.1 201.1 L215.6 193.7 L215.0 192.3 L213.1 187.7 L212.8 186.6 L210.7 182.5 L209.4 179.8 L208.1 176.7 L206.5 172.6 L205.7 170.3 L204.9 168.2 L200.9 157.9 L200.4 156.4 L199.5 154.8 L198.9 153.9 L196.9 151.1 L195.1 148.7 L193.8 147.0 L187.9 139.6 L186.9 139.2 L184.2 136.1 L182.2 133.8 L178.5 129.4 L176.3 126.7 L174.4 124.4 L173.6 123.4 L172.2 123.9 L170.7 124.3 L168.6 124.7 L166.6 125.1 L160.5 125.6 L158.9 125.7 L158.7 126.9 L158.5 129.3 L157.8 133.2 L156.6 140.4 L157.7 140.7 L158.3 137.7 L159.7 129.7 L160.2 127.1 L161.8 126.8 L167.7 126.0 L169.6 125.7 L171.6 125.3 L174.4 124.4 L176.3 126.7 L178.5 129.4 L182.2 133.8 L184.2 136.1 L186.9 139.2 L186.9 140.4 L192.6 147.5 L193.8 149.2 L196.4 152.3 L197.7 154.2 L198.7 156.1 L199.4 157.8 L199.7 158.7 L205.1 171.9 L205.2 173.1 L205.3 174.1 L205.4 175.5 L205.5 175.9 L205.9 178.2 L206.4 181.1 L206.9 184.6 L206.9 185.0 L206.7 187.6 L206.5 189.9 L206.3 191.6 L205.8 193.9 L205.5 194.8 L202.7 198.7 L200.4 201.3 L199.8 202.7 L199.8 203.7 L199.8 204.6 L199.9 205.3 L200.3 206.8 L201.3 209.8 L203.5 215.3 L209.4 235.7 L209.8 236.9 L210.6 241.5 L210.6 243.8 L210.1 244.7 L210.0 245.4 L209.9 246.1 L209.9 246.6 L210.0 247.8 L210.2 248.8 L210.6 249.8 L211.3 250.9 L212.5 252.4 L213.2 256.0 L213.1 259.7 L212.6 271.7 L212.5 272.9 L212.1 274.1 L211.2 274.9 L210.0 275.7 L207.2 276.7 L206.0 276.8 L205.5 276.9 L204.9 277.0 L202.8 278.0 L202.4 277.8 L202.0 277.8 L201.5 277.9 L201.0 278.2 L200.8 278.7 L200.7 279.2 L200.9 279.8 L201.4 280.2 L202.0 280.4 L202.6 280.2 L204.3 281.5 L206.1 282.5 L210.3 287.0 L212.5 289.2 L216.8 293.5 L219.2 295.7 L225.8 301.6 L234.1 309.1 L234.4 309.4 L235.7 310.4 L234.7 311.7 L233.3 313.4 L227.0 321.0 L226.3 321.9 L225.4 322.9 L224.1 324.5 L222.9 325.9 L222.9 326.0" fill="none" stroke="#fff" stroke-width="11" stroke-linejoin="round" stroke-linecap="round"/>
+        <path d="M211.9 240.6 L209.8 236.9 L209.4 235.7 L203.5 215.3 L202.8 212.0 L202.4 209.8 L201.6 206.5 L201.4 205.2 L201.5 204.2 L201.6 203.1 L202.1 201.5 L202.9 200.4 L203.6 199.1 L204.8 196.5 L205.5 194.8 L205.8 193.9 L206.3 191.6 L206.5 189.9 L206.7 187.6 L206.9 185.0 L206.9 184.6 L207.0 184.4 L208.0 182.2 L208.8 180.8 L209.4 179.8 L208.1 176.7 L206.5 172.6 L206.9 171.3 L207.2 167.3 L208.5 148.0 L208.7 145.2 L209.1 141.0 L210.2 128.6 L210.3 128.1 L210.6 126.2 L211.1 124.0 L211.7 121.1 L212.3 118.1 L212.5 117.4 L215.0 108.0 L217.1 99.3 L220.3 86.5 L222.0 79.8 L222.9 76.1 L223.1 75.5 L223.5 73.0 L224.2 72.3 L224.8 70.3 L225.8 66.1 L226.6 65.3 L226.9 64.5 L227.4 62.2 L228.0 58.7 L228.6 55.5 L229.1 51.9 L229.7 48.6 L229.9 47.9 L230.1 47.1 L230.4 46.5 L230.8 45.9 L231.4 44.9 L233.0 44.4 L234.0 43.9 L234.8 43.1 L235.9 41.1 L236.2 40.1 L236.2 39.0 L236.0 38.0 L235.3 36.4 L234.5 35.5 L233.6 34.8 L232.6 34.3 L231.4 34.0 L230.2 34.0 L228.8 34.3 L227.6 35.0 L226.5 36.0 L225.6 37.6 L225.3 39.4 L225.5 41.0 L226.2 42.5 L227.3 43.7 L227.5 44.8 L227.6 45.6 L227.5 46.5 L227.0 49.5 L226.7 52.3 L226.4 53.9 L222.6 52.2 L222.0 52.8 L221.3 53.5 L220.7 54.1 L220.2 54.8 L220.2 54.8 L220.7 54.1 L221.3 53.5 L222.0 52.8 L222.6 52.2 L226.4 53.9 L226.0 57.0 L225.4 60.2 L224.7 63.8 L224.6 64.8 L224.8 65.9 L224.2 68.0 L223.9 69.4 L223.2 72.1 L223.5 73.0 L223.1 75.5 L222.9 76.1 L223.7 76.7 L224.3 77.4 L224.9 78.8 L228.7 89.8 L235.0 106.2 L235.1 106.5 L235.8 108.6 L237.1 111.9 L238.3 115.5 L238.5 117.7 L238.6 118.6 L240.2 123.2 L244.6 135.5 L244.9 137.2 L245.0 138.9 L244.7 142.0 L244.1 145.1 L243.3 148.3 L242.2 148.7 L241.7 148.9 L241.1 149.1 L240.1 149.6 L238.9 150.5 L238.8 152.1 L240.4 155.8 L241.0 157.4 L241.4 158.4 L243.0 162.2 L244.0 163.1 L245.2 163.5 L246.6 163.2 L247.4 164.9 L252.7 176.9 L253.9 177.8 L254.0 178.1 L257.0 185.6 L257.4 186.4 L257.7 187.3 L258.3 188.9 L261.8 196.9 L262.6 198.6 L264.7 203.5 L265.6 205.5 L266.2 206.9 L272.2 220.3 L273.0 222.0 L273.9 223.9 L274.7 225.5 L278.9 234.6 L280.9 238.9 L283.0 241.7 L285.1 243.0 L285.0 243.5 L285.0 243.9 L285.2 244.2 L285.4 244.5 L285.7 244.8 L286.0 244.9 L286.4 245.0 L287.0 244.9 L287.3 244.7 L287.6 244.3 L287.8 244.1 L287.9 243.6 L287.9 243.2 L287.7 242.8 L287.4 242.4 L297.9 228.5 L301.0 224.5 L308.3 214.3 L315.5 204.0 L320.6 197.2 L327.5 187.7 L328.8 187.0 L329.7 186.5 L330.9 185.7 L331.3 186.0 L331.8 186.3 L332.4 186.3 L332.9 186.1 L333.2 186.0 L333.5 185.6 L333.7 185.2 L333.8 184.6 L333.7 184.0 L333.4 183.5 L334.4 180.3 L334.3 178.9 L334.5 178.5 L334.8 178.0 L336.3 174.3 L344.2 171.6 L346.5 170.9 L351.1 169.4 L352.7 169.0 L356.5 167.8 L360.8 166.2 L361.4 165.9 L361.9 167.6 L361.8 168.4 L362.3 169.2 L362.7 170.3 L363.0 171.2 L363.1 171.6 L363.3 172.6 L363.4 172.8 L359.5 182.3 L358.0 186.0 L357.3 187.6 L356.9 188.7 L354.6 193.8 L354.1 194.6 L353.0 196.8 L351.9 197.9 L350.0 199.4 L348.6 202.1 L346.8 205.2 L345.3 202.2 L344.4 200.6 L342.3 197.4 L336.9 189.1 L336.2 187.8 L335.4 186.6 L334.7 185.8 L333.7 185.2 L333.8 184.6 L333.7 184.0 L333.4 183.5 L332.8 183.1 L332.2 183.0 L331.6 183.1 L331.1 183.4 L330.8 183.8 L330.6 184.3 L329.1 185.5 L328.3 186.5 L327.5 187.7 L320.6 197.2 L315.5 204.0 L308.3 214.3 L301.0 224.5 L297.9 228.5 L287.4 242.4 L286.9 242.2 L286.4 242.1 L285.7 242.3 L285.4 242.6 L285.1 243.0 L285.0 243.5 L285.0 243.9 L283.3 245.4 L269.6 260.5 L265.0 265.4 L264.2 266.0 L263.3 266.4 L255.7 267.3 L250.6 262.4 L244.8 256.5 L243.9 255.4 L240.4 247.6 L236.5 239.2 L235.6 235.1 L235.7 234.7 L235.7 234.4 L235.5 233.9 L235.1 233.5 L234.7 233.4 L234.2 233.3 L233.7 232.7 L233.0 231.8 L232.9 231.6 L227.8 220.2 L221.2 205.5 L221.0 205.1 L219.1 201.1 L215.6 193.7 L215.0 192.3 L213.1 187.7 L212.8 186.6 L210.7 182.5 L209.4 179.8 L208.1 176.7 L206.5 172.6 L205.7 170.3 L204.9 168.2 L200.9 157.9 L200.4 156.4 L199.5 154.8 L198.9 153.9 L196.9 151.1 L195.1 148.7 L193.8 147.0 L187.9 139.6 L186.9 139.2 L184.2 136.1 L182.2 133.8 L178.5 129.4 L176.3 126.7 L174.4 124.4 L173.6 123.4 L172.2 123.9 L170.7 124.3 L168.6 124.7 L166.6 125.1 L160.5 125.6 L158.9 125.7 L158.7 126.9 L158.5 129.3 L157.8 133.2 L156.6 140.4 L157.7 140.7 L158.3 137.7 L159.7 129.7 L160.2 127.1 L161.8 126.8 L167.7 126.0 L169.6 125.7 L171.6 125.3 L174.4 124.4 L176.3 126.7 L178.5 129.4 L182.2 133.8 L184.2 136.1 L186.9 139.2 L186.9 140.4 L192.6 147.5 L193.8 149.2 L196.4 152.3 L197.7 154.2 L198.7 156.1 L199.4 157.8 L199.7 158.7 L205.1 171.9 L205.2 173.1 L205.3 174.1 L205.4 175.5 L205.5 175.9 L205.9 178.2 L206.4 181.1 L206.9 184.6 L206.9 185.0 L206.7 187.6 L206.5 189.9 L206.3 191.6 L205.8 193.9 L205.5 194.8 L202.7 198.7 L200.4 201.3 L199.8 202.7 L199.8 203.7 L199.8 204.6 L199.9 205.3 L200.3 206.8 L201.3 209.8 L203.5 215.3 L209.4 235.7 L209.8 236.9 L210.6 241.5 L210.6 243.8 L210.1 244.7 L210.0 245.4 L209.9 246.1 L209.9 246.6 L210.0 247.8 L210.2 248.8 L210.6 249.8 L211.3 250.9 L212.5 252.4 L213.2 256.0 L213.1 259.7 L212.6 271.7 L212.5 272.9 L212.1 274.1 L211.2 274.9 L210.0 275.7 L207.2 276.7 L206.0 276.8 L205.5 276.9 L204.9 277.0 L202.8 278.0 L202.4 277.8 L202.0 277.8 L201.5 277.9 L201.0 278.2 L200.8 278.7 L200.7 279.2 L200.9 279.8 L201.4 280.2 L202.0 280.4 L202.6 280.2 L204.3 281.5 L206.1 282.5 L210.3 287.0 L212.5 289.2 L216.8 293.5 L219.2 295.7 L225.8 301.6 L234.1 309.1 L234.4 309.4 L235.7 310.4 L234.7 311.7 L233.3 313.4 L227.0 321.0 L226.3 321.9 L225.4 322.9 L224.1 324.5 L222.9 325.9 L222.9 326.0" fill="none" stroke="#d62f2f" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+        <g font-family="Barlow Condensed" font-weight="800" font-size="14" text-anchor="middle">
+          <g><circle cx="220.7" cy="54.1" r="13" fill="#f7c51e"/><text x="220.7" y="58.6" fill="#13261a">2</text></g><g><circle cx="302.3" cy="222.6" r="13" fill="#f7c51e"/><text x="302.3" y="227.1" fill="#13261a">4</text></g><g><circle cx="350.8" cy="198.7" r="13" fill="#2f86d6"/><text x="350.8" y="203.2" fill="#fff">5</text></g><g><circle cx="210.7" cy="182.4" r="13" fill="#f7c51e"/><text x="210.7" y="186.9" fill="#13261a">7</text></g>
+          <g><circle cx="211.9" cy="240.6" r="16" fill="#14713b"/><text x="211.9" y="245.6" fill="#fff">D</text></g>
+          <g><circle cx="222.9" cy="326.0" r="16" fill="#0c4a26" stroke="#f7c51e" stroke-width="3"/><text x="222.9" y="331.0" fill="#fff">A</text></g>
+        </g>
+        <text x="504" y="324" text-anchor="end" font-family="Barlow" font-size="14" fill="var(--muted)">Proposed route</text>
+        <text x="504" y="342" text-anchor="end" font-family="Barlow" font-size="14" fill="var(--muted)">to be measured and approved</text>
+        <text x="16" y="346" font-family="Barlow" font-size="11" fill="var(--muted)">Data © OpenStreetMap contributors</text>
+      </svg>
+      <div class="legend"><span><i style="background:#14713b"></i>Start · Boulevard du 20 Mai</span><span><i style="background:#0c4a26;border:2px solid #f7c51e"></i>Finish · National Museum, village</span><span><i style="background:#f7c51e"></i>Kilometre marker</span><span><i style="background:#2f86d6"></i>Water station (km 5)</span></div>
+    </figure>
+  </div>
+</section>
+</div>
+
+<div class="view" id="inscriptions">
+<div class="pagehead"><div class="wrap"><div class="crumb"><a href="#accueil">Home</a> › Registration</div><h1>Registration</h1><p>Registration opens on 1 December 2026, online and in the official app.</p></div></div>
+<section class="band">
+  <div class="wrap two">
+    <div>
+      <h2>Fees</h2>
+      <table class="stack" style="margin-top:18px">
+        <thead><tr><th>Race and who</th><th class="r">Fee</th><th>Details</th></tr></thead>
+        <tbody>
+          <tr><td><strong>10 km · Students</strong></td><td class="r"><span class="price">500 CFA</span></td><td>Sports challenge, timed, student prizes</td></tr>
+          <tr><td><strong>10 km · Workers</strong></td><td class="r"><span class="price">1,000 CFA</span></td><td>Sports challenge, timed</td></tr>
+          <tr><td><strong>5 km · Popular run</strong></td><td class="r"><span class="price">500 CFA</span></td><td>For everyone, suited to beginners and students</td></tr>
+          <tr><td><strong>3 km · Eco family walk</strong></td><td class="r"><span class="price">500 CFA</span></td><td>For everyone, open to as many people as possible</td></tr>
+          <tr><td><strong>Companies</strong></td><td class="r"><span class="price">100,000 CFA</span></td><td>Per team of 10 runners, on the distance of their choice, with a company challenge</td></tr>
+        </tbody>
+      </table>
+      <p class="note">Payment by Orange Money or MTN MoMo. Part of every paid registration goes to the Solidarity Fund. Places open in stages: a first batch of 3,000, then more as registrations come in. Opening: 1 December 2026.</p>
+    </div>
+    <div>
+      <h2 id="prix">Prizes</h2>
+      <p class="lead">2,500,000 CFA francs in prizes on the 10 km, shared so that students are rewarded too. The 5 km and the 3 km walk have no ranking: every participant gets a medal.</p>
+      <div class="scroll">
+      <table>
+        <thead><tr><th>Category</th><th class="r">1st</th><th class="r">2nd</th><th class="r">3rd</th><th class="r">4th–10th</th></tr></thead>
+        <tbody id="prizeRows"></tbody>
+      </table>
+      </div>
+      <p class="note">Amounts in CFA francs, subject to the official rules. A student card is required to receive a student prize.</p>
+    </div>
+  </div>
+</section>
+<section class="band soft">
+  <div class="wrap two">
+    <div><h2>Register with Odyssée Connect</h2><p class="lead">Registration, mobile-money payment and digital bib: everything happens in Odyssée Connect, the Odyssée network app.</p><div class="cta" style="margin-top:16px"><a class="btn y" href="#application">Discover Odyssée Connect</a></div></div>
+    <img src="connect-ecrans.jpg" alt="Real app screens: home, registration, payment, bib, route, Solidarity Fund, actions and profile" loading="lazy" style="width:100%;border-radius:18px">
+  </div>
+</section>
+</div>
+
+
+<div class="view" id="application">
+<div class="pagehead"><div class="wrap"><div class="crumb"><a href="#accueil">Home</a> › App</div><h1>Odyssée Connect</h1><p>Together, let's act for a sustainable future. The Odyssée network app, and your gateway to the Yaoundé 10 KM.</p></div></div>
+<section class="band">
+  <div class="wrap two">
+    <div><h2>One app, a whole community</h2><p class="lead">Odyssée Connect brings together citizens, associations, companies and partners around the actions of the Odyssée network. It is not limited to one event: the Yaoundé 10 KM 2027 is the first event it hosts, and more services and projects will follow, in several countries.</p></div>
+    <img src="connect-presentation.jpg" alt="Odyssée Connect: community home and the Yaoundé 10 KM 2027 page." style="width:100%;border-radius:20px;box-shadow:0 18px 40px rgba(0,0,0,.15)">
+  </div>
+</section>
+<section class="band soft">
+  <div class="wrap">
+    <h2>For the Yaoundé 10 KM</h2>
+    <div class="featgrid"><article class="feature"><span class="tagv ">Available at launch</span><h3>Register for the 10 KM</h3><p>With your phone number and a code received by text message. Choose your distance: 3, 5 or 10 km.</p></article><article class="feature"><span class="tagv ">Available at launch</span><h3>Pay by mobile money</h3><p>Orange Money or MTN MoMo, securely. Registration confirmed as soon as payment is validated.</p></article><article class="feature"><span class="tagv ">Available at launch</span><h3>Get your digital bib</h3><p>A number and a QR code to show at bib collection.</p></article><article class="feature"><span class="tagv ">Available at launch</span><h3>Routes and information</h3><p>Routes of the three distances, rules, times, health and zero-waste advice, notifications.</p></article><article class="feature"><span class="tagv ">Race day</span><h3>Check your results</h3><p>Your time and the rankings by distance and category, as soon as they are validated.</p></article><article class="feature"><span class="tagv soon">Coming soon</span><h3>Follow the race live</h3><p>Runners' positions on the map, water and first-aid points, with your consent.</p></article></div>
+  </div>
+</section>
+<section class="band">
+  <div class="wrap">
+    <h2>App preview</h2>
+    <figure class="shot1"><img src="connect-ecrans.jpg" alt="The runner journey: registration, choice of distance, payment, bib, route, Solidarity Fund, actions and profile." loading="lazy"><figcaption>The runner journey: registration, choice of distance, payment, bib, route, ranking and profile.</figcaption></figure>
+    <p class="note" style="margin-top:20px">Odyssée Connect will first be a web app you can install on Android and iPhone, available when registration for the 10 KM opens. The screens shown are mock-ups; names, times and amounts are fictitious.</p>
+  </div>
+</section>
+<section class="band soft">
+  <div class="wrap">
+    <h2>And tomorrow, beyond the race</h2>
+    <div class="featgrid"><article class="feature"><span class="tagv soon">Coming</span><h3>Sports events</h3><p>The 10 KM, other races and challenges, in several cities.</p></article><article class="feature"><span class="tagv soon">Coming</span><h3>Environmental actions</h3><p>Clean-ups, recycling, tree planting: find an action near you and take part.</p></article><article class="feature"><span class="tagv soon">Coming</span><h3>Community and volunteering</h3><p>Become an Odyssée ambassador and join the volunteer teams.</p></article><article class="feature"><span class="tagv soon">Coming</span><h3>News and projects</h3><p>News from the network and the projects it supports.</p></article><article class="feature"><span class="tagv soon">Coming</span><h3>Impact tracking</h3><p>The environmental and social results of actions, published and verifiable.</p></article></div>
+    <div class="cta" style="margin-top:22px"><a class="btn y" href="#inscriptions">See 10 KM fees</a></div>
+  </div>
+</section>
+</div>
+<div class="view" id="infos">
+<div class="pagehead"><div class="wrap"><div class="crumb"><a href="#accueil">Home</a> › Practical info</div><h1>Practical info</h1><p>Everything you need to know before race day. Details will be added when registration opens.</p></div></div>
+<section class="band">
+  <div class="wrap">
+    <h2>For runners</h2>
+    <div class="cards" id="infoCards"></div>
+    <p class="note" style="margin-top:20px">First time over 10 km? Follow our <a href="#entrainement"><strong>8-week training plan</strong></a>.</p>
+  </div>
+</section>
+<section class="band soft">
+  <div class="wrap two">
+    <div>
+      <h2>Race day <span class="prov">times to come</span></h2>
+      <p class="lead">Exact times will be published with the official rules.</p>
+    </div>
+    <ol class="steps">
+      <li><div><b>Welcome and last bib collection</b><span>The start area opens.</span></div></li>
+      <li><div><b>Group warm-up</b><span>To start gently.</span></div></li>
+      <li><div><b>10 km start on the Boulevard du 20 Mai</b><span>Sports challenge, timed.</span></div></li>
+      <li><div><b>5 km then 3 km starts</b><span>Staggered after the 10 km, closer to the city centre; the 3 km can be run or walked, for all ages.</span></div></li>
+      <li><div><b>Finish at the National Museum and Odyssée village</b><span>Refreshments, stands, waste collection and sorting.</span></div></li>
+      <li><div><b>Prize-giving and Solidarity Fund handover</b><span>The sports winners, then the first beneficiaries of the Fund.</span></div></li>
+    </ol>
+  </div>
+</section>
+<section class="band">
+  <div class="wrap">
+    <h2>Rules</h2>
+    <p class="lead">The official rules (age limits, categories, timing, complaints, safety) will be published here when registration opens. By registering, you accept them.</p>
+  </div>
+</section>
+</div>
+
+<div class="view" id="benevoles">
+<div class="pagehead"><div class="wrap"><div class="crumb"><a href="#accueil">Home</a> › Volunteers</div><h1>Volunteers</h1><p>No volunteers, no race. Join the team behind the Yaoundé 10 KM and its cause.</p></div></div>
+<section class="band">
+  <div class="wrap">
+    <h2>Volunteer roles</h2>
+    <div class="cards" id="volCards"></div>
+  </div>
+</section>
+<section class="band soft">
+  <div class="wrap two">
+    <div>
+      <h2>How to join</h2>
+      <p class="lead">Write to us with your name, phone number, neighbourhood and the role you are interested in. We will get back to you before the race.</p>
+    </div>
+    <div class="card">
+      <h3>Volunteer application</h3>
+      <p class="mail">contact@odyssee-env.org</p>
+      <p>Subject: “Volunteer Yaoundé 10 KM”</p>
+      <button class="copy" data-copy="contact@odyssee-env.org">Copy address</button>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="view" id="partenaires">
+<div class="pagehead"><div class="wrap"><div class="crumb"><a href="#accueil">Home</a> › Partners</div><h1>Partners</h1><p>Associate your company with a charity, environmental and sporting race, with clear benefits and a measured report.</p></div></div>
+<section class="band">
+  <div class="wrap">
+    <h2>Partnership levels</h2>
+    <p class="lead">Five levels, each doubling the previous one. Only one title partnership is available.</p>
+    <div class="levels" id="levels"></div>
+    <p style="margin-top:18px">Technical and media partners are welcome: water and soft drinks, equipment, transport, health, timing, media coverage. All or part of a contribution can be allocated to the Solidarity Fund.</p>
+  </div>
+</section>
+<section class="band soft">
+  <div class="wrap two">
+    <div>
+      <h2>Our partners</h2>
+      <p class="lead">First-edition partners will be presented here once agreements are signed. No logo is published without written consent.</p>
+    </div>
+    <div class="card">
+      <h3>Request the partnership pack</h3>
+      <p class="mail">contact@odyssee-env.org</p>
+      <p>Subject: “Partnership Yaoundé 10 KM”</p>
+      <button class="copy" data-copy="contact@odyssee-env.org">Copy address</button>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="view" id="faq">
+<div class="pagehead"><div class="wrap"><div class="crumb"><a href="#accueil">Home</a> › FAQ</div><h1>Frequently asked questions</h1><p>Answers to the most common questions about the race, registration and the Solidarity Fund.</p></div></div>
+<section class="band"><div class="wrap" style="max-width:860px" id="faqList"></div></section>
+</div>
+
+
+<div class="view" id="presse">
+<div class="pagehead"><div class="wrap"><div class="crumb"><a href="#accueil">Home</a> › Press</div><h1>Press and media</h1><p>Press release, key facts and press contact for the Yaoundé 10 KM 2027.</p></div></div>
+<section class="band">
+  <div class="wrap two">
+    <div>
+      <h2>Launch press release</h2>
+      <div class="card" id="cpEn" style="margin-top:18px">
+        <p><strong>Yaoundé to host the first Yaoundé 10 KM in 2027, a charity race for the victims of environmental destruction</strong></p>
+        <p>The association L'Odyssée de l'environnement au Cameroun announces the first edition of the Yaoundé 10 KM, a 10-kilometre road race planned in the capital on Saturday 10 July 2027 (provisional date).</p>
+        <p>The race exists for one reason: to help widows, children and orphans, disaster-hit families and people made ill by the destruction of the environment. Part of the funds raised goes to an Environmental Solidarity Fund, with a target of 5,000,000 CFA francs for the first edition. Beneficiaries will be chosen according to public criteria and the use of the Fund will be publicly reported.</p>
+        <p>Run under zero-waste rules, the race can bring together up to 10,000 participants over three distances: a 3 km eco family walk, a 5 km popular run and a 10 km sports challenge, from the Boulevard du 20 Mai to the National Museum. Registration will cost 500 CFA francs for students and for the 5 km and 3 km, and 1,000 CFA francs for workers on the 10 km.</p>
+        <p>The official date and route will be announced once approved by the relevant authorities. Information: contact@odyssee-env.org.</p>
+      </div>
+      <button class="copy" data-copytarget="cpEn">Copy the press release</button>
+    </div>
+    <div>
+      <h2>At a glance</h2>
+      <table style="margin-top:18px">
+        <tbody>
+          <tr><td><strong>Event</strong></td><td>Yaoundé 10 KM, first edition</td></tr>
+          <tr><td><strong>Date</strong></td><td>Saturday 10 July 2027, 8 a.m. start (provisional date, to be confirmed by the authorities)</td></tr>
+          <tr><td><strong>Place</strong></td><td>Yaoundé, Cameroon</td></tr>
+          <tr><td><strong>Cause</strong></td><td>Environmental Solidarity Fund: 5,000,000 CFA francs target</td></tr>
+          <tr><td><strong>Participants</strong></td><td>Up to 10,000 over three distances: 3 km, 5 km and 10 km</td></tr>
+          <tr><td><strong>Organiser</strong></td><td>L'Odyssée de l'environnement au Cameroun</td></tr>
+        </tbody>
+      </table>
+      <div class="card" style="margin-top:18px">
+        <h3>Press contact</h3>
+        <p>Interviews, accreditation, high-resolution visuals.</p>
+        <p class="mail">contact@odyssee-env.org</p>
+        <p>Subject: “Press Yaoundé 10 KM”</p>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+
+
+<div class="view" id="entrainement">
+<div class="pagehead"><div class="wrap"><div class="crumb"><a href="#accueil">Home</a> › Training</div><h1>My first 10 km</h1><p>An 8-week plan to go from 30 minutes of running to the finish line of the Yaoundé 10 KM.</p></div></div>
+<section class="band">
+  <div class="wrap two">
+    <div>
+      <h2>Before you start</h2>
+      <p class="lead">This plan is for anyone who can already run about 30 minutes without stopping. Three sessions a week are enough.</p>
+      <ul class="list">
+        <li><strong>Easy run</strong>: a pace at which you can talk without getting out of breath.</li>
+        <li><strong>Steady</strong>: a pace at which you can only say a few words.</li>
+        <li><strong>Hills</strong>: Yaoundé is the city of seven hills, make the most of it. Run up fast, walk down.</li>
+        <li><strong>Long run</strong>: always slow, it is what carries you to 10 km.</li>
+      </ul>
+      <p class="note">See a doctor before you start if you have not exercised for a long time or have any doubt about your health. Run early in the morning or late in the day, and drink regularly.</p>
+    </div>
+    <div class="scroll">
+      <table class="plan stack">
+        <thead><tr><th>Week</th><th>Session 1</th><th>Session 2</th><th>Long run</th></tr></thead>
+        <tbody id="planRows"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="view" id="mentions">
+<div class="pagehead"><div class="wrap"><div class="crumb"><a href="#accueil">Home</a> › Legal notice</div><h1>Legal notice and privacy</h1><p>Who publishes this site, and how we protect your personal data.</p></div></div>
+<section class="band legal">
+  <div class="wrap" style="max-width:860px">
+    <h2>Publisher</h2>
+    <p>L'Odyssée de l'environnement au Cameroun, an association registered in Yaoundé. Registration receipt no. <span class="todo">to be completed</span>. Registered office: <span class="todo">address to be completed</span>. Contact: contact@odyssee-env.org.</p>
+    <p>Publication manager: <span class="todo">name of the association's president</span>.</p>
+    <h2>Hosting</h2>
+    <p>Host: <span class="todo">to be specified when the site goes live</span>.</p>
+    <h2>Intellectual property</h2>
+    <p>The texts, illustrations and the name “10 KM de Yaoundé” belong to the association. Any reproduction requires its written consent. Partner logos remain the property of their owners.</p>
+    <h2>Personal data protection</h2>
+    <p>We process personal data in accordance with Cameroon's Law No. 2024/017 of 23 December 2024 on the protection of personal data.</p>
+    <h3>This site</h3>
+    <p>The site sets no advertising cookies and uses no audience-measurement tool. It only remembers, in your browser, the language you chose.</p>
+    <h3>Race registration</h3>
+    <ul class="list">
+      <li><strong>Data collected</strong>: surname, first name, sex, date of birth, phone, city, emergency contact and, for students, their institution (optional).</li>
+      <li><strong>Purposes</strong>: managing your registration and payment, assigning your bib, keeping you safe on race day, publishing results.</li>
+      <li><strong>Recipients</strong>: the organising team, the timing provider, the first-aid teams for the emergency contact, the mobile-payment operator.</li>
+      <li><strong>Results</strong>: name, category and time are published in the rankings. You may ask to appear under your initials only.</li>
+      <li><strong>Retention</strong>: no more than 12 months after the race, except accounting records kept as required by law.</li>
+      <li><strong>Location</strong>: only in a future version of the app, with your explicit consent and during the race only.</li>
+    </ul>
+    <h3>The Solidarity Fund</h3>
+    <p>Information about Fund beneficiaries is strictly confidential, reserved for the selection committee, and never published by name.</p>
+    <h3>Your rights</h3>
+    <p>You can ask to access, correct or delete your data by writing to contact@odyssee-env.org. You can also contact Cameroon's personal data protection authority.</p>
+    <p class="small" style="margin-top:18px">Last updated: November 2026.</p>
+  </div>
+</section>
+</div>
+
+<div class="view" id="contact">
+<div class="pagehead"><div class="wrap"><div class="crumb"><a href="#accueil">Home</a> › Contact</div><h1>Contact</h1><p>A question, a partnership proposal, a wish to help? Write to us.</p></div></div>
+<section class="band">
+  <div class="wrap">
+    <div class="contactgrid">
+      <div class="card"><h3>Runners</h3><p>Registration, rules, bib collection.</p><p class="mail">contact@odyssee-env.org</p></div>
+      <div class="card"><h3>Partners and media</h3><p>Partnership pack, press accreditation. <a href="#presse">Press area</a></p><p class="mail">contact@odyssee-env.org</p></div>
+      <div class="card"><h3>Volunteers</h3><p>Roles and applications.</p><p class="mail">contact@odyssee-env.org</p></div>
+    </div>
+    <button class="copy" data-copy="contact@odyssee-env.org" style="margin-top:18px">Copy address</button>
+    <div class="card" style="margin-top:24px">
+      <h3>The organiser</h3>
+      <p>L'Odyssée de l'environnement au Cameroun, an association registered in Yaoundé, member of the L'Odyssée de l'environnement network.</p>
+      <p>Network website: <a href="https://www.odyssee-env.org/">www.odyssee-env.org</a></p>
+      <div class="social" hidden><strong>Our social media</strong><div class="slinks"></div></div>
+    </div>
+  </div>
+</section>
+</div>
+</main>
+
+<footer class="band">
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <h3>Yaoundé 10 KM</h3>
+        <p>A 10 km race for the widows, children and families struck by the destruction of the environment.</p>
+        <p>L'Odyssée de l'environnement au Cameroun · contact@odyssee-env.org</p>
+        <div class="social" hidden><strong>Follow us</strong><div class="slinks"></div></div>
+      </div>
+      <div>
+        <h3>The race</h3>
+        <a href="#cause">Our cause</a><a href="#course">About the race</a><a href="#parcours">Route</a><a href="#infos">Practical info</a><a href="#entrainement">Training</a><a href="#faq">FAQ</a>
+      </div>
+      <div>
+        <h3>Take part</h3>
+        <a href="#inscriptions">Registration</a><a href="#application">App</a><a href="#benevoles">Volunteers</a><a href="#partenaires">Partners</a><a href="#presse">Press</a><a href="#contact">Contact</a>
+      </div>
+    </div>
+    <div class="fine"><a href="#mentions" style="display:inline;text-decoration:underline">Legal notice and privacy</a> · Yaoundé 10 KM 2027 · Information on this site (date, route, fees, prizes) is provisional and will be confirmed once approved by the authorities.</div>
+  </div>
+</footer>
+</template>
+<script>
+{
+
+const icon = {
+  cup:'<path d="M6 4h12l-1.5 16h-9z"/><path d="M6 9h12"/>',
+  bin:'<path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/><path d="M10 11v6M14 11v6"/>',
+  broom:'<path d="M14 3 9 14"/><path d="M5 14h8l2 7H3z"/>',
+  flag:'<path d="M5 21V4"/><path d="M5 4h12l-2 4 2 4H5"/>',
+  tent:'<path d="M3 20 12 4l9 16z"/><path d="M12 20v-6"/>',
+  tree:'<path d="M12 21v-6"/><path d="M12 3 6 13h12z"/>',
+  bib:'<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 12h8"/>',
+  drop:'<path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z"/>',
+  cross:'<path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/>',
+  doc:'<path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7"/>',
+  hand:'<path d="M7 11V6a2 2 0 0 1 4 0v5"/><path d="M11 10V4a2 2 0 0 1 4 0v7"/><path d="M15 9a2 2 0 0 1 4 0v4a7 7 0 0 1-14 0v-2a2 2 0 0 1 4 0"/>',
+  bus:'<rect x="4" y="4" width="16" height="13" rx="2"/><path d="M4 11h16M8 21v-4M16 21v-4"/>',
+  heart:'<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/>',
+  child:'<circle cx="12" cy="6" r="3"/><path d="M8 21v-6l-2-4h12l-2 4v6"/>',
+  home:'<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/>',
+  pulse:'<path d="M3 12h4l2-5 4 10 2-5h6"/>',
+  users:'<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5"/><circle cx="17" cy="9" r="2.5"/><path d="M15 15c3 0 6 1.5 6 4.5"/>',
+  shield:'<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/>',
+  bag:'<path d="M5 8h14l-1 13H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/>'
+};
+const card = ([i,t,d]) => `<article class="card"><div class="ico"><svg viewBox="0 0 24 24">${icon[i]}</svg></div><h3>${t}</h3><p>${d}</p></article>`;
+
+const env = [
+  ['cup','Course zéro déchet',"Gobelets réutilisables et ravitaillements sans bouteilles jetables lorsque c'est possible."],
+  ['bin','Collecte et tri','Points de collecte sur le parcours et au village, tri confié à un opérateur spécialisé.'],
+  ['broom','Nettoyage du parcours',"Des équipes d'ambassadeurs avant et après la course pour rendre les rues plus propres qu'avant."],
+  ['flag','Kilomètre vert','Un tronçon de sensibilisation aux déchets plastiques, avec un point où chaque déchet rapporté est compté.'],
+  ['tent','Village environnement',"Associations, jeunes innovateurs du Green Hackathon et partenaires réunis à l'arrivée."],
+  ['tree','Action durable',"Une plantation ou la restauration d'un espace vert avec une structure locale."]
+];
+const benef = [
+  ['heart','Les veuves',"Femmes ayant perdu leur conjoint à la suite d'une catastrophe ou d'un problème environnemental, et laissées en situation de vulnérabilité."],
+  ['child','Les enfants et les orphelins','Enfants ayant perdu leurs parents dans ces circonstances, ou dont la scolarité et la santé en sont affectées.'],
+  ['home','Les familles sinistrées',"Familles dont la maison a été détruite ou rendue inhabitable par une inondation, un glissement de terrain ou une autre catastrophe."],
+  ['pulse','Les personnes malades','Personnes souffrant de maladies liées à la pollution ou à d’autres risques environnementaux, après évaluation appropriée.']
+];
+const infoRunners = [
+  ['bib','Retrait des dossards',"Sur présentation du QR code reçu à l'inscription et d'une pièce d'identité. Lieux et horaires publiés avant la course."],
+  ['drop','Ravitaillement',"Un point d'eau au km 5 du 10 km et au village d'arrivée, en version zéro déchet. Pensez à votre gourde."],
+  ['cross','Sécurité et secours',"Postes médicaux sur le parcours, équipe de secours à l'arrivée et numéro d'urgence imprimé sur le dossard."],
+  ['sun','Chaleur et santé',"Courez à votre rythme, hydratez-vous avant le départ et consultez un médecin en cas de doute sur votre condition physique."],
+  ['bag','Consigne et vestiaires',"Une consigne pour les sacs sera proposée au village. Les détails seront communiqués avec le programme."],
+  ['bus','Venir à la course',"Conseils de transport, covoiturage et stationnement publiés avec le parcours définitif."]
+];
+const volunteers = [
+  ['users','Accueil et retrait des dossards','Accueillir les coureurs, vérifier les inscriptions et remettre les dossards.'],
+  ['drop','Ravitaillement','Tenir un point d’eau sur le parcours ou à l’arrivée, en version zéro déchet.'],
+  ['bin','Collecte et tri des déchets','Animer les points de collecte, trier et compter les déchets pour le bilan.'],
+  ['broom','Nettoyage du parcours','Rejoindre les équipes d’ambassadeurs avant et après la course.'],
+  ['shield','Sécurité du parcours','Signaler les virages, orienter les coureurs et le public aux côtés des équipes de sécurité.'],
+  ['tent','Village environnement','Accueillir le public, animer les stands et présenter le Fonds de solidarité.']
+];
+const prizes = [['Général femmes',300000,200000,150000,50000],['Général hommes',300000,200000,150000,50000],['Étudiantes',100000,75000,50000,0],['Étudiants',100000,75000,50000,0]];
+const levels = [['Bronze','500 000 FCFA','Logo sur les supports collectifs, mention dans le bilan','#b07a4a'],['Argent','1 000 000 FCFA','Supports sélectionnés, une équipe de 10 coureurs','#8f9a95'],['Or','2 000 000 FCFA','Logo sur les dossards, stand au village, deux équipes','#d9a514'],['Platine','4 000 000 FCFA','Visibilité principale, ravitaillement ou kilomètre vert à son nom, cinq équipes','#5b7f8f'],['Partenaire titre','8 000 000 FCFA','Nom associé à la course, arche d’arrivée, dix équipes','#0c4a26']];
+const faq = [
+  ['La course',[
+    ['Quelle est la date de la course ?',"La première édition est prévue le samedi 10 juillet 2027, départ à 8 h. Cette date est provisoire : elle sera confirmée sur ce site après validation du parcours par les autorités."],
+    ['Faut-il être un coureur confirmé ?',"Non. Le 10 KM de Yaoundé est ouvert aux coureurs confirmés comme aux amateurs. Préparez-vous progressivement et courez à votre rythme."],
+    ['Y a-t-il un âge minimum ?',"Oui. L'âge minimum et les conditions pour les mineurs seront précisés dans le règlement officiel, publié à l'ouverture des inscriptions."],
+    ['Où passe le parcours ?',"Le 10 km part du boulevard du 20 Mai et arrive au Musée national, en passant par Nlongkak, Elig-Essono et Warda. Le 5 km et le 3 km arrivent au même endroit. Ce tracé est une proposition, en cours d'étude avec les autorités municipales et les services de sécurité."]
+  ]],
+  ['Inscriptions',[
+    ['Combien coûte l’inscription ?',"10 km : 500 FCFA pour les étudiants, 1 000 FCFA pour les travailleurs. 5 km et marche de 3 km : 500 FCFA pour tous. Entreprises : 100 000 FCFA par équipe de 10 coureurs."],
+    ['Quelle épreuve choisir ?',"Le 3 km est une marche écologique et familiale, accessible au plus grand nombre. Le 5 km est une course populaire, adaptée aux débutants et aux étudiants. Le 10 km est un défi sportif pour les coureurs plus entraînés."],
+    ['Comment payer ?',"Le paiement se fera par Orange Money ou MTN MoMo, en ligne ou dans l'application officielle."],
+    ['Quand ouvrent les inscriptions ?',"Le 1er décembre 2026, dans l'application Odyssée Connect. Les places sont ouvertes par tranches, à partir de 3 000."],
+    ['Faut-il une carte d’étudiant ?',"Elle pourra être demandée au retrait du dossard pour le tarif étudiant, et elle sera exigée pour recevoir un prix dans les catégories étudiantes."]
+  ]],
+  ['Le Fonds de solidarité',[
+    ['À quoi sert le Fonds ?',"Il soutient les veuves, les enfants et les orphelins, les familles sinistrées et les personnes malades touchés par la destruction de l'environnement. C'est la raison d'être de la course."],
+    ['Comment les bénéficiaires sont-ils choisis ?',"Selon des critères publiés, avec des structures locales compétentes et en concertation avec les administrations. Un comité de sélection documente chaque décision."],
+    ['Comment savoir à quoi a servi l’argent ?',"Un bilan public présentera les montants collectés et attribués, et le nombre de bénéficiaires, sans exposer leur identité."]
+  ]]
+];
+
+// ---- À METTRE À JOUR À LA MAIN ----
+const FONDS = { objectif: 5000000, collecte: 0, maj: '' };   // collecte en FCFA, maj = date de mise à jour (ex. '15 mars 2027')
+const SOCIAL = { facebook: '', linkedin: '', instagram: '' }; // coller ici les adresses des pages officielles
+// -----------------------------------
+const PLAN = {fr: [["1", "3 × (8 min de course + 2 min de marche)", "30 min de footing", "4 km à allure facile"], ["2", "35 min de footing", "6 × 1 min rapide / 1 min lent", "5 km"], ["3", "35 min de footing", "Côtes : 6 × 30 s en montée", "6 km"], ["4", "30 min de footing", "30 min de footing", "5 km (semaine plus légère)"], ["5", "40 min de footing", "5 × 3 min soutenu / 2 min lent", "7 km"], ["6", "40 min de footing", "Côtes : 8 × 30 s en montée", "8 km"], ["7", "35 min de footing", "3 × 5 min soutenu / 2 min lent", "6 km (semaine plus légère)"], ["8", "30 min de footing", "20 min avec 3 accélérations", "LE 10 KM DE YAOUNDÉ"]], en: [["1", "3 × (8 min running + 2 min walking)", "30 min easy run", "4 km at easy pace"], ["2", "35 min easy run", "6 × 1 min fast / 1 min slow", "5 km"], ["3", "35 min easy run", "Hills: 6 × 30 s uphill", "6 km"], ["4", "30 min easy run", "30 min easy run", "5 km (lighter week)"], ["5", "40 min easy run", "5 × 3 min steady / 2 min slow", "7 km"], ["6", "40 min easy run", "Hills: 8 × 30 s uphill", "8 km"], ["7", "35 min easy run", "3 × 5 min steady / 2 min slow", "6 km (lighter week)"], ["8", "30 min easy run", "20 min with 3 strides", "THE YAOUNDÉ 10 KM"]]};
+const FR = {env, benef, infoRunners, volunteers, prizes, levels, faq,
+  ui:{gaugeOf:'collectés sur {o} FCFA · {p} %', gaugeSoon:'La collecte démarre avec l’ouverture des inscriptions.', gaugeUpd:'Mis à jour le {d}.', challenge:'Challenge entreprises', trophy:'Trophée', locale:'fr-FR', copy:'Copier l’adresse', copied:'Adresse copiée', copyFail:'Copie impossible : sélectionnez le texte', copiedText:'Texte copié', title:'10 KM de Yaoundé 2027'}};
+
+const EN = {
+ env: [
+  ['cup','Zero-waste race','Reusable cups and water stations without disposable bottles wherever possible.'],
+  ['bin','Collection and sorting','Collection points along the route and in the village, sorting by a specialised operator.'],
+  ['broom','Route clean-up','Ambassador teams before and after the race, to leave the streets cleaner than before.'],
+  ['flag','Green kilometre','An awareness stretch on plastic waste, with a point where every piece of waste brought in is counted.'],
+  ['tent','Environmental village','Associations, young Green Hackathon innovators and partners gathered at the finish.'],
+  ['tree','Lasting action','Tree planting or the restoration of a green space with a local organisation.']
+ ],
+ benef: [
+  ['heart','Widows','Women who lost their husband in a disaster or an environmental problem and were left vulnerable.'],
+  ['child','Children and orphans','Children who lost their parents in such circumstances, or whose schooling and health have been affected.'],
+  ['home','Disaster-hit families','Families whose home was destroyed or made uninhabitable by a flood, a landslide or another disaster.'],
+  ['pulse','People made ill','People suffering from illnesses linked to pollution or other environmental risks, after proper assessment.']
+ ],
+ infoRunners: [
+  ['bib','Bib collection','Show the QR code received at registration and an ID. Places and times will be published before the race.'],
+  ['drop','Water stations','A water point at km 5 of the 10 km and in the finish village, zero-waste style. Bring your own bottle.'],
+  ['cross','Safety and first aid','Medical posts along the route, a first-aid team at the finish and an emergency number printed on your bib.'],
+  ['sun','Heat and health','Run at your own pace, drink before the start and see a doctor if you have any doubt about your fitness.'],
+  ['bag','Bag drop and changing','A bag drop will be available in the village. Details will come with the programme.'],
+  ['bus','Getting there','Transport, car-sharing and parking advice will be published with the final route.']
+ ],
+ volunteers: [
+  ['users','Welcome and bib collection','Welcome runners, check registrations and hand out bibs.'],
+  ['drop','Water stations','Run a water point on the route or at the finish, zero-waste style.'],
+  ['bin','Waste collection and sorting','Staff the collection points, sort and count waste for the report.'],
+  ['broom','Route clean-up','Join the ambassador teams before and after the race.'],
+  ['shield','Route safety','Mark turns and guide runners and spectators alongside the security teams.'],
+  ['tent','Environmental village','Welcome visitors, run stands and present the Solidarity Fund.']
+ ],
+ prizes: [['Women overall',300000,200000,150000,50000],['Men overall',300000,200000,150000,50000],['Female students',100000,75000,50000,0],['Male students',100000,75000,50000,0]],
+ levels: [['Bronze','500,000 CFA','Logo on shared materials, mention in the report','#b07a4a'],['Silver','1,000,000 CFA','Selected materials, one team of 10 runners','#8f9a95'],['Gold','2,000,000 CFA','Logo on bibs, stand in the village, two teams','#d9a514'],['Platinum','4,000,000 CFA','Main visibility, a water station or the green kilometre in its name, five teams','#5b7f8f'],['Title partner','8,000,000 CFA','Name linked to the race, finish arch, ten teams','#0c4a26']],
+ faq: [
+  ['The race',[
+    ['When is the race?','The first edition is planned for Saturday 10 July 2027, with an 8 a.m. start. This date is provisional: it will be confirmed on this site once the authorities have approved the route.'],
+    ['Do I need to be an experienced runner?','No. The Yaoundé 10 KM is open to experienced runners and beginners alike. Train gradually and run at your own pace.'],
+    ['Is there a minimum age?','Yes. The minimum age and conditions for minors will be set out in the official rules, published when registration opens.'],
+    ['Where does the route go?','The 10 km starts on the Boulevard du 20 Mai and finishes at the National Museum, via Nlongkak, Elig-Essono and Warda. The 5 km and 3 km finish at the same place. This route is a proposal, being studied with the city authorities and the security services.']
+  ]],
+  ['Registration',[
+    ['How much does it cost?','10 km: 500 CFA francs for students, 1,000 CFA francs for workers. 5 km and 3 km walk: 500 CFA francs for everyone. Companies: 100,000 CFA francs per team of 10 runners.'],
+    ['Which race should I choose?','The 3 km is an eco family walk, open to as many people as possible. The 5 km is a popular run, suited to beginners and students. The 10 km is a sports challenge for more trained runners.'],
+    ['How do I pay?','By Orange Money or MTN MoMo, online or in the official app.'],
+    ['When does registration open?','On 1 December 2026, in the Odyssée Connect app. Places open in stages, starting with 3,000.'],
+    ['Do I need a student card?','It may be requested at bib collection for the student fee, and it will be required to receive a prize in the student categories.']
+  ]],
+  ['The Solidarity Fund',[
+    ['What is the Fund for?','It supports widows, children and orphans, disaster-hit families and people made ill by the destruction of the environment. It is the reason the race exists.'],
+    ['How are beneficiaries chosen?','According to published criteria, with recognised local organisations and in consultation with the authorities. A selection committee documents every decision.'],
+    ['How will I know how the money was used?','A public report will present the amounts raised and awarded and the number of beneficiaries, without revealing anyone\'s identity.']
+  ]]
+ ],
+ ui: {gaugeOf:'raised of {o} CFA · {p}%', gaugeSoon:'Fundraising starts when registration opens.', gaugeUpd:'Updated on {d}.', challenge:'Company challenge', trophy:'Trophy', locale:'en-GB', copy:'Copy address', copied:'Address copied', copyFail:'Copy failed: select the text', copiedText:'Text copied', title:'Yaoundé 10 KM 2027'}
+};
+
+const root = document.getElementById('root');
+let D = FR, views = [];
+function show() {
+  const h = (location.hash || '#accueil').slice(1);
+  const el = h ? document.getElementById(h) : null;
+  const host = el ? el.closest('.view') : null;
+  const target = views.includes(h) ? h : (host ? host.id : 'accueil');
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === target));
+  document.querySelectorAll('.links a').forEach(a => a.getAttribute('href') === '#' + target ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
+  const t = document.querySelector('#' + target + ' h1');
+  document.title = (target === 'accueil' || !t ? '' : t.textContent + ' · ') + D.ui.title;
+  const menu = document.getElementById('menu'), burger = document.getElementById('burger');
+  menu.classList.remove('open'); burger.setAttribute('aria-expanded', 'false');
+  if (el && !views.includes(h)) el.scrollIntoView(); else window.scrollTo(0, 0);
+}
+function mount(lang) {
+  D = lang === 'en' ? EN : FR;
+  root.replaceChildren(document.getElementById('tpl-' + lang).content.cloneNode(true));
+  document.documentElement.lang = lang;
+  const fmt = n => n ? n.toLocaleString(D.ui.locale) : '—';
+  document.getElementById('envCards').innerHTML = D.env.map(card).join('');
+  document.getElementById('benefCards').innerHTML = D.benef.map(card).join('');
+  document.getElementById('infoCards').innerHTML = D.infoRunners.map(card).join('');
+  document.getElementById('volCards').innerHTML = D.volunteers.map(card).join('');
+  document.getElementById('prizeRows').innerHTML = D.prizes.map(([c,a,b,d,e]) =>
+    `<tr><td><strong>${c}</strong></td><td class="r">${fmt(a)}</td><td class="r">${fmt(b)}</td><td class="r">${fmt(d)}</td><td class="r">${fmt(e)}</td></tr>`).join('')
+    + `<tr><td><strong>${D.ui.challenge}</strong></td><td class="r">${D.ui.trophy}</td><td class="r">—</td><td class="r">—</td><td class="r">—</td></tr>`;
+  document.getElementById('levels').innerHTML = D.levels.map(([n,a,d,c]) => `<div class="lvl" style="--c:${c}"><span>${n}</span><b>${a}</b><span>${d}</span></div>`).join('');
+  document.getElementById('faqList').innerHTML = D.faq.map(([cat,qs]) => `<div class="faqcat">${cat}</div>` + qs.map(([q,a]) => `<details><summary>${q}</summary><div>${a}</div></details>`).join('')).join('');
+
+  // plan d'entraînement
+  const pr = document.getElementById('planRows');
+  if (pr) pr.innerHTML = PLAN[lang].map(([w,a,b,c]) => `<tr${w==='12'?' class="race"':''}><td><strong>${w}</strong></td><td>${a}</td><td>${b}</td><td>${c}</td></tr>`).join('');
+  // jauge du Fonds
+  document.querySelectorAll('.gauge').forEach(g => {
+    const pct = Math.min(100, Math.round(FONDS.collecte / FONDS.objectif * 100));
+    g.querySelector('.bar i').style.width = pct + '%';
+    g.querySelector('.gnum').textContent = FONDS.collecte.toLocaleString(D.ui.locale) + ' FCFA';
+    g.querySelector('.gof').textContent = D.ui.gaugeOf.replace('{o}', FONDS.objectif.toLocaleString(D.ui.locale)).replace('{p}', pct);
+    g.querySelector('.gnote').textContent = FONDS.collecte === 0 ? D.ui.gaugeSoon : (FONDS.maj ? D.ui.gaugeUpd.replace('{d}', FONDS.maj) : '');
+  });
+  // réseaux sociaux
+  const names = { facebook: 'Facebook', linkedin: 'LinkedIn', instagram: 'Instagram' };
+  document.querySelectorAll('.social').forEach(box => {
+    const links = Object.entries(SOCIAL).filter(([, u]) => u.startsWith('https://'));
+    box.hidden = links.length === 0;
+    box.querySelector('.slinks').replaceChildren(...links.map(([k, u]) => { const a = document.createElement('a'); a.href = u; a.textContent = names[k]; a.rel = 'noopener'; return a; }));
+  });
+  views = [...document.querySelectorAll('.view')].map(v => v.id);
+  const menu = document.getElementById('menu'), burger = document.getElementById('burger');
+  burger.addEventListener('click', () => { const o = menu.classList.toggle('open'); burger.setAttribute('aria-expanded', String(o)); });
+  document.querySelectorAll('.lang').forEach(b => b.addEventListener('click', () => {
+    try { localStorage.setItem('lang20km', b.dataset.lang); } catch (e) {}
+    mount(b.dataset.lang);
+  }));
+  document.querySelectorAll('[data-copytarget]').forEach(b => { const label = b.textContent; b.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(document.getElementById(b.dataset.copytarget).innerText); b.textContent = D.ui.copiedText; }
+    catch (e) { b.textContent = D.ui.copyFail; }
+    setTimeout(() => { b.textContent = label; }, 2500);
+  }); });
+  document.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(b.dataset.copy); b.textContent = D.ui.copied; }
+    catch (e) { b.textContent = D.ui.copyFail; }
+    setTimeout(() => { b.textContent = D.ui.copy; }, 2500);
+  }));
+  show();
+}
+window.addEventListener('hashchange', show);
+let start = 'fr';
+try { if (localStorage.getItem('lang20km') === 'en') start = 'en'; } catch (e) {}
+mount(start);
+
+}
+</script>
+<script>
+(function(){
+  function pad(n){return String(n).padStart(2,'0');}
+  function tick(){
+    document.querySelectorAll('[data-cd]').forEach(function(el){
+      var r=Math.max(0,Math.floor((new Date(el.getAttribute('data-cd'))-Date.now())/1000));
+      var v={j:Math.floor(r/86400),h:pad(Math.floor(r%86400/3600)),m:pad(Math.floor(r%3600/60)),s:pad(r%60)};
+      el.querySelectorAll('[data-u]').forEach(function(b){b.textContent=v[b.getAttribute('data-u')];});
+    });
+  }
+  tick(); setInterval(tick,1000);
+})();
+</script>
+<script src="parcours.js"></script>
+<script>
+/* Parcours interactif (mêmes tracés que l'appli Odyssée Connect) */
+(function () {
+  const T = window.ODC_TRACES || {};
+  let dl = null;
+  try { if (window.claude && window.claude.use) window.claude.use('downloads').then((d) => { dl = d; }).catch(() => {}); } catch (e) { /* hors claude.ai */ }
+  const L = {
+    fr: { dist: 'Distance calculée', dep: 'Départ', arr: 'Arrivée', ravit: 'Ravitaillement', gpx: 'Télécharger le tracé (GPX) pour votre montre ou Strava',
+          note: 'Proposition non mesurée : la distance officielle sera fixée par un mesureur agréé et le tracé validé par les autorités de Yaoundé.',
+          sansR: 'Pas de ravitaillement sur le parcours : eau au départ et au village d’arrivée.', avecR: (k) => 'Ravitaillement prévu au km ' + k.join(', ') + ' (emplacement indicatif).' },
+    en: { dist: 'Calculated distance', dep: 'Start', arr: 'Finish', ravit: 'Water station', gpx: 'Download the route (GPX) for your watch or Strava',
+          note: 'Unmeasured proposal: the official distance will be set by an accredited measurer and the route approved by the Yaoundé authorities.',
+          sansR: 'No water station on the route: water at the start and at the finish village.', avecR: (k) => 'Water station planned at km ' + k.join(', ') + ' (indicative location).' }
+  };
+  const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  function projeter(coords, W, H, m) {
+    const la = coords.map((p) => p[0]), lo = coords.map((p) => p[1]);
+    const c = Math.cos((Math.min(...la) + Math.max(...la)) / 2 * Math.PI / 180);
+    const x0 = Math.min(...lo) * c, x1 = Math.max(...lo) * c, y0 = Math.min(...la), y1 = Math.max(...la);
+    const k = Math.min((W - 2 * m) / (x1 - x0 || 1), (H - 2 * m) / (y1 - y0 || 1));
+    const ox = (W - (x1 - x0) * k) / 2, oy = (H - (y1 - y0) * k) / 2;
+    return (p) => [ox + (p[1] * c - x0) * k, H - (oy + (p[0] - y0) * k)];
+  }
+  function plan(t, l) {
+    const W = 520, H = 400, xy = projeter(t.coords, W, H, 30);
+    const d = t.coords.map((p, i) => { const [x, y] = xy(p); return (i ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1); }).join(' ');
+    const [dx, dy] = xy(t.coords[0]), [ax, ay] = xy(t.coords[t.coords.length - 1]);
+    const bornes = Object.entries(t.km || {}).map(([k, p]) => { const [x, y] = xy(p); const r = (t.ravitaillements || []).includes(+k);
+      return r ? `<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><circle r="11" fill="#1d5f99" stroke="#fff" stroke-width="2"/><text y="4" text-anchor="middle" font-size="11" font-weight="800" fill="#fff">${k}</text></g>`
+               : `<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><circle r="9" fill="#f7c51e" stroke="#fff" stroke-width="1.5"/><text y="3.5" text-anchor="middle" font-size="9" font-weight="800" fill="#13261a">${k}</text></g>`; }).join('');
+    return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(t.nom)}"><rect width="${W}" height="${H}" rx="12" fill="var(--soft,#eef3ea)"/>
+      <path d="${d}" fill="none" stroke="#fff" stroke-width="11" stroke-linejoin="round" stroke-linecap="round"/>
+      <path d="${d}" fill="none" stroke="#f7c51e" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+      <path d="${d}" fill="none" stroke="#0b4d2c" stroke-width="1.6" stroke-dasharray="6 6"/>${bornes}
+      <g transform="translate(${dx.toFixed(1)} ${dy.toFixed(1)})"><circle r="14" fill="#0b4d2c" stroke="#fff" stroke-width="3"/><text y="5" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">D</text></g>
+      <g transform="translate(${ax.toFixed(1)} ${ay.toFixed(1)})"><circle r="14" fill="#c62828" stroke="#fff" stroke-width="3"/><text y="5" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">A</text></g>
+      <text x="12" y="${H - 12}" font-size="10" fill="#5b6b5f">© OpenStreetMap contributors · OSRM</text>
+      <g transform="translate(${W - 30} 32)"><path d="M0 -14 L6 4 L0 0 L-6 4Z" fill="#0b4d2c"/><text y="17" text-anchor="middle" font-size="10" font-weight="700" fill="#0b4d2c">N</text></g></svg>`;
+  }
+  function rendre(fig, id) {
+    const lang = fig.dataset.traceLang === 'en' ? 'en' : 'fr', l = L[lang], t = T[id]; if (!t) return;
+    const km = (n) => n.toLocaleString(lang === 'en' ? 'en-GB' : 'fr-FR', { maximumFractionDigits: 1 }) + ' km';
+    const r = t.ravitaillements || [];
+    fig.innerHTML = `<div class="tr-tabs" role="group" aria-label="Distance">${['3', '5', '10'].filter((k) => T[k]).map((k) => `<button type="button" class="t${k}" data-tr="${k}" aria-pressed="${k === id}">${k} KM</button>`).join('')}</div>
+      ${plan(t, l)}
+      <div class="tr-leg"><span><i style="background:#0b4d2c"></i>${l.dep} · ${esc(t.depart)}</span><span><i style="background:#c62828"></i>${l.arr} · ${esc(t.arrivee)}</span>${r.length ? `<span><i style="background:#1d5f99"></i>${l.ravit}</span>` : ''}</div>
+      <p class="tr-info"><b>${l.dist} : ${km(t.longueur_m / 1000)}.</b> ${l.note}</p>
+      <ol class="tr-etapes">${(t.etapes || []).map((e, i, a) => `<li class="${i === 0 ? 'dep' : i === a.length - 1 ? 'arr' : ''}"><span class="km">${km(e.km)}</span><span><b>${esc(e.nom)}</b><small>${esc(e.par)}</small></span></li>`).join('')}</ol>
+      <p class="tr-info">${r.length ? l.avecR(r) : l.sansR}</p>
+      <a class="tr-dl" href="#" data-gpx="${id}">⬇ ${l.gpx}</a>`;
+  }
+  const tout = () => document.querySelectorAll('figure[data-trace-lang]').forEach((f) => { if (!f.querySelector('.tr-tabs')) rendre(f, '10'); });
+  tout();
+  // La page change de langue en remplaçant son contenu : on redessine les parcours qui apparaissent
+  new MutationObserver(tout).observe(document.body, { childList: true, subtree: true });
+  // Fichier GPX fabriqué dans le navigateur à partir du même tracé
+  function gpx(t) {
+    const pts = t.coords.map((p) => `<trkpt lat="${p[0]}" lon="${p[1]}"/>`).join('');
+    return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="L'Odyssée de l'environnement" xmlns="http://www.topografix.com/GPX/1/1"><metadata><name>${esc(t.nom)}</name><copyright author="OpenStreetMap contributors"><license>https://opendatacommons.org/licenses/odbl/</license></copyright></metadata><trk><name>${esc(t.nom)}</name><trkseg>${pts}</trkseg></trk></gpx>`;
+  }
+  document.addEventListener('click', (e) => {
+    const g = e.target.closest('[data-gpx]');
+    if (g) { e.preventDefault(); const t = T[g.dataset.gpx]; if (!t) return;
+      const blob = new Blob([gpx(t)], { type: 'application/gpx+xml' }), filename = 'parcours-' + t.id + 'km-yaounde-2027.gpx';
+      if (dl) { dl.save({ filename, data: blob }).catch(() => {}); return; }
+      // Page ouverte hors de claude.ai : lien de téléchargement classique
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename;
+      document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); return; }
+    const b = e.target.closest('[data-tr]'); if (!b) return;
+    rendre(b.closest('figure[data-trace-lang]'), b.dataset.tr);
+  });
+})();
+</script>
+</body>
+</html>
