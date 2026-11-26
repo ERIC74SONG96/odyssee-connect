@@ -1,19 +1,26 @@
 # Migrations de la base de données
 
 Chaque fichier modifie la base Supabase. On les applique **dans l'ordre des numéros**,
-dans *Supabase > SQL Editor*, d'abord sur la base de **test**, puis sur la **production**.
+dans *Supabase > SQL Editor*, après le passage des tests automatiques (base locale jetable).
 
-**Projet de test** Supabase : `nuqmvkutljogqjuhtqrj` (Londres, eu-west-2, offre gratuite), relié à l'appli. Migrations 001 → 006 appliquées sur ce projet le 26/11/2026 (commit e9981c1), contrôles de la liste de mise en production passés : aucun droit d'écriture public, RLS sur toutes les tables, dépôt de photos réservé à l'équipe, inscriptions fermées (quota 3 000).
-**La production n'est pas encore migrée** : si l'association garde ce projet pour l'ouverture, le noter ici ; sinon appliquer 001 → 006 sur le projet de production et remplir la colonne.
+**Projet de production** Supabase : `nuqmvkutljogqjuhtqrj` (Londres, eu-west-2, offre gratuite, organisation « Odyssée de l'environnement »), relié à l'appli par `js/config.js`. L'association a retenu ce projet pour l'ouverture : il n'y a pas d'autre projet Supabase. Les tests automatiques utilisent une base locale jetable (`tests/verifier_sql.sh`).
 
-| Fichier | Contenu | Projet de test | Production |
-|---|---|---|---|
-| `001_schema_initial.sql` | Schéma complet : tables, règles de sécurité, fonctions, dossier de photos | 26/11/2026 | — |
-| `002_donnees_personnelles.sql` | E-mail obligatoire, accord parental des mineurs, version du consentement, anonymisation après la course | 26/11/2026 | — |
-| `003_ouverture_et_doublons.sql` | Interrupteur d'ouverture et quota (fermé par défaut), clé d'envoi anti-doublon, même personne refusée, identifiant de transaction unique | 26/11/2026 | — |
-| `004_audit_securite.sql` | Audit #26 : délai de paiement (48 h) avant qu'une inscription non payée libère sa place, droits limités à la lecture sur les tables, plus de dépôt anonyme de photos | 26/11/2026 | — |
-| `005_verification_paiements.sql` | #27 : l'équipe peut refuser un paiement déclaré introuvable, avec un motif visible par le coureur (identifiant effacé, nouveau délai de paiement) | 26/11/2026 | — |
-| `006_fil_equipe.sql` | Seule l'équipe publie des photos dans le fil (publication immédiate) ; dépôt de photos réservé à l'équipe connectée | 26/11/2026 | — |
+Migrations 001 → 006 appliquées le 26/11/2026 (commit e9981c1). Contrôle sur la base de production le 26/11/2026 :
+- 25 tables dans `public`, **RLS active sur toutes** ; 20 règles RLS ;
+- **0 droit d'écriture** (INSERT/UPDATE/DELETE/TRUNCATE) pour `anon`, `authenticated` ou `PUBLIC` sur les tables ;
+- 72 fonctions ; fonctions `SECURITY DEFINER` avec `search_path` fixé, aucune exécutable par `PUBLIC` ; les fonctions réservées à l'équipe vérifient `est_staff()` ;
+- dossier `photos` en lecture publique (fil d'actualité), dépôt réservé à l'équipe connectée (`depot_photos_equipe` : `publications/%` et `est_staff()`) ;
+- 1 compte équipe ; inscription libre désactivée dans l'authentification Supabase ;
+- inscriptions **fermées** (`ouvertes = false`, quota 3 000), 0 inscription en base.
+
+| Fichier | Contenu | Production (`nuqmvkutljogqjuhtqrj`) |
+|---|---|---|
+| `001_schema_initial.sql` | Schéma complet : tables, règles de sécurité, fonctions, dossier de photos | 26/11/2026 |
+| `002_donnees_personnelles.sql` | E-mail obligatoire, accord parental des mineurs, version du consentement, anonymisation après la course | 26/11/2026 |
+| `003_ouverture_et_doublons.sql` | Interrupteur d'ouverture et quota (fermé par défaut), clé d'envoi anti-doublon, même personne refusée, identifiant de transaction unique | 26/11/2026 |
+| `004_audit_securite.sql` | Audit #26 : délai de paiement (48 h) avant qu'une inscription non payée libère sa place, droits limités à la lecture sur les tables, plus de dépôt anonyme de photos | 26/11/2026 |
+| `005_verification_paiements.sql` | #27 : l'équipe peut refuser un paiement déclaré introuvable, avec un motif visible par le coureur (identifiant effacé, nouveau délai de paiement) | 26/11/2026 |
+| `006_fil_equipe.sql` | Seule l'équipe publie des photos dans le fil (publication immédiate) ; dépôt de photos réservé à l'équipe connectée | 26/11/2026 |
 
 Règles :
 - ne jamais modifier un fichier déjà appliqué en production : écrire le suivant (`002_…`) ;
