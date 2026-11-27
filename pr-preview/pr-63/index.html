@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Odyssée Connect</title>
+<meta name="description" content="La plateforme de la communauté Odyssée : événements, 10 KM de Yaoundé, actions environnementales, bénévolat, formations, impact et boutique.">
+<meta name="theme-color" content="#0b4d2c">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preload" href="css/polices/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/polices.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div class="app">
+  <div id="bandeau-demo" class="demo" hidden></div>
+  <div id="ecran-indisponible" hidden style="padding:28px 20px;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#0b2e1c;max-width:34rem;margin:0 auto;line-height:1.55">
+    <h1 style="font-size:1.35rem;margin:0 0 .6rem">Connexion au serveur impossible</h1>
+    <p style="margin:0 0 .9rem">L'application n'a pas pu charger ses r&eacute;glages. Vos inscriptions et vos paiements ne seraient pas enregistr&eacute;s&nbsp;: nous pr&eacute;f&eacute;rons donc ne rien afficher plut&ocirc;t que de vous laisser croire le contraire.</p>
+    <p style="margin:0 0 .9rem">Cela arrive quand un r&eacute;seau filtre le site&nbsp;: Wi-Fi d'&eacute;cole, d'entreprise ou d'h&ocirc;tel. Essayez en donn&eacute;es mobiles, ou depuis un autre r&eacute;seau.</p>
+    <p style="margin:0 0 1.2rem"><button type="button" onclick="location.reload()" style="font:inherit;padding:.6rem 1.1rem;border:0;border-radius:.5rem;background:#0b4d2c;color:#fff;cursor:pointer">R&eacute;essayer</button></p>
+    <p style="margin:0;font-size:.92rem;color:#4a5b52">Besoin d'aide&nbsp;? <a href="mailto:contact@odyssee-env.org" style="color:#0b4d2c">contact@odyssee-env.org</a></p>
+  </div>
+  <main id="vue" tabindex="-1" aria-live="polite"></main>
+  <nav class="tabs" aria-label="Navigation principale">
+    <a href="#accueil" data-tab="accueil"><span class="tab-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>Accueil</a>
+    <a href="#evenements" data-tab="evenements"><span class="tab-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>Événements</a>
+    <a href="#actions" data-tab="actions"><span class="tab-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.2 2 8 0 5.5-4.8 10-10 10z"/><path d="M2 21c0-3 1.9-5.4 5.1-6"/></svg></span>Actions</a>
+    <a href="#communaute" data-tab="communaute"><span class="tab-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7" r="3"/><circle cx="17" cy="9" r="2"/><path d="M3 21a6 6 0 0 1 12 0M14 21a4 4 0 0 1 7 0"/></svg></span>Communauté</a>
+    <a href="#profil" data-tab="profil"><span class="tab-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>Profil</a>
+  </nav>
+</div>
+<script src="js/config.js"></script>
+<script>
+  if (window.ODC_CONFIG && ODC_CONFIG.supabaseUrl) {
+    document.write('<script src="js/vendor/supabase/supabase.min.js"><\/script>'); // @supabase/supabase-js 2.119.2 (UMD officiel), servie depuis le site
+  }
+</script>
+<script>
+  /* Garde-fou. Sur le site public, l'appli ne démarre jamais en mode démonstration.
+     Si js/config.js ou la bibliothèque Supabase n'arrivent pas (filtre réseau, coupure,
+     fichier incomplet), on affiche un message au lieu de basculer sur des données locales :
+     personne ne doit pouvoir s'inscrire et payer en croyant que c'est enregistré.
+     La démonstration ne s'active que si config.js le demande explicitement (demo: true). */
+  (function () {
+    var c = window.ODC_CONFIG;
+    var prod = !!(c && c.supabaseUrl && c.supabaseAnonKey && window.supabase);
+    var demo = !!(c && c.demo === true && !c.supabaseUrl);
+    if (prod || demo) {
+      document.write('<script src="js/vendor/qrcode.min.js"><\/script>'
+        + '<script src="js/data.js"><\/script>'
+        + '<script src="js/parcours.js"><\/script>'
+        + '<script src="js/app.js"><\/script>');
+    } else {
+      document.getElementById('ecran-indisponible').hidden = false;
+      document.getElementById('vue').hidden = true;
+      var n = document.querySelector('nav.tabs'); if (n) n.hidden = true;
+    }
+  })();
+</script>
+</body>
+</html>
