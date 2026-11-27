@@ -21,6 +21,7 @@ Migrations 001 → 006 appliquées le 26/11/2026 (commit e9981c1). Contrôle sur
 | `004_audit_securite.sql` | Audit #26 : délai de paiement (48 h) avant qu'une inscription non payée libère sa place, droits limités à la lecture sur les tables, plus de dépôt anonyme de photos | 26/11/2026 |
 | `005_verification_paiements.sql` | #27 : l'équipe peut refuser un paiement déclaré introuvable, avec un motif visible par le coureur (identifiant effacé, nouveau délai de paiement) | 26/11/2026 |
 | `006_fil_equipe.sql` | Seule l'équipe publie des photos dans le fil (publication immédiate) ; dépôt de photos réservé à l'équipe connectée | 26/11/2026 |
+| `007_reference_search_path.sql` | Correctif production : search_path de `_nouvelle_reference` élargi à `public, extensions` (pgcrypto est dans `extensions` sur Supabase) — sans quoi `gen_random_bytes` est introuvable et aucune inscription/don/commande ne peut être créé | à appliquer |
 
 Règles :
 - ne jamais modifier un fichier déjà appliqué en production : écrire le suivant (`002_…`) ;
