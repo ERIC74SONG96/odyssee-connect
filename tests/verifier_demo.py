@@ -25,7 +25,7 @@ def main():
         # pointe vers la vraie base : on sert une copie de config.js sans adresse Supabase.
         def config_demo(route):
             texte = route.fetch().text()
-            texte = re.sub(r"supabaseUrl:\s*'[^']*'", "supabaseUrl: ''", texte)
+            texte = re.sub(r"supabaseUrl:\s*'[^']*'", "supabaseUrl: '', demo: true", texte)
             route.fulfill(body=texte, content_type="application/javascript")
         page.route("**/js/config.js*", config_demo)
         erreurs = []

@@ -5,7 +5,7 @@
  *  - Démonstration (navigateur) sinon.
  */
 (function () {
-  const C = window.ODC_CONFIG;
+  const C = window.ODC_CONFIG; // absent si js/config.js n'a pas pu être chargé
   const chiffres = (t) => String(t || '').replace(/\D/g, '');
   const telValide = (t) => { const n = chiffres(t).length; return n >= 8 && n <= 15; };
 
@@ -620,10 +620,36 @@
     };
   }
 
+  // ------------------------------------------------------------------
+  // Moteur « indisponible » : les réglages ou la bibliothèque n'ont pas été chargés.
+  // On ne bascule jamais en démonstration à la place : un visiteur pourrait croire
+  // son inscription et son paiement enregistrés alors que rien n'arriverait en base.
+  // ------------------------------------------------------------------
+  function moteurIndisponible() {
+    const message = 'Connexion au serveur impossible. Réessayez depuis un autre réseau.';
+    // mode et urlPhoto sont synchrones (app.js les lit directement) : on les fournit
+    // tels quels pour qu'aucune méthode synchrone ne devienne une promesse. Toutes les
+    // autres fonctions (réseau) rejettent avec un message clair. En pratique ce moteur
+    // n'est pas atteint : le portail de index.html ne charge pas app.js dans cet état.
+    const base = { mode: 'indisponible', urlPhoto: (chemin) => chemin };
+    return new Proxy(base, {
+      get(cible, nom) {
+        if (nom in cible) return cible[nom];
+        if (typeof nom === 'symbol') return undefined;
+        return async () => { throw erreur(message); };
+      }
+    });
+  }
+
   window.ODC_DATA = {
     creer() {
-      if (C.supabaseUrl && C.supabaseAnonKey && window.supabase) return moteurSupabase();
-      return moteurDemo();
+      if (C && C.supabaseUrl && C.supabaseAnonKey && window.supabase) return moteurSupabase();
+      // La démonstration doit être demandée explicitement (config.js : demo: true) et
+      // n'est jamais tolérée sur les hôtes publics de production (défense en profondeur
+      // du portail de index.html).
+      const surProd = ['inscription.odyssee-env.com'].indexOf(location.hostname) !== -1;
+      if (C && C.demo === true && !C.supabaseUrl && !surProd) return moteurDemo();
+      return moteurIndisponible();
     },
     telValide, chiffres
   };
