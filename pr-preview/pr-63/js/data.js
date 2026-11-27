@@ -627,7 +627,12 @@
   // ------------------------------------------------------------------
   function moteurIndisponible() {
     const message = 'Connexion au serveur impossible. Réessayez depuis un autre réseau.';
-    return new Proxy({ mode: 'indisponible' }, {
+    // mode et urlPhoto sont synchrones (app.js les lit directement) : on les fournit
+    // tels quels pour qu'aucune méthode synchrone ne devienne une promesse. Toutes les
+    // autres fonctions (réseau) rejettent avec un message clair. En pratique ce moteur
+    // n'est pas atteint : le portail de index.html ne charge pas app.js dans cet état.
+    const base = { mode: 'indisponible', urlPhoto: (chemin) => chemin };
+    return new Proxy(base, {
       get(cible, nom) {
         if (nom in cible) return cible[nom];
         if (typeof nom === 'symbol') return undefined;
@@ -639,8 +644,11 @@
   window.ODC_DATA = {
     creer() {
       if (C && C.supabaseUrl && C.supabaseAnonKey && window.supabase) return moteurSupabase();
-      // La démonstration doit être demandée explicitement (config.js : demo: true).
-      if (C && C.demo === true && !C.supabaseUrl) return moteurDemo();
+      // La démonstration doit être demandée explicitement (config.js : demo: true) et
+      // n'est jamais tolérée sur les hôtes publics de production (défense en profondeur
+      // du portail de index.html).
+      const surProd = ['inscription.odyssee-env.com'].indexOf(location.hostname) !== -1;
+      if (C && C.demo === true && !C.supabaseUrl && !surProd) return moteurDemo();
       return moteurIndisponible();
     },
     telValide, chiffres
