@@ -47,7 +47,11 @@
   (function () {
     var c = window.ODC_CONFIG;
     var prod = !!(c && c.supabaseUrl && c.supabaseAnonKey && window.supabase);
-    var demo = !!(c && c.demo === true && !c.supabaseUrl);
+    // La démonstration n'est tolérée QUE hors des hôtes publics de production, même si
+    // config.js contenait demo:true par erreur. Sur inscription.odyssee-env.com, jamais.
+    var HOTES_PUBLICS = ['inscription.odyssee-env.com'];
+    var surProd = HOTES_PUBLICS.indexOf(location.hostname) !== -1;
+    var demo = !!(c && c.demo === true && !c.supabaseUrl) && !surProd;
     if (prod || demo) {
       document.write('<script src="js/vendor/qrcode.min.js"><\/script>'
         + '<script src="js/data.js"><\/script>'
