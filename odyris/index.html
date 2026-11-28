@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Odyris · Console interne</title>
+<style>
+  :root{
+    --vert:#14532d; --vert2:#1b6b3a; --vert-clair:#e8f3ec; --or:#f5c518;
+    --fond:#f4f6f5; --carte:#ffffff; --bord:#e2e8e4; --texte:#14201a;
+    --gris:#64756c; --rouge:#b4251d; --ambre:#9a6a00; --ambre-fond:#fdf3dc;
+    --ok:#1b6b3a; --ok-fond:#e8f3ec;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--texte);background:var(--fond)}
+  button{font:inherit;cursor:pointer}
+  input{font:inherit}
+  .cache{display:none !important}
+
+  /* ---------- Écran de connexion ---------- */
+  #ecran-login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;
+    background:linear-gradient(135deg,#0f3d22,#14532d 60%,#0c2e19)}
+  .carte-login{background:#fff;border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.3);width:100%;max-width:420px;padding:28px}
+  .marque{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+  .logo{width:46px;height:46px;border-radius:10px;background:var(--vert);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .logo svg{width:30px;height:30px}
+  .marque h1{margin:0;font-size:22px}
+  .marque .sous{color:var(--gris);font-size:13px;margin-top:1px}
+  .champ{display:block;margin-top:14px}
+  .champ label{display:block;font-size:13px;color:var(--gris);margin-bottom:5px;font-weight:600}
+  .champ input{width:100%;padding:11px 12px;border:1px solid var(--bord);border-radius:9px;background:#fbfdfc}
+  .champ input:focus{outline:2px solid var(--vert-clair);border-color:var(--vert2)}
+  .btn{width:100%;padding:12px;border:0;border-radius:9px;font-weight:700;background:var(--vert);color:#fff;margin-top:16px}
+  .btn:hover{background:var(--vert2)}
+  .btn:disabled{opacity:.55;cursor:default}
+  .btn.sec{background:#fff;color:var(--vert);border:1px solid var(--bord);margin-top:10px}
+  .btn.sec:hover{background:var(--vert-clair)}
+  .msg{margin-top:12px;font-size:14px;min-height:18px}
+  .msg.err{color:var(--rouge)} .msg.ok{color:var(--ok)}
+  .intro{color:var(--gris);font-size:13px;margin:6px 0 2px}
+
+  /* ---------- MFA ---------- */
+  .qr{display:flex;flex-direction:column;align-items:center;gap:10px;margin:14px 0;padding:14px;background:var(--vert-clair);border-radius:12px}
+  .qr img,.qr svg{width:180px;height:180px;background:#fff;border-radius:8px;padding:6px}
+  .secret{font-family:ui-monospace,monospace;font-size:13px;background:#fff;border:1px solid var(--bord);border-radius:7px;padding:7px 10px;word-break:break-all;text-align:center}
+  .code{letter-spacing:6px;text-align:center;font-size:20px !important;font-family:ui-monospace,monospace}
+
+  /* ---------- Application ---------- */
+  #app{display:none;min-height:100vh;flex-direction:column}
+  header{background:var(--vert);color:#fff;display:flex;align-items:center;gap:14px;padding:10px 18px;position:sticky;top:0;z-index:10}
+  header .logo{width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,.14)}
+  header .logo svg{width:22px;height:22px}
+  header h1{font-size:17px;margin:0;font-weight:700}
+  header .spacer{flex:1}
+  .ident{text-align:right;font-size:13px;line-height:1.3}
+  .ident .nom{font-weight:700}
+  .badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;vertical-align:middle}
+  .badge.admin{background:var(--or);color:#3a2e00}
+  .badge.agent{background:rgba(255,255,255,.2);color:#fff}
+  .mfa-pill{font-size:12px;padding:3px 9px;border-radius:999px;font-weight:700}
+  .mfa-pill.on{background:#d7f0df;color:#0f3d22} .mfa-pill.off{background:var(--ambre-fond);color:var(--ambre)}
+  header button.lien{background:transparent;border:1px solid rgba(255,255,255,.35);color:#fff;padding:6px 11px;border-radius:8px;font-size:13px}
+  header button.lien:hover{background:rgba(255,255,255,.12)}
+
+  nav.tabs{display:flex;gap:4px;padding:10px 18px 0;background:var(--carte);border-bottom:1px solid var(--bord)}
+  nav.tabs button{background:transparent;border:0;padding:10px 16px;border-radius:9px 9px 0 0;color:var(--gris);font-weight:600}
+  nav.tabs button.actif{color:var(--vert);background:var(--vert-clair)}
+  main{padding:18px;max-width:1100px;width:100%;margin:0 auto;flex:1}
+
+  .barre{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+  .recherche{flex:1;min-width:220px;position:relative}
+  .recherche input{width:100%;padding:11px 12px 11px 38px;border:1px solid var(--bord);border-radius:10px;background:#fff}
+  .recherche svg{position:absolute;left:11px;top:11px;width:18px;height:18px;opacity:.5}
+  .compte{color:var(--gris);font-size:13px}
+
+  .liste{display:grid;gap:10px}
+  .pers{background:var(--carte);border:1px solid var(--bord);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:.1s}
+  .pers:hover{border-color:var(--vert2);box-shadow:0 3px 12px rgba(20,83,45,.08)}
+  .av{width:42px;height:42px;border-radius:50%;background:var(--vert-clair);color:var(--vert);display:flex;align-items:center;justify-content:center;font-weight:700;flex:0 0 auto}
+  .pers .info{flex:1;min-width:0}
+  .pers .nom{font-weight:700}
+  .pers .sub{color:var(--gris);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .roles{display:flex;gap:5px;flex-wrap:wrap}
+  .rpill{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--vert-clair);color:var(--vert)}
+  .rpill.donateur{background:#fdeccd;color:#8a5a00}
+  .rpill.coureur{background:#dce9fb;color:#1c4e8a}
+  .rpill.benevole{background:#e8ddfb;color:#5a2e8a}
+  .pers .chiffre{text-align:right;font-size:13px;color:var(--gris)}
+  .pers .chiffre b{display:block;color:var(--texte);font-size:15px}
+
+  .vide{text-align:center;color:var(--gris);padding:50px 20px}
+
+  /* Fiche (panneau) */
+  .overlay{position:fixed;inset:0;background:rgba(10,20,15,.45);display:flex;justify-content:flex-end;z-index:50}
+  .panneau{background:var(--fond);width:min(560px,100%);height:100%;overflow:auto;box-shadow:-10px 0 40px rgba(0,0,0,.25);animation:glisse .18s ease}
+  @keyframes glisse{from{transform:translateX(30px);opacity:.4}to{transform:none;opacity:1}}
+  .pan-tete{background:var(--vert);color:#fff;padding:20px 20px 18px}
+  .pan-tete .fermer{float:right;background:rgba(255,255,255,.15);border:0;color:#fff;width:32px;height:32px;border-radius:8px;font-size:18px}
+  .pan-tete h2{margin:2px 0 6px;font-size:21px}
+  .pan-tete .coord{font-size:13px;opacity:.92;line-height:1.6}
+  .pan-tete .coord span{display:inline-block;margin-right:14px}
+  .resume{display:flex;gap:10px;padding:14px 20px;background:var(--carte);border-bottom:1px solid var(--bord);flex-wrap:wrap}
+  .stat{flex:1;min-width:120px}
+  .stat .n{font-size:20px;font-weight:800;color:var(--vert)}
+  .stat .l{font-size:12px;color:var(--gris)}
+  .ops{padding:16px 20px}
+  .ops h3{font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--gris);margin:0 0 10px}
+  .op{background:var(--carte);border:1px solid var(--bord);border-radius:11px;padding:12px 14px;margin-bottom:10px}
+  .op .haut{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+  .op .lib{font-weight:600;flex:1}
+  .op .date{font-size:12px;color:var(--gris)}
+  .op .bas{display:flex;align-items:center;gap:10px;margin-top:6px;flex-wrap:wrap}
+  .statut{font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px}
+  .statut.ok{background:var(--ok-fond);color:var(--ok)}
+  .statut.attente{background:var(--ambre-fond);color:var(--ambre)}
+  .statut.neutre{background:#eef1ef;color:var(--gris)}
+  .montant{font-weight:700}
+  .op .act{margin-left:auto}
+  .mini{padding:7px 13px;border-radius:8px;border:0;background:var(--vert);color:#fff;font-weight:700;font-size:13px}
+  .mini:hover{background:var(--vert2)}
+  .mini:disabled{background:#cfe0d6;color:#7f978a;cursor:not-allowed}
+  .ref{font-family:ui-monospace,monospace;font-size:12px;color:var(--gris)}
+
+  /* Journal */
+  table.journal{width:100%;border-collapse:collapse;background:var(--carte);border:1px solid var(--bord);border-radius:12px;overflow:hidden}
+  table.journal th,table.journal td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--bord);font-size:13px;vertical-align:top}
+  table.journal th{background:var(--vert-clair);color:var(--vert);font-size:12px;text-transform:uppercase;letter-spacing:.4px}
+  table.journal tr:last-child td{border-bottom:0}
+
+  /* Toast */
+  #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);opacity:0;
+    background:var(--texte);color:#fff;padding:12px 18px;border-radius:10px;font-weight:600;z-index:100;transition:.2s;max-width:90vw}
+  #toast.on{opacity:1;transform:translateX(-50%)}
+  #toast.err{background:var(--rouge)}
+  .dialog{background:#fff;border-radius:14px;padding:22px;max-width:360px;width:90%;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+  .dialog p{margin:0 0 16px;font-size:15px}
+  .dialog input{width:100%;box-sizing:border-box;padding:11px;border:1px solid var(--bord);border-radius:9px;margin-bottom:16px;font-size:18px}
+  .dlg-btns{display:flex;gap:10px;justify-content:flex-end}
+  .dlg-btns .btn{width:auto;margin-top:0;padding:9px 18px}
+  .chargement{display:flex;align-items:center;gap:10px;color:var(--gris);padding:40px;justify-content:center}
+  .spin{width:18px;height:18px;border:3px solid var(--vert-clair);border-top-color:var(--vert);border-radius:50%;animation:t 1s linear infinite}
+  @keyframes t{to{transform:rotate(360deg)}}
+  .avert{background:var(--ambre-fond);color:var(--ambre);border:1px solid #f0dca8;border-radius:10px;padding:10px 13px;font-size:13px;margin-bottom:14px;display:flex;gap:10px;align-items:center}
+  .avert button{background:var(--ambre);color:#fff;border:0;padding:5px 11px;border-radius:7px;font-weight:700;font-size:12px;white-space:nowrap}
+</style>
+</head>
+<body>
+
+<!-- ===================== CONNEXION ===================== -->
+<div id="ecran-login">
+  <div class="carte-login">
+    <div class="marque">
+      <div class="logo"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="22" fill="#f5c518"/><path d="M24 10c-7 4-10 10-10 16 0 5 3 9 8 11 0-9 3-16 11-21-3 0-6 0-9 .5 0-2.5.4-4.8 0-6.5z" fill="#14532d"/></svg></div>
+      <div><h1>Odyris</h1><div class="sous">Console interne · L'Odyssée de l'environnement</div></div>
+    </div>
+
+    <!-- étape mot de passe -->
+    <div id="etape-login">
+      <p class="intro">Accès réservé au personnel.</p>
+      <label class="champ"><span>Adresse e-mail Odyssée</span><input id="mail" type="email" autocomplete="username" placeholder="prenom.nom@odyssee-env.org"></label>
+      <label class="champ"><span>Mot de passe</span><input id="pass" type="password" autocomplete="current-password" placeholder="••••••••"></label>
+      <button class="btn" id="btn-login">Se connecter</button>
+      <button class="btn sec" id="btn-demo">Voir la démo (données fictives)</button>
+      <div class="msg" id="msg-login"></div>
+    </div>
+
+    <!-- étape MFA : vérifier un code -->
+    <div id="etape-mfa" class="cache">
+      <p class="intro">Double authentification — entrez le code à 6 chiffres de votre application Authenticator.</p>
+      <label class="champ"><span>Code</span><input id="mfa-code" class="code" inputmode="numeric" maxlength="6" placeholder="------"></label>
+      <button class="btn" id="btn-mfa">Valider le code</button>
+      <button class="btn sec" id="btn-lecture">Continuer sans MFA (lecture seule)</button>
+      <div class="msg" id="msg-mfa"></div>
+    </div>
+
+    <!-- étape MFA : activer (enrôlement) -->
+    <div id="etape-enrol" class="cache">
+      <p class="intro">Activez la double authentification : scannez ce QR code avec Google Authenticator, Authy ou équivalent, puis entrez le code affiché.</p>
+      <div class="qr"><div id="qr-img"></div><div class="secret" id="qr-secret"></div></div>
+      <label class="champ"><span>Code de confirmation</span><input id="enrol-code" class="code" inputmode="numeric" maxlength="6" placeholder="------"></label>
+      <button class="btn" id="btn-enrol">Confirmer l'activation</button>
+      <button class="btn sec" id="btn-enrol-plus-tard">Plus tard (lecture seule)</button>
+      <div class="msg" id="msg-enrol"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== APPLICATION ===================== -->
+<div id="app">
+  <header>
+    <div class="logo"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="22" fill="#f5c518"/><path d="M24 10c-7 4-10 10-10 16 0 5 3 9 8 11 0-9 3-16 11-21-3 0-6 0-9 .5 0-2.5.4-4.8 0-6.5z" fill="#14532d"/></svg></div>
+    <h1>Odyris</h1>
+    <span id="pill-mfa" class="mfa-pill off">MFA inactive</span>
+    <div class="spacer"></div>
+    <div class="ident"><div class="nom" id="h-nom">—</div><div id="h-role"></div></div>
+    <button class="lien" id="btn-logout">Déconnexion</button>
+  </header>
+
+  <nav class="tabs">
+    <button data-vue="personnes" class="actif">Personnes</button>
+    <button data-vue="journal" id="tab-journal">Journal</button>
+  </nav>
+
+  <main>
+    <!-- Vue Personnes -->
+    <section id="vue-personnes">
+      <div id="avert-mfa" class="avert cache">
+        <span>⚠️ Vous êtes en lecture seule. Activez la double authentification pour valider des paiements.</span>
+        <button id="btn-activer-mfa">Activer la MFA</button>
+      </div>
+      <div class="barre">
+        <div class="recherche">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>
+          <input id="q" placeholder="Rechercher un nom, un téléphone…">
+        </div>
+        <span class="compte" id="compte-pers"></span>
+      </div>
+      <div id="liste" class="liste"></div>
+    </section>
+
+    <!-- Vue Journal -->
+    <section id="vue-journal" class="cache">
+      <div class="barre"><strong>Journal d'audit</strong><span class="compte" id="compte-journal"></span></div>
+      <div id="journal-contenu"></div>
+    </section>
+  </main>
+</div>
+
+<div id="pan"></div>
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const CFG = { url:'https://nuqmvkutljogqjuhtqrj.supabase.co', key:'sb_publishable_HcVLS83NEdSiaev6IiArvw_asLVlSkg' };
+let sb = null, MODE = null;          // MODE: 'reel' | 'demo'
+let MOI = null;                      // {nom, role, admin, aal}
+let PERSONNES = [], ENROL = null;    // ENROL: {factorId}
+
+const $ = s => document.querySelector(s);
+const el = (id) => document.getElementById(id);
+function toast(txt, err){ const t=el('toast'); t.textContent=txt; t.className='on'+(err?' err':''); setTimeout(()=>t.className='',3200); }
+// Fenêtres maison (confirm/prompt natifs bloqués dans le bac à sable de l'aperçu)
+function confirmer(message){
+  return new Promise(resolve=>{
+    const ov=document.createElement('div'); ov.className='overlay'; ov.style.alignItems='center'; ov.style.justifyContent='center'; ov.style.zIndex='200';
+    ov.innerHTML=`<div class="dialog"><p>${echap(message)}</p><div class="dlg-btns"><button class="btn sec" id="d-no">Annuler</button><button class="btn" id="d-yes">Confirmer</button></div></div>`;
+    document.body.appendChild(ov);
+    const fin=v=>{ ov.remove(); resolve(v); };
+    ov.querySelector('#d-yes').onclick=()=>fin(true);
+    ov.querySelector('#d-no').onclick=()=>fin(false);
+    ov.addEventListener('click',e=>{ if(e.target===ov) fin(false); });
+  });
+}
+function demanderCode(message){
+  return new Promise(resolve=>{
+    const ov=document.createElement('div'); ov.className='overlay'; ov.style.alignItems='center'; ov.style.justifyContent='center'; ov.style.zIndex='200';
+    ov.innerHTML=`<div class="dialog"><p>${echap(message)}</p><input class="code" inputmode="numeric" maxlength="6" placeholder="------"><div class="dlg-btns"><button class="btn sec" id="d-no">Annuler</button><button class="btn" id="d-yes">Valider</button></div></div>`;
+    document.body.appendChild(ov);
+    const inp=ov.querySelector('input'); setTimeout(()=>inp.focus(),30);
+    const fin=v=>{ ov.remove(); resolve(v); };
+    ov.querySelector('#d-yes').onclick=()=>fin(inp.value.trim());
+    ov.querySelector('#d-no').onclick=()=>fin(null);
+    inp.addEventListener('keydown',e=>{ if(e.key==='Enter') fin(inp.value.trim()); });
+    ov.addEventListener('click',e=>{ if(e.target===ov) fin(null); });
+  });
+}
+function initiales(n){ return (n||'?').split(/\s+/).map(x=>x[0]).slice(0,2).join('').toUpperCase(); }
+function fcfa(n){ return (n==null)?'':Number(n).toLocaleString('fr-FR')+' FCFA'; }
+function dateCourte(d){ if(!d) return ''; try{return new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'});}catch(e){return d;} }
+function dateHeure(d){ if(!d) return ''; try{return new Date(d).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});}catch(e){return d;} }
+
+try{ if(window.supabase) sb = window.supabase.createClient(CFG.url, CFG.key); }catch(e){ console.warn(e); }
+
+/* ------------------- CONNEXION ------------------- */
+el('btn-login').onclick = connexion;
+el('pass').addEventListener('keydown', e=>{ if(e.key==='Enter') connexion(); });
+el('btn-demo').onclick = ()=>{ MODE='demo'; demarrerDemo(); };
+el('btn-mfa').onclick = verifierMfa;
+el('btn-lecture').onclick = ()=> entrerApp();        // reste en aal1
+el('btn-enrol').onclick = confirmerEnrol;
+el('btn-enrol-plus-tard').onclick = ()=> entrerApp();
+el('btn-logout').onclick = deconnexion;
+el('btn-activer-mfa').onclick = demarrerEnrol;
+
+function montrerEtape(id){ ['etape-login','etape-mfa','etape-enrol'].forEach(e=>el(e).classList.add('cache')); el(id).classList.remove('cache'); }
+
+async function connexion(){
+  const m=el('msg-login'); m.className='msg';
+  if(!sb){ m.className='msg err'; m.textContent="Service indisponible ici (bac à sable). Utilisez « Voir la démo » ou l'adresse déployée."; return; }
+  const email=el('mail').value.trim(), password=el('pass').value;
+  if(!email||!password){ m.className='msg err'; m.textContent='Renseignez e-mail et mot de passe.'; return; }
+  el('btn-login').disabled=true; m.textContent='Connexion…';
+  try{
+    const {error} = await sb.auth.signInWithPassword({email,password});
+    if(error){ m.className='msg err'; m.textContent='Connexion refusée : '+error.message; el('btn-login').disabled=false; return; }
+    MODE='reel';
+    await routerMfa();
+  }catch(e){ m.className='msg err'; m.textContent='Erreur : '+e.message; }
+  el('btn-login').disabled=false;
+}
+
+// Décide : code MFA à saisir, enrôlement à faire, ou entrée directe
+async function routerMfa(){
+  try{
+    const {data:aal} = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+    if(aal && aal.nextLevel==='aal2' && aal.currentLevel!=='aal2'){
+      const {data:facteurs} = await sb.auth.mfa.listFactors();
+      const totp = (facteurs && facteurs.totp) ? facteurs.totp.filter(f=>f.status==='verified') : [];
+      if(totp.length){ ENROL={factorId:totp[0].id}; montrerEtape('etape-mfa'); el('mfa-code').focus(); return; }
+      return demarrerEnrol();           // aucun facteur : activer
+    }
+    await entrerApp();                   // déjà aal2 ou MFA non requise
+  }catch(e){ await entrerApp(); }
+}
+
+async function verifierMfa(){
+  const m=el('msg-mfa'); m.className='msg'; m.textContent='Vérification…';
+  const code=el('mfa-code').value.trim();
+  try{
+    const {data:ch,error:e1}=await sb.auth.mfa.challenge({factorId:ENROL.factorId});
+    if(e1) throw e1;
+    const {error:e2}=await sb.auth.mfa.verify({factorId:ENROL.factorId,challengeId:ch.id,code});
+    if(e2){ m.className='msg err'; m.textContent='Code incorrect.'; return; }
+    await entrerApp();
+  }catch(e){ m.className='msg err'; m.textContent='Erreur : '+e.message; }
+}
+
+async function demarrerEnrol(){
+  montrerEtape('etape-enrol');
+  const m=el('msg-enrol'); m.className='msg'; m.textContent='Préparation…';
+  try{
+    const {data,error}=await sb.auth.mfa.enroll({factorType:'totp',friendlyName:'Odyris '+Date.now()});
+    if(error) throw error;
+    ENROL={factorId:data.id};
+    el('qr-img').innerHTML = data.totp.qr_code ? '<img src="'+data.totp.qr_code+'" alt="QR">' : '';
+    el('qr-secret').textContent = data.totp.secret || '';
+    m.textContent='';
+  }catch(e){ m.className='msg err'; m.textContent='Impossible d\'activer la MFA : '+e.message; }
+}
+
+async function confirmerEnrol(){
+  const m=el('msg-enrol'); m.className='msg'; m.textContent='Activation…';
+  const code=el('enrol-code').value.trim();
+  try{
+    const {data:ch,error:e1}=await sb.auth.mfa.challenge({factorId:ENROL.factorId});
+    if(e1) throw e1;
+    const {error:e2}=await sb.auth.mfa.verify({factorId:ENROL.factorId,challengeId:ch.id,code});
+    if(e2){ m.className='msg err'; m.textContent='Code incorrect, réessayez.'; return; }
+    toast('Double authentification activée');
+    await entrerApp();
+  }catch(e){ m.className='msg err'; m.textContent='Erreur : '+e.message; }
+}
+
+async function deconnexion(){
+  if(sb && MODE==='reel'){ try{ await sb.auth.signOut(); }catch(e){} }
+  location.reload();
+}
+
+/* ------------------- ENTRÉE DANS L'APP ------------------- */
+async function entrerApp(){
+  try{ MOI = await appelMoi(); }
+  catch(e){
+    const m=el('msg-login'); montrerEtape('etape-login');
+    m.className='msg err'; m.textContent=(''+e.message).match(/réserv/i)?"Ce compte n'est pas membre du personnel.":'Erreur : '+e.message;
+    if(sb&&MODE==='reel'){ try{await sb.auth.signOut();}catch(_){} }
+    return;
+  }
+  el('ecran-login').style.display='none';
+  el('app').style.display='flex';
+  // en-tête
+  el('h-nom').textContent = MOI.nom || 'Membre du personnel';
+  el('h-role').innerHTML = '<span class="badge '+(MOI.admin?'admin':'agent')+'">'+(MOI.admin?'Administrateur':'Agent')+'</span>';
+  majPillMfa();
+  el('tab-journal').style.display = MOI.admin ? '' : 'none';
+  el('avert-mfa').classList.toggle('cache', MOI.aal==='aal2');
+  await chargerPersonnes();
+}
+
+function majPillMfa(){
+  const p=el('pill-mfa');
+  if(MOI.aal==='aal2'){ p.className='mfa-pill on'; p.textContent='🔒 MFA active'; }
+  else { p.className='mfa-pill off'; p.textContent='⚠ MFA inactive'; }
+}
+const peutAgir = ()=> MOI && MOI.aal==='aal2';
+
+/* ------------------- ONGLET ------------------- */
+document.querySelectorAll('nav.tabs button').forEach(b=> b.onclick=()=>{
+  document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.remove('actif'));
+  b.classList.add('actif');
+  const v=b.dataset.vue;
+  el('vue-personnes').classList.toggle('cache', v!=='personnes');
+  el('vue-journal').classList.toggle('cache', v!=='journal');
+  if(v==='journal') chargerJournal();
+});
+
+/* ------------------- PERSONNES ------------------- */
+async function chargerPersonnes(){
+  el('liste').innerHTML='<div class="chargement"><div class="spin"></div>Chargement…</div>';
+  try{ PERSONNES = await appelPersonnes(); }
+  catch(e){ el('liste').innerHTML='<div class="vide">Erreur : '+e.message+'</div>'; return; }
+  rendrePersonnes();
+}
+el('q').addEventListener('input', rendrePersonnes);
+
+function rendrePersonnes(){
+  const q=el('q').value.trim().toLowerCase();
+  const filtre = PERSONNES.filter(p=>{
+    if(!q) return true;
+    return (p.nom||'').toLowerCase().includes(q) || (p.telephone||'').toLowerCase().includes(q) || (p.email||'').toLowerCase().includes(q);
+  });
+  el('compte-pers').textContent = filtre.length+' personne'+(filtre.length>1?'s':'');
+  if(!filtre.length){ el('liste').innerHTML='<div class="vide">Aucune personne'+(PERSONNES.length?' ne correspond.':' pour l\'instant. L\'écran se remplira avec les inscriptions, dons et commandes.')+'</div>'; return; }
+  el('liste').innerHTML = filtre.map(p=>`
+    <div class="pers" data-cle="${encodeURIComponent(p.cle)}">
+      <div class="av">${initiales(p.nom)}</div>
+      <div class="info">
+        <div class="nom">${echap(p.nom)||'(sans nom)'}</div>
+        <div class="sub">${echap(p.telephone||p.email||'')}${p.ville?' · '+echap(p.ville):''}</div>
+        <div class="roles">${(p.roles||[]).map(r=>`<span class="rpill ${r}">${r}</span>`).join('')}</div>
+      </div>
+      <div class="chiffre"><b>${p.nb_operations}</b>opération${p.nb_operations>1?'s':''}${p.don_total?`<div style="margin-top:4px">${fcfa(p.don_total)}</div>`:''}</div>
+    </div>`).join('');
+  document.querySelectorAll('.pers').forEach(c=> c.onclick=()=> ouvrirFiche(decodeURIComponent(c.dataset.cle)));
+}
+
+/* ------------------- FICHE ------------------- */
+async function ouvrirFiche(cle){
+  el('pan').innerHTML = `<div class="overlay"><div class="panneau"><div class="chargement"><div class="spin"></div>Chargement de la fiche…</div></div></div>`;
+  el('pan').querySelector('.overlay').onclick = e=>{ if(e.target.classList.contains('overlay')) el('pan').innerHTML=''; };
+  let f;
+  try{ f = await appelFiche(cle); }
+  catch(e){ el('pan').querySelector('.panneau').innerHTML='<div class="vide">Erreur : '+e.message+'</div>'; return; }
+  if(!f){ el('pan').innerHTML=''; return; }
+  rendreFiche(cle, f);
+}
+
+function rendreFiche(cle, f){
+  const p=f.personne||{}, ops=f.operations||[];
+  const coord=[p.telephone?`<span>📞 ${echap(p.telephone)}</span>`:'',p.email?`<span>✉ ${echap(p.email)}</span>`:'',p.ville?`<span>📍 ${echap(p.ville)}</span>`:''].join('');
+  el('pan').innerHTML = `<div class="overlay"><div class="panneau">
+    <div class="pan-tete">
+      <button class="fermer" title="Fermer">×</button>
+      <div class="roles" style="margin-bottom:4px">${(p.roles||[]).map(r=>`<span class="rpill ${r}">${r}</span>`).join('')}</div>
+      <h2>${echap(p.nom)||'(sans nom)'}</h2>
+      <div class="coord">${coord||'<span style="opacity:.7">Aucune coordonnée</span>'}</div>
+    </div>
+    <div class="resume">
+      <div class="stat"><div class="n">${ops.length}</div><div class="l">opération${ops.length>1?'s':''}</div></div>
+      <div class="stat"><div class="n">${fcfa(p.don_total||0)}</div><div class="l">dons validés</div></div>
+      <div class="stat"><div class="n">${dateCourte(p.premier)}</div><div class="l">première activité</div></div>
+    </div>
+    <div class="ops"><h3>Historique</h3>${ops.map(renduOp).join('')||'<div class="vide">Aucune opération.</div>'}</div>
+  </div></div>`;
+  const ov=el('pan').querySelector('.overlay');
+  ov.onclick=e=>{ if(e.target.classList.contains('overlay')) el('pan').innerHTML=''; };
+  el('pan').querySelector('.fermer').onclick=()=> el('pan').innerHTML='';
+  el('pan').querySelectorAll('[data-valider]').forEach(b=> b.onclick=()=> validerOp(b.dataset.type, b.dataset.ref, cle));
+}
+
+function renduOp(o){
+  const st = statutRendu(o.statut);
+  let action='';
+  const estInscr = o.role==='coureur' && o.statut && !['paye','annule'].includes(o.statut);
+  const estDon = o.role==='donateur' && o.statut && !['valide','annule'].includes(o.statut);
+  if(estInscr||estDon){
+    const type = estInscr?'paiement':'don';
+    const dis = peutAgir()?'':'disabled title="Double authentification requise"';
+    action = `<button class="mini" ${dis} data-valider data-type="${type}" data-ref="${echap(o.reference||'')}">Valider ${estInscr?'le paiement':'le don'}</button>`;
+  }
+  return `<div class="op">
+    <div class="haut"><span class="lib">${echap(o.libelle||o.role)}</span><span class="date">${dateCourte(o.date)}</span></div>
+    <div class="bas">
+      ${o.reference?`<span class="ref">${echap(o.reference)}</span>`:''}
+      ${st}
+      ${o.montant?`<span class="montant">${fcfa(o.montant)}</span>`:''}
+      <span class="act">${action}</span>
+    </div></div>`;
+}
+function statutRendu(s){
+  if(!s) return '';
+  const ok=['paye','valide','payee','livree','confirmee'], att=['en_attente','paiement_declare','nouvelle'];
+  const cls = ok.includes(s)?'ok':att.includes(s)?'attente':'neutre';
+  const lib={paye:'Payé',valide:'Validé',en_attente:'En attente',paiement_declare:'Paiement déclaré',annule:'Annulé',nouvelle:'Nouvelle',confirmee:'Confirmée',payee:'Payée',livree:'Livrée',annulee:'Annulée'}[s]||s;
+  return `<span class="statut ${cls}">${lib}</span>`;
+}
+
+async function validerOp(type, ref, cle){
+  if(!peutAgir()){ toast('Activez la double authentification pour valider.', true); return; }
+  if(!(await confirmer('Confirmer la validation de '+ref+' ?'))) return;
+  try{
+    await executerValidation(type, ref, cle);
+  }catch(e){
+    // Action financière refusée car le second facteur est trop ancien : on propose un step-up.
+    if(MODE==='reel' && /Reconfirmez|trop ancienne|MFA/i.test(e.message||'')){
+      if(await reauthMfa()){
+        try{ await executerValidation(type, ref, cle); }
+        catch(e2){ toast('Échec : '+e2.message, true); }
+      }
+      return;
+    }
+    toast('Échec : '+e.message, true);
+  }
+}
+async function executerValidation(type, ref, cle){
+  const r = await appelValider(type, ref);
+  toast(type==='paiement' ? ('Paiement validé — dossard '+r) : 'Don validé');
+  const f = await appelFiche(cle); rendreFiche(cle, f);
+  PERSONNES = await appelPersonnes(); rendrePersonnes();
+}
+async function reauthMfa(){
+  try{
+    let fid = ENROL && ENROL.factorId;
+    if(!fid){ const {data}=await sb.auth.mfa.listFactors(); const t=((data&&data.totp)||[]).filter(f=>f.status==='verified'); if(t.length) fid=t[0].id; }
+    if(!fid){ toast('Aucun second facteur configuré.', true); return false; }
+    const code = await demanderCode('Action financière — reconfirmez votre code MFA (6 chiffres) :');
+    if(!code) return false;
+    const {data:ch,error:e1}=await sb.auth.mfa.challenge({factorId:fid}); if(e1) throw e1;
+    const {error:e2}=await sb.auth.mfa.verify({factorId:fid,challengeId:ch.id,code:code.trim()});
+    if(e2){ toast('Code incorrect.', true); return false; }
+    MOI = await appelMoi(); majPillMfa();
+    return true;
+  }catch(e){ toast('Ré-authentification échouée : '+e.message, true); return false; }
+}
+
+/* ------------------- JOURNAL ------------------- */
+async function chargerJournal(){
+  el('journal-contenu').innerHTML='<div class="chargement"><div class="spin"></div>Chargement…</div>';
+  let lignes;
+  try{ lignes = await appelJournal(); }
+  catch(e){ el('journal-contenu').innerHTML='<div class="vide">Erreur : '+e.message+'</div>'; return; }
+  el('compte-journal').textContent = lignes.length+' entrée'+(lignes.length>1?'s':'');
+  if(!lignes.length){ el('journal-contenu').innerHTML='<div class="vide">Aucune action enregistrée.</div>'; return; }
+  const libAction={valider_paiement:'Validation paiement',valider_don:'Validation don'};
+  el('journal-contenu').innerHTML = `<table class="journal"><thead><tr>
+    <th>Date</th><th>Agent</th><th>Action</th><th>Cible</th><th>MFA</th><th>Détails</th></tr></thead><tbody>
+    ${lignes.map(l=>`<tr>
+      <td>${dateHeure(l.at)}</td><td>${echap(l.acteur_nom||'—')}</td>
+      <td>${libAction[l.action]||echap(l.action)}</td><td class="ref">${echap(l.cible||'')}</td>
+      <td>${l.aal==='aal2'?'🔒':'—'}</td>
+      <td class="ref">${l.details?echap(JSON.stringify(l.details)):''}</td></tr>`).join('')}
+  </tbody></table>`;
+}
+
+function echap(s){ return (s==null?'':''+s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/* =================================================================
+   COUCHE DONNÉES : réel (Supabase RPC) ou démo (en mémoire)
+   ================================================================= */
+async function appelMoi(){
+  if(MODE==='demo') return {nom:'Gédéon (démo)',role:'admin',admin:true,aal:'aal2'};
+  const {data,error}=await sb.rpc('odyris_moi'); if(error) throw error; return data;
+}
+async function appelPersonnes(){
+  if(MODE==='demo') return DEMO.personnes;
+  const {data,error}=await sb.rpc('odyris_personnes'); if(error) throw error; return data||[];
+}
+async function appelFiche(cle){
+  if(MODE==='demo') return DEMO.fiche(cle);
+  const {data,error}=await sb.rpc('odyris_fiche',{p_cle:cle}); if(error) throw error; return data;
+}
+async function appelValider(type, ref){
+  if(MODE==='demo') return DEMO.valider(type, ref);
+  if(type==='paiement'){ const {data,error}=await sb.rpc('odyris_valider_paiement',{p_reference:ref}); if(error) throw error; return data; }
+  const {error}=await sb.rpc('odyris_valider_don',{p_reference:ref}); if(error) throw error; return null;
+}
+async function appelJournal(){
+  if(MODE==='demo') return DEMO.journal;
+  const {data,error}=await sb.rpc('odyris_journal_lire',{p_limit:100}); if(error) throw error; return data||[];
+}
+
+/* ------------------- DONNÉES DE DÉMO ------------------- */
+const DEMO = (()=> {
+  const personnes = [
+    {cle:'237691000001',nom:'Salla Mbarga',telephone:'+237 6 91 00 00 01',email:'salla.mbarga@exemple.cm',ville:'Yaoundé',roles:['coureur','donateur'],nb_operations:3,premier:'2026-10-02',dernier:'2026-11-20',don_total:5000},
+    {cle:'237692000002',nom:'Awa NdONGO',telephone:'+237 6 92 00 00 02',email:'',ville:'Douala',roles:['donateur'],nb_operations:1,premier:'2026-11-10',dernier:'2026-11-10',don_total:0},
+    {cle:'237693000003',nom:'Jean-Paul Essomba',telephone:'+237 6 93 00 00 03',email:'jp.essomba@exemple.cm',ville:'Yaoundé',roles:['coureur'],nb_operations:1,premier:'2026-11-18',dernier:'2026-11-18',don_total:0},
+    {cle:'237694000004',nom:'Marie Fotso',telephone:'+237 6 94 00 00 04',email:'marie.fotso@exemple.cm',ville:'Bafoussam',roles:['benevole','coureur'],nb_operations:2,premier:'2026-09-15',dernier:'2026-11-05',don_total:0},
+    {cle:'237695000005',nom:'Boris Kamga',telephone:'+237 6 95 00 00 05',email:'',ville:'Yaoundé',roles:['boutique'],nb_operations:1,premier:'2026-11-22',dernier:'2026-11-22',don_total:0},
+  ];
+  const fiches = {
+    '237691000001':{personne:personnes[0],operations:[
+      {role:'donateur',libelle:'Don au Fonds de solidarité',date:'2026-11-20',montant:5000,statut:'valide',reference:'DON-A1B2C3'},
+      {role:'coureur',libelle:'Inscription 10 km — travailleur',date:'2026-11-18',montant:1000,statut:'paiement_declare',reference:'ODY-7788AA'},
+      {role:'donateur',libelle:'Don au Fonds de solidarité',date:'2026-10-02',montant:2000,statut:'en_attente',reference:'DON-9900BB'},
+    ]},
+    '237692000002':{personne:personnes[1],operations:[
+      {role:'donateur',libelle:'Don au Fonds de solidarité',date:'2026-11-10',montant:3000,statut:'paiement_declare',reference:'DON-CD12EF'},
+    ]},
+    '237693000003':{personne:personnes[2],operations:[
+      {role:'coureur',libelle:'Inscription 5 km — étudiant',date:'2026-11-18',montant:500,statut:'en_attente',reference:'ODY-4455CC'},
+    ]},
+    '237694000004':{personne:personnes[3],operations:[
+      {role:'benevole',libelle:'Bénévolat — logistique, accueil',date:'2026-11-05',montant:null,statut:'confirmee',reference:'BEN-220011'},
+      {role:'coureur',libelle:'Inscription 3 km — étudiant',date:'2026-09-15',montant:500,statut:'paye',reference:'ODY-1122DD'},
+    ]},
+    '237695000005':{personne:personnes[4],operations:[
+      {role:'boutique',libelle:'Commande boutique — t-shirt',date:'2026-11-22',montant:null,statut:'nouvelle',reference:'CMD-556677'},
+    ]},
+  };
+  const journal = [
+    {at:'2026-11-22T09:14:00Z',acteur_nom:'Gédéon (démo)',action:'valider_paiement',cible:'ODY-1122DD',aal:'aal2',details:{dossard:10234}},
+    {at:'2026-11-20T16:40:00Z',acteur_nom:'Gédéon (démo)',action:'valider_don',cible:'DON-A1B2C3',aal:'aal2',details:{montant:5000}},
+  ];
+  return {
+    personnes, journal,
+    fiche:(cle)=> fiches[cle]||null,
+    valider:(type,ref)=>{
+      for(const k in fiches){ for(const o of fiches[k].operations){ if(o.reference===ref){
+        if(type==='paiement'){ o.statut='paye'; const d=10000+Math.floor(Math.random()*5000); journal.unshift({at:new Date().toISOString(),acteur_nom:'Gédéon (démo)',action:'valider_paiement',cible:ref,aal:'aal2',details:{dossard:d}}); return d; }
+        else { o.statut='valide'; journal.unshift({at:new Date().toISOString(),acteur_nom:'Gédéon (démo)',action:'valider_don',cible:ref,aal:'aal2',details:{montant:o.montant}}); return null; }
+      }}}
+      return null;
+    }
+  };
+})();
+
+async function demarrerDemo(){ await entrerApp(); }
+</script>
+</body>
+</html>
