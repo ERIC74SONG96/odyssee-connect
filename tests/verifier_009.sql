@@ -89,10 +89,29 @@ begin
 end $t$;
 reset role;
 
--- 3. Agent AVEC MFA : validation + trace au journal -------------------
+-- 2 bis. Agent avec aal2 mais second facteur ANCIEN : step-up exigé
 set local role authenticated;
 set local request.jwt.uid = '00000000-0000-0000-0000-0000000009cc';
 set local request.jwt.aal = 'aal2';
+set local request.jwt.mfa_ts = '1700000000';   -- nov. 2023 : trop ancien
+do $t$
+begin
+  begin
+    perform public.odyris_valider_paiement((select v from t9 where k = 'ins'));
+    raise exception 'ÉCHEC : validation acceptée avec un second facteur ancien';
+  exception when others then
+    if sqlerrm like 'ÉCHEC%' then raise; end if;
+    if sqlerrm not like '%Reconfirmez%' then
+      raise exception 'ÉCHEC : message fraîcheur inattendu : %', sqlerrm; end if;
+  end;
+end $t$;
+reset role;
+
+-- 3. Agent AVEC MFA fraîche : validation + trace au journal -----------
+set local role authenticated;
+set local request.jwt.uid = '00000000-0000-0000-0000-0000000009cc';
+set local request.jwt.aal = 'aal2';
+set local request.jwt.mfa_ts = '';              -- fraîche (horodatage = maintenant)
 do $t$ declare d integer;
 begin
   d := public.odyris_valider_paiement((select v from t9 where k = 'ins'));
@@ -109,10 +128,11 @@ do $t$ begin
     raise exception 'ÉCHEC : trace de validation absente ou en double'; end if;
 end $t$;
 
--- 4. Validation d'un don (admin, MFA) --------------------------------
+-- 4. Validation d'un don (admin, MFA fraîche) ------------------------
 set local role authenticated;
 set local request.jwt.uid = '00000000-0000-0000-0000-0000000009aa';
 set local request.jwt.aal = 'aal2';
+set local request.jwt.mfa_ts = '';
 do $t$
 begin
   perform public.odyris_valider_don((select v from t9 where k = 'don'));

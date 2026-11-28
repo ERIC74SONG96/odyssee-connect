@@ -32,12 +32,11 @@ do $$ begin
   end if;
 end $$;
 
--- Promotion unique : tant qu'AUCUN administrateur n'existe, le personnel
--- actuel (les fondateurs déjà en place) devient administrateur. Après le
--- premier passage, cette condition est fausse, donc les comptes ajoutés
--- ensuite restent « agent » par défaut. Idempotent.
-update public.staff set role = 'admin'
- where not exists (select 1 from public.staff where role = 'admin');
+-- IMPORTANT : aucune promotion automatique. Tout le personnel existant reste
+-- « agent » par défaut ; le rôle « admin » doit être attribué EXPLICITEMENT,
+-- une personne à la fois, par une commande manuelle (voir la note de
+-- déploiement). On évite ainsi que l'ensemble du personnel devienne
+-- administrateur d'un coup.
 
 -- Comme est_staff() : simple témoin booléen, utilisé aussi dans une politique RLS,
 -- donc exécutable par anon/authenticated (il renvoie « faux » pour un non-admin).
@@ -66,6 +65,32 @@ begin
   end if;
 end $$;
 revoke all on function public._odyris_exiger_mfa() from public, anon, authenticated;
+
+-- Fraîcheur du second facteur : le claim « amr » du jeton liste les méthodes
+-- d'authentification avec leur horodatage. Pour une action sensible, on exige
+-- que le second facteur ait été présenté récemment (step-up), pas seulement
+-- que la session soit « aal2 » (ce niveau peut dater de plusieurs heures).
+create or replace function public._odyris_mfa_recente(p_max_minutes integer default 15) returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1
+      from jsonb_array_elements(coalesce(auth.jwt() -> 'amr', '[]'::jsonb)) e
+     where e ->> 'method' in ('totp','mfa','webauthn','phone')
+       and to_timestamp((e ->> 'timestamp')::double precision)
+             > now() - make_interval(mins => greatest(1, p_max_minutes))
+  );
+$$;
+revoke all on function public._odyris_mfa_recente(integer) from public, anon, authenticated;
+
+create or replace function public._odyris_exiger_mfa_fraiche(p_minutes integer default 15) returns void
+language plpgsql stable security definer set search_path = public as $$
+begin
+  perform public._odyris_exiger_mfa();                 -- niveau aal2 requis
+  if not public._odyris_mfa_recente(p_minutes) then
+    raise exception 'Reconfirmez votre code MFA pour cette action (authentification trop ancienne).';
+  end if;
+end $$;
+revoke all on function public._odyris_exiger_mfa_fraiche(integer) from public, anon, authenticated;
 
 -- ---------------------------------------------------------------------
 -- 3. Journal d'audit
@@ -110,7 +135,7 @@ returns integer language plpgsql volatile security definer set search_path = pub
 declare v_id uuid; v_num integer; v_ref text := upper(btrim(coalesce(p_reference, '')));
 begin
   perform public._exiger_staff();
-  perform public._odyris_exiger_mfa();
+  perform public._odyris_exiger_mfa_fraiche(15);        -- aal2 + second facteur récent
   select id into v_id from public.inscriptions where reference = v_ref;
   if v_id is null then raise exception 'Inscription introuvable : %', v_ref; end if;
   v_num := public.valider_paiement(v_id);            -- logique existante (dossard, Fonds)
@@ -125,7 +150,7 @@ returns void language plpgsql volatile security definer set search_path = public
 declare v_id uuid; v_montant integer; v_ref text := upper(btrim(coalesce(p_reference, '')));
 begin
   perform public._exiger_staff();
-  perform public._odyris_exiger_mfa();
+  perform public._odyris_exiger_mfa_fraiche(15);        -- aal2 + second facteur récent
   select id, montant into v_id, v_montant from public.dons where reference = v_ref;
   if v_id is null then raise exception 'Don introuvable : %', v_ref; end if;
   perform public.valider_don(v_id);                  -- logique existante (Fonds)
