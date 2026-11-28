@@ -549,10 +549,17 @@ function ouvrirVue(v){
   else if(v==='benevoles') chargerBenevoles();
   else if(v==='candidatures') chargerCandidatures();
 }
-// Action de statut simple (staff, sans MFA) : applique + rafraîchit.
+// Action de statut : applique + rafraîchit. Gère le step-up MFA (ex. commande « payée »).
 async function majStatut(appel, apres){
-  try{ await appel(); toast('Statut mis à jour'); if(apres) await apres(); }
-  catch(e){ toast('Échec : '+e.message, true); }
+  const resync=async ()=>{ if(apres) await apres(); };
+  try{ await appel(); toast('Statut mis à jour'); return await resync(); }
+  catch(e){
+    if(MODE==='reel' && /Reconfirmez|trop ancienne|MFA|authentification/i.test(e.message||'')){
+      if(await reauthMfa()){ try{ await appel(); toast('Statut mis à jour'); }catch(e2){ toast('Échec : '+e2.message, true); } }
+      return await resync();
+    }
+    toast('Échec : '+e.message, true); await resync();
+  }
 }
 function selStatut(valeurs, courant, k){
   return `<select class="statut-sel" data-k="${k}">`+valeurs.map(([v,l])=>`<option value="${v}" ${v===courant?'selected':''}>${l}</option>`).join('')+`</select>`;

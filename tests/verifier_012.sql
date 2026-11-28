@@ -71,6 +71,14 @@ begin
   perform public.odyris_commande_statut('CMD-120001','confirmee');
   if (select statut from public.commandes where reference='CMD-120001') <> 'confirmee' then raise exception 'ÉCHEC : commande statut'; end if;
 
+  -- marquer « payée » (confirmation financière) sans MFA doit être refusé
+  begin perform public.odyris_commande_statut('CMD-120001','payee');
+    raise exception 'ÉCHEC : commande payée acceptée sans MFA';
+  exception when others then
+    if sqlerrm like 'ÉCHEC%' then raise; end if;
+    if sqlerrm not like '%authentification%' then raise exception 'ÉCHEC : message MFA commande inattendu : %', sqlerrm; end if;
+  end;
+
   perform public.odyris_candidature_statut('CAN-120001','accepte');
   if (select statut from public.candidatures where reference='CAN-120001') <> 'accepte' then raise exception 'ÉCHEC : candidature statut'; end if;
 
@@ -88,6 +96,18 @@ begin
     if sqlerrm like 'ÉCHEC%' then raise; end if;
     if sqlerrm not like '%introuvable%' then raise exception 'ÉCHEC : message introuvable inattendu : %', sqlerrm; end if;
   end;
+end $t$;
+reset role;
+
+-- 3 bis. Marquer « payée » AVEC MFA récente réussit --------------------
+set local role authenticated;
+set local request.jwt.uid = '00000000-0000-0000-0000-0000000012aa';
+set local request.jwt.aal = 'aal2';
+set local request.jwt.mfa_ts = '';
+do $t$ begin
+  perform public.odyris_commande_statut('CMD-120001','payee');
+  if (select statut from public.commandes where reference='CMD-120001') <> 'payee' then
+    raise exception 'ÉCHEC : commande non payée avec MFA'; end if;
 end $t$;
 reset role;
 

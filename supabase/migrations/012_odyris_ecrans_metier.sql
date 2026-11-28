@@ -66,6 +66,9 @@ declare v_ref text := upper(btrim(coalesce(p_reference, ''))); v_statut text := 
 begin
   perform public._exiger_staff();
   if v_statut not in ('nouvelle','confirmee','payee','livree','annulee') then raise exception 'Statut invalide'; end if;
+  -- « payée » = confirmation d'un paiement reçu : action financière, MFA récente exigée
+  -- (comme la validation des dons). Les autres transitions restent staff seul.
+  if v_statut = 'payee' then perform public._odyris_exiger_mfa_fraiche(15); end if;
   update public.commandes set statut = v_statut where reference = v_ref;
   if not found then raise exception 'Commande introuvable : %', v_ref; end if;
   perform public._odyris_log('commande_statut', v_ref, jsonb_build_object('statut', v_statut));
