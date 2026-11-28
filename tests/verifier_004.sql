@@ -216,7 +216,7 @@ begin
    where n.nspname = 'public' and has_function_privilege('anon', p.oid, 'execute')
      and p.proname not in ('aimer','annonces_publiques','arreter_position','commentaires_publics','commenter',
        'consulter_inscription','contenus_publics','creer_benevole','creer_candidature','creer_commande','creer_don',
-       'creer_inscription','creer_participation','declarer_don','declarer_paiement','est_staff',
+       'creer_inscription','creer_participation','declarer_don','declarer_paiement','est_staff','est_admin',
        'etat_public','evenements_publics','fil_public','groupes_publics','impact_public','partager_position',
        'points_publics','positions_publiques','resultats_publics','signaler','suivi_etat');
   if f is not null then raise exception 'ÉCHEC : fonctions exécutables par anon hors liste blanche : %', f; end if;
