@@ -206,18 +206,7 @@
       <label class="champ"><span>Mot de passe</span><input id="pass" type="password" autocomplete="current-password" placeholder="••••••••"></label>
       <button class="btn" id="btn-login">Se connecter</button>
       <button class="btn sec" id="btn-demo">Voir la démo (données fictives)</button>
-      <div style="text-align:center;margin-top:12px"><a href="#" id="lien-inscription" style="color:var(--vert);font-size:13px;text-decoration:none">Première connexion ? Créer mon accès</a></div>
       <div class="msg" id="msg-login"></div>
-    </div>
-
-    <!-- étape : créer son accès (collaborateur) -->
-    <div id="etape-inscription" class="cache">
-      <p class="intro">Créez votre accès. Un administrateur devra ensuite vous ajouter à l'équipe pour que vous voyiez les données.</p>
-      <label class="champ"><span>Adresse e-mail</span><input id="ins-mail" type="email" placeholder="prenom.nom@odyssee-env.org"></label>
-      <label class="champ"><span>Mot de passe (8 caractères min.)</span><input id="ins-pass" type="password" placeholder="••••••••"></label>
-      <button class="btn" id="btn-inscription">Créer mon accès</button>
-      <button class="btn sec" id="btn-ins-retour">Retour</button>
-      <div class="msg" id="msg-inscription"></div>
     </div>
 
     <!-- étape MFA : vérifier un code -->
@@ -300,10 +289,11 @@
         <div class="pers-form">
           <input id="pers-mail" type="email" placeholder="e-mail du collaborateur">
           <input id="pers-nom" type="text" placeholder="nom (facultatif)">
+          <input id="pers-pass" type="password" autocomplete="new-password" placeholder="mot de passe (min. 8) — ou vide si compte existant">
           <select id="pers-role"><option value="agent">Agent</option><option value="admin">Administrateur</option></select>
           <button class="mini" id="btn-pers-ajouter">Ajouter</button>
         </div>
-        <div class="pers-aide">La personne doit d'abord avoir créé son accès (écran de connexion → « Première connexion »). Vous l'ajoutez ensuite ici par son e-mail.</div>
+        <div class="pers-aide">Renseignez un e-mail <b>et un mot de passe</b> : le compte est créé directement et le collaborateur peut se connecter (communiquez-lui ses identifiants vous-même). Laissez le mot de passe vide si la personne possède déjà un compte — vous l'ajoutez alors simplement par son e-mail.</div>
       </div>
       <div id="personnel-contenu"></div>
     </section>
@@ -414,25 +404,7 @@ el('btn-enrol').onclick = confirmerEnrol;
 el('btn-enrol-plus-tard').onclick = ()=> entrerApp();
 el('btn-logout').onclick = deconnexion;
 el('btn-activer-mfa').onclick = demarrerEnrol;
-el('lien-inscription').onclick = (e)=>{ e.preventDefault(); el('msg-inscription').textContent=''; montrerEtape('etape-inscription'); setTimeout(()=>el('ins-mail').focus(),30); };
-el('btn-ins-retour').onclick = ()=> montrerEtape('etape-login');
-el('btn-inscription').onclick = inscription;
-async function inscription(){
-  const m=el('msg-inscription'); m.className='msg';
-  if(!sb){ m.className='msg err'; m.textContent="Indisponible dans l'aperçu. Utilisez l'adresse déployée."; return; }
-  const email=el('ins-mail').value.trim(), password=el('ins-pass').value;
-  if(!email || password.length<8){ m.className='msg err'; m.textContent='E-mail et mot de passe (8 caractères min.) requis.'; return; }
-  el('btn-inscription').disabled=true; m.textContent='Création…';
-  try{
-    const {error}=await sb.auth.signUp({email,password});
-    if(error){ m.className='msg err'; m.textContent='Échec : '+error.message; el('btn-inscription').disabled=false; return; }
-    try{ await sb.auth.signOut(); }catch(_){}
-    m.className='msg ok'; m.textContent="Accès créé. Demande à un administrateur de t'ajouter à l'équipe, puis reviens te connecter.";
-  }catch(e){ m.className='msg err'; m.textContent='Erreur : '+e.message; }
-  el('btn-inscription').disabled=false;
-}
-
-function montrerEtape(id){ ['etape-login','etape-mfa','etape-enrol','etape-inscription'].forEach(e=>el(e).classList.add('cache')); el(id).classList.remove('cache'); }
+function montrerEtape(id){ ['etape-login','etape-mfa','etape-enrol'].forEach(e=>el(e).classList.add('cache')); el(id).classList.remove('cache'); }
 
 async function connexion(){
   const m=el('msg-login'); m.className='msg';
@@ -787,12 +759,43 @@ async function actionAdmin(appel, apres){
   }
 }
 el('btn-pers-ajouter').onclick = ()=>{
-  const email=el('pers-mail').value.trim(), nom=el('pers-nom').value.trim(), role=el('pers-role').value;
+  const email=el('pers-mail').value.trim().toLowerCase(), nom=el('pers-nom').value.trim(), role=el('pers-role').value, pass=el('pers-pass').value;
   if(!email){ toast('E-mail requis', true); return; }
-  actionAdmin(()=> appelPersonnelAjouter(email, nom, role), async ()=>{
-    el('pers-mail').value=''; el('pers-nom').value=''; toast('Collaborateur ajouté'); await chargerPersonnel();
-  });
+  const vider=()=>{ el('pers-mail').value=''; el('pers-nom').value=''; el('pers-pass').value=''; };
+  if(pass){
+    if(pass.length<8){ toast('Mot de passe : 8 caractères minimum.', true); return; }
+    creerAcces(email, nom, role, pass, vider);
+  } else {
+    actionAdmin(()=> appelPersonnelAjouter(email, nom, role), async ()=>{
+      vider(); toast('Collaborateur ajouté'); await chargerPersonnel();
+    });
+  }
 };
+// Création d'un accès (e-mail + mot de passe) via la fonction serveur ; MFA exigée.
+async function creerAcces(email, nom, role, pass, vider){
+  if(MODE==='demo'){
+    try{ await appelCreerAcces(email, nom, role, pass); vider(); toast('Accès créé (démo)'); await chargerPersonnel(); }
+    catch(e){ toast('Échec : '+e.message, true); }
+    return;
+  }
+  const faire = async ()=>{
+    const {data, error} = await sb.functions.invoke('odyris-creer-acces', {body:{email, nom, role, password:pass}});
+    if(error){
+      let d=null; try{ d=await error.context.json(); }catch(_){}
+      const er=new Error((d&&d.error)||error.message||'Appel échoué'); if(d&&d.code) er.code=d.code; throw er;
+    }
+    if(!data || !data.ok){ const er=new Error(data?.error||'Échec'); er.code=data?.code; throw er; }
+    if(data.avertissement) toast(data.avertissement, true);
+  };
+  try{ await faire(); toast('Accès créé — communiquez les identifiants au collaborateur.'); vider(); await chargerPersonnel(); }
+  catch(e){
+    if(e.code==='mfa' || /Reconfirmez|trop ancienne|MFA|authentification/i.test(e.message||'')){
+      if(await reauthMfa()){ try{ await faire(); toast('Accès créé — communiquez les identifiants au collaborateur.'); vider(); await chargerPersonnel(); }catch(e2){ toast('Échec : '+e2.message, true); } }
+      return;
+    }
+    toast('Échec : '+e.message, true);
+  }
+}
 async function chargerPersonnel(){
   el('personnel-contenu').innerHTML='<div class="chargement"><div class="spin"></div>Chargement…</div>';
   let liste;
@@ -953,6 +956,11 @@ async function appelPersonnelLister(){
 async function appelPersonnelAjouter(email, nom, role){
   if(MODE==='demo') return DEMO.persAjouter(email, nom, role);
   const {error}=await sb.rpc('odyris_personnel_ajouter',{p_email:email,p_nom:nom,p_role:role}); if(error) throw error;
+}
+async function appelCreerAcces(email, nom, role, pass){
+  // En démo uniquement : on simule la création en ajoutant au personnel.
+  if(MODE==='demo') return DEMO.persAjouter(email, nom, role);
+  // En réel, l'appel passe par sb.functions.invoke('odyris-creer-acces') dans creerAcces().
 }
 async function appelPersonnelRole(uid, role){
   if(MODE==='demo') return DEMO.persRole(uid, role);
