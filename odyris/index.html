@@ -111,6 +111,21 @@
   .av-ligne .mt{font-weight:700;margin-left:auto}
   .tab-badge{display:inline-block;min-width:18px;height:18px;padding:0 5px;margin-left:6px;border-radius:999px;background:var(--ambre);color:#fff;font-size:11px;font-weight:700;line-height:18px;text-align:center;vertical-align:middle}
 
+  /* Personnel */
+  .pers-ajout{background:var(--carte);border:1px solid var(--bord);border-radius:12px;padding:14px 16px;margin-bottom:16px}
+  .pers-form{display:flex;gap:10px;flex-wrap:wrap}
+  .pers-form input,.pers-form select{padding:9px 11px;border:1px solid var(--bord);border-radius:8px;background:#fbfdfc}
+  .pers-form input{flex:1;min-width:160px}
+  .pers-aide{font-size:12px;color:var(--gris);margin-top:9px}
+  .mbr{background:var(--carte);border:1px solid var(--bord);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:14px;margin-bottom:10px;flex-wrap:wrap}
+  .mbr .who{flex:1;min-width:160px}
+  .mbr .nom{font-weight:700}
+  .mbr .mail{color:var(--gris);font-size:13px}
+  .mbr select{padding:7px 10px;border:1px solid var(--bord);border-radius:8px;background:#fff}
+  .mbr .moi{font-size:11px;font-weight:700;color:var(--vert);background:var(--vert-clair);padding:2px 8px;border-radius:999px}
+  .btn-retirer{background:#fff;color:var(--rouge);border:1px solid #ecc;padding:7px 12px;border-radius:8px;font-weight:700;font-size:13px}
+  .btn-retirer:hover{background:#fdecec} .btn-retirer:disabled{opacity:.4;cursor:not-allowed}
+
   /* Fiche (panneau) */
   .overlay{position:fixed;inset:0;background:rgba(10,20,15,.45);display:flex;justify-content:flex-end;z-index:50}
   .panneau{background:var(--fond);width:min(560px,100%);height:100%;overflow:auto;box-shadow:-10px 0 40px rgba(0,0,0,.25);animation:glisse .18s ease}
@@ -182,7 +197,18 @@
       <label class="champ"><span>Mot de passe</span><input id="pass" type="password" autocomplete="current-password" placeholder="••••••••"></label>
       <button class="btn" id="btn-login">Se connecter</button>
       <button class="btn sec" id="btn-demo">Voir la démo (données fictives)</button>
+      <div style="text-align:center;margin-top:12px"><a href="#" id="lien-inscription" style="color:var(--vert);font-size:13px;text-decoration:none">Première connexion ? Créer mon accès</a></div>
       <div class="msg" id="msg-login"></div>
+    </div>
+
+    <!-- étape : créer son accès (collaborateur) -->
+    <div id="etape-inscription" class="cache">
+      <p class="intro">Créez votre accès. Un administrateur devra ensuite vous ajouter à l'équipe pour que vous voyiez les données.</p>
+      <label class="champ"><span>Adresse e-mail</span><input id="ins-mail" type="email" placeholder="prenom.nom@odyssee-env.org"></label>
+      <label class="champ"><span>Mot de passe (8 caractères min.)</span><input id="ins-pass" type="password" placeholder="••••••••"></label>
+      <button class="btn" id="btn-inscription">Créer mon accès</button>
+      <button class="btn sec" id="btn-ins-retour">Retour</button>
+      <div class="msg" id="msg-inscription"></div>
     </div>
 
     <!-- étape MFA : vérifier un code -->
@@ -222,6 +248,7 @@
     <button data-vue="avalider">À valider<span id="badge-avalider" class="tab-badge cache">0</span></button>
     <button data-vue="personnes">Personnes</button>
     <button data-vue="journal" id="tab-journal">Journal</button>
+    <button data-vue="personnel" id="tab-personnel">Personnel</button>
   </nav>
 
   <main>
@@ -250,6 +277,22 @@
         <span class="compte" id="compte-pers"></span>
       </div>
       <div id="liste" class="liste"></div>
+    </section>
+
+    <!-- Vue Personnel (admin) -->
+    <section id="vue-personnel" class="cache">
+      <div class="barre"><strong>Personnel</strong><span class="compte" id="compte-personnel"></span></div>
+      <div class="pers-ajout">
+        <div class="grp-titre">Ajouter un collaborateur</div>
+        <div class="pers-form">
+          <input id="pers-mail" type="email" placeholder="e-mail du collaborateur">
+          <input id="pers-nom" type="text" placeholder="nom (facultatif)">
+          <select id="pers-role"><option value="agent">Agent</option><option value="admin">Administrateur</option></select>
+          <button class="mini" id="btn-pers-ajouter">Ajouter</button>
+        </div>
+        <div class="pers-aide">La personne doit d'abord avoir créé son accès (écran de connexion → « Première connexion »). Vous l'ajoutez ensuite ici par son e-mail.</div>
+      </div>
+      <div id="personnel-contenu"></div>
     </section>
 
     <!-- Vue Journal -->
@@ -315,8 +358,25 @@ el('btn-enrol').onclick = confirmerEnrol;
 el('btn-enrol-plus-tard').onclick = ()=> entrerApp();
 el('btn-logout').onclick = deconnexion;
 el('btn-activer-mfa').onclick = demarrerEnrol;
+el('lien-inscription').onclick = (e)=>{ e.preventDefault(); el('msg-inscription').textContent=''; montrerEtape('etape-inscription'); setTimeout(()=>el('ins-mail').focus(),30); };
+el('btn-ins-retour').onclick = ()=> montrerEtape('etape-login');
+el('btn-inscription').onclick = inscription;
+async function inscription(){
+  const m=el('msg-inscription'); m.className='msg';
+  if(!sb){ m.className='msg err'; m.textContent="Indisponible dans l'aperçu. Utilisez l'adresse déployée."; return; }
+  const email=el('ins-mail').value.trim(), password=el('ins-pass').value;
+  if(!email || password.length<8){ m.className='msg err'; m.textContent='E-mail et mot de passe (8 caractères min.) requis.'; return; }
+  el('btn-inscription').disabled=true; m.textContent='Création…';
+  try{
+    const {error}=await sb.auth.signUp({email,password});
+    if(error){ m.className='msg err'; m.textContent='Échec : '+error.message; el('btn-inscription').disabled=false; return; }
+    try{ await sb.auth.signOut(); }catch(_){}
+    m.className='msg ok'; m.textContent="Accès créé. Demande à un administrateur de t'ajouter à l'équipe, puis reviens te connecter.";
+  }catch(e){ m.className='msg err'; m.textContent='Erreur : '+e.message; }
+  el('btn-inscription').disabled=false;
+}
 
-function montrerEtape(id){ ['etape-login','etape-mfa','etape-enrol'].forEach(e=>el(e).classList.add('cache')); el(id).classList.remove('cache'); }
+function montrerEtape(id){ ['etape-login','etape-mfa','etape-enrol','etape-inscription'].forEach(e=>el(e).classList.add('cache')); el(id).classList.remove('cache'); }
 
 async function connexion(){
   const m=el('msg-login'); m.className='msg';
@@ -406,6 +466,7 @@ async function entrerApp(){
   el('h-role').innerHTML = '<span class="badge '+(MOI.admin?'admin':'agent')+'">'+(MOI.admin?'Administrateur':'Agent')+'</span>';
   majPillMfa();
   el('tab-journal').style.display = MOI.admin ? '' : 'none';
+  el('tab-personnel').style.display = MOI.admin ? '' : 'none';
   el('avert-mfa').classList.toggle('cache', MOI.aal==='aal2');
   ouvrirVue('bord');
 }
@@ -418,7 +479,7 @@ function majPillMfa(){
 const peutAgir = ()=> MOI && MOI.aal==='aal2';
 
 /* ------------------- ONGLETS ------------------- */
-const VUES=['bord','avalider','personnes','journal'];
+const VUES=['bord','avalider','personnes','journal','personnel'];
 function ouvrirVue(v){
   document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.toggle('actif', x.dataset.vue===v));
   VUES.forEach(x=> el('vue-'+x).classList.toggle('cache', x!==v));
@@ -426,6 +487,7 @@ function ouvrirVue(v){
   else if(v==='avalider') chargerAValider();
   else if(v==='personnes'){ if(!PERSONNES.length) chargerPersonnes(); else rendrePersonnes(); }
   else if(v==='journal') chargerJournal();
+  else if(v==='personnel') chargerPersonnel();
 }
 document.querySelectorAll('nav.tabs button').forEach(b=> b.onclick=()=> ouvrirVue(b.dataset.vue));
 
@@ -637,6 +699,52 @@ async function chargerAValider(){
   });
 }
 
+/* ------------------- PERSONNEL (admin) ------------------- */
+// Enveloppe une action admin avec ré-authentification MFA (step-up) si besoin.
+async function actionAdmin(appel, apres){
+  try{ await appel(); if(apres) await apres(); }
+  catch(e){
+    if(MODE==='reel' && /Reconfirmez|trop ancienne|MFA|authentification/i.test(e.message||'')){
+      if(await reauthMfa()){ try{ await appel(); if(apres) await apres(); }catch(e2){ toast('Échec : '+e2.message, true); } }
+      return;
+    }
+    toast('Échec : '+e.message, true);
+  }
+}
+el('btn-pers-ajouter').onclick = ()=>{
+  const email=el('pers-mail').value.trim(), nom=el('pers-nom').value.trim(), role=el('pers-role').value;
+  if(!email){ toast('E-mail requis', true); return; }
+  actionAdmin(()=> appelPersonnelAjouter(email, nom, role), async ()=>{
+    el('pers-mail').value=''; el('pers-nom').value=''; toast('Collaborateur ajouté'); await chargerPersonnel();
+  });
+};
+async function chargerPersonnel(){
+  el('personnel-contenu').innerHTML='<div class="chargement"><div class="spin"></div>Chargement…</div>';
+  let liste;
+  try{ liste=await appelPersonnelLister(); }catch(e){ el('personnel-contenu').innerHTML='<div class="vide">Erreur : '+echap(e.message)+'</div>'; return; }
+  el('compte-personnel').textContent=liste.length+' membre'+(liste.length>1?'s':'');
+  el('personnel-contenu').innerHTML=liste.map((m,k)=>`
+    <div class="mbr">
+      <div class="av">${initiales(m.nom||m.email)}</div>
+      <div class="who"><div class="nom">${echap(m.nom||'(sans nom)')} ${m.est_moi?'<span class="moi">vous</span>':''}</div>
+        <div class="mail">${echap(m.email||'')}</div></div>
+      <select data-role="${k}" ${m.est_moi?'':''}>
+        <option value="agent" ${m.role==='agent'?'selected':''}>Agent</option>
+        <option value="admin" ${m.role==='admin'?'selected':''}>Administrateur</option>
+      </select>
+      <button class="btn-retirer" data-ret="${k}" ${m.est_moi?'disabled title="Vous ne pouvez pas vous retirer"':''}>Retirer</button>
+    </div>`).join('');
+  el('personnel-contenu').querySelectorAll('[data-role]').forEach(sel=> sel.onchange=()=>{
+    const m=liste[+sel.dataset.role];
+    actionAdmin(()=> appelPersonnelRole(m.user_id, sel.value), chargerPersonnel);
+  });
+  el('personnel-contenu').querySelectorAll('[data-ret]').forEach(b=> b.onclick=async ()=>{
+    const m=liste[+b.dataset.ret];
+    if(!(await confirmer('Retirer '+(m.nom||m.email)+' de l\'équipe ? (son compte de connexion reste)'))) return;
+    actionAdmin(()=> appelPersonnelRetirer(m.user_id), chargerPersonnel);
+  });
+}
+
 /* =================================================================
    COUCHE DONNÉES : réel (Supabase RPC) ou démo (en mémoire)
    ================================================================= */
@@ -668,6 +776,22 @@ async function appelBord(){
 async function appelAValider(){
   if(MODE==='demo') return DEMO.aValider();
   const {data,error}=await sb.rpc('odyris_a_valider'); if(error) throw error; return data||[];
+}
+async function appelPersonnelLister(){
+  if(MODE==='demo') return DEMO.personnel();
+  const {data,error}=await sb.rpc('odyris_personnel_lister'); if(error) throw error; return data||[];
+}
+async function appelPersonnelAjouter(email, nom, role){
+  if(MODE==='demo') return DEMO.persAjouter(email, nom, role);
+  const {error}=await sb.rpc('odyris_personnel_ajouter',{p_email:email,p_nom:nom,p_role:role}); if(error) throw error;
+}
+async function appelPersonnelRole(uid, role){
+  if(MODE==='demo') return DEMO.persRole(uid, role);
+  const {error}=await sb.rpc('odyris_personnel_role',{p_user_id:uid,p_role:role}); if(error) throw error;
+}
+async function appelPersonnelRetirer(uid){
+  if(MODE==='demo') return DEMO.persRetirer(uid);
+  const {error}=await sb.rpc('odyris_personnel_retirer',{p_user_id:uid}); if(error) throw error;
 }
 
 /* ------------------- DONNÉES DE DÉMO ------------------- */
@@ -704,9 +828,17 @@ const DEMO = (()=> {
     {at:'2026-11-20T16:40:00Z',acteur_nom:'Gédéon (démo)',action:'valider_don',cible:'DON-A1B2C3',aal:'aal2',details:{montant:5000}},
   ];
   const toutesOps=()=>{ let r=[]; for(const k in fiches){ const p=fiches[k].personne; for(const o of fiches[k].operations) r.push({...o, nomP:p.nom, tel:p.telephone}); } return r; };
+  let equipe=[
+    {user_id:'u-moi', email:'gedeon.tchuisseu@odyssee-env.org', nom:'Gédéon (démo)', role:'admin', created_at:'2026-09-01', est_moi:true},
+    {user_id:'u-1', email:'awa.ndongo@odyssee-env.org', nom:'Awa Ndongo', role:'agent', created_at:'2026-10-12', est_moi:false},
+  ];
   return {
     personnes, journal,
     fiche:(cle)=> fiches[cle]||null,
+    personnel:()=> equipe.map(m=>({...m})),
+    persAjouter:(email,nom,role)=>{ if(!equipe.find(m=>m.email===email.toLowerCase())) equipe.push({user_id:'u-'+Date.now(), email:email.toLowerCase(), nom:nom||null, role:role||'agent', created_at:new Date().toISOString(), est_moi:false}); },
+    persRole:(uid,role)=>{ const m=equipe.find(x=>x.user_id===uid); if(m){ if(m.role==='admin'&&role==='agent'&&equipe.filter(x=>x.role==='admin').length<=1) throw new Error('Il doit rester au moins un administrateur.'); m.role=role; } },
+    persRetirer:(uid)=>{ const m=equipe.find(x=>x.user_id===uid); if(m&&m.est_moi) throw new Error('Vous ne pouvez pas vous retirer vous-même.'); if(m&&m.role==='admin'&&equipe.filter(x=>x.role==='admin').length<=1) throw new Error('Il doit rester au moins un administrateur.'); equipe=equipe.filter(x=>x.user_id!==uid); },
     bord:()=>{
       const ops=toutesOps(), ins=ops.filter(o=>o.role==='coureur'), dn=ops.filter(o=>o.role==='donateur');
       const collecte=dn.filter(o=>o.statut==='valide').reduce((s,o)=>s+(o.montant||0),0);
