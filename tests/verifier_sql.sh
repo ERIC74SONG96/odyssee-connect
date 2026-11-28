@@ -18,6 +18,7 @@ psql -v ON_ERROR_STOP=1 -q -f tests/verifier_004.sql
 psql -v ON_ERROR_STOP=1 -q -f tests/verifier_005.sql
 psql -v ON_ERROR_STOP=1 -q -f tests/verifier_006.sql
 psql -v ON_ERROR_STOP=1 -q -f tests/verifier_009.sql
+psql -v ON_ERROR_STOP=1 -q -f tests/verifier_010.sql
 if [ "${ODC_BASE_DE_TEST:-}" = "oui" ]; then
   tests/verifier_concurrence.sh
 else
