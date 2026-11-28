@@ -7,8 +7,28 @@ end $$;
 create schema if not exists auth;
 create table if not exists auth.users(id uuid primary key, email text);
 create or replace function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.uid', true),'')::uuid $$;
+-- Imitation de auth.jwt() : en vrai Supabase, les claims du jeton (dont « aal »,
+-- le niveau d'authentification) sont exposés ici. Pour les tests, on les
+-- reconstruit depuis des réglages de session : request.jwt.claims (jsonb complet)
+-- ou, à défaut, request.jwt.uid + request.jwt.aal.
+-- request.jwt.mfa_ts (epoch en secondes) permet de simuler une MFA ancienne ;
+-- par défaut, une session aal2 est considérée « fraîche » (horodatage = maintenant).
+create or replace function auth.jwt() returns jsonb language sql stable as $$
+  select coalesce(
+    nullif(current_setting('request.jwt.claims', true), '')::jsonb,
+    jsonb_build_object(
+      'sub', nullif(current_setting('request.jwt.uid', true), ''),
+      'aal', coalesce(nullif(current_setting('request.jwt.aal', true), ''), 'aal1'),
+      'amr', case when coalesce(nullif(current_setting('request.jwt.aal', true), ''), 'aal1') = 'aal2'
+        then jsonb_build_array(jsonb_build_object('method','totp','timestamp',
+               coalesce(nullif(current_setting('request.jwt.mfa_ts', true), '')::double precision,
+                        extract(epoch from now()))))
+        else '[]'::jsonb end
+    ));
+$$;
 grant usage on schema auth to anon, authenticated;
 grant execute on function auth.uid() to anon, authenticated;
+grant execute on function auth.jwt() to anon, authenticated;
 grant usage on schema public to anon, authenticated;
 grant select on all tables in schema public to anon, authenticated;
 alter default privileges in schema public grant select on tables to anon, authenticated;
