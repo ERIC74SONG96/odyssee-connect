@@ -1,0 +1,39 @@
+# Envoie la console interne Odyris sur LWS : https://odyris.odyssee-env.com/
+# Déploiement SÉPARÉ de l'application publique (sous-domaine et dossier distincts).
+# Même compte FTP, même secret (LWS_FTP_PASSWORD_COM). Production : seule la
+# branche main est déposée. Ne se déclenche que si quelque chose change sous odyris/.
+name: Dépôt Odyris sur LWS
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'odyris/**'
+      - '.github/workflows/depot-odyris.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: depot-odyris
+  cancel-in-progress: false
+
+jobs:
+  depot:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Vérifier le dossier à déposer
+        run: find odyris -type f | sort
+
+      - name: Envoyer sur LWS (FTP)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: 193.203.239.78
+          username: odyss2839870
+          password: ${{ secrets.LWS_FTP_PASSWORD_COM }}
+          protocol: ftps
+          local-dir: ./odyris/
+          server-dir: odyris.odyssee-env.com/
+          timeout: 120000

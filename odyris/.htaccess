@@ -1,0 +1,29 @@
+# Odyris · console interne du personnel · odyris.odyssee-env.com (LWS, Apache)
+# L'accès applicatif est protégé par Supabase (authentification + MFA + rôles).
+# Cette page est publique à l'URL, mais ne montre AUCUNE donnée sans connexion staff.
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+Options -Indexes
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript text/javascript application/json image/svg+xml
+</IfModule>
+
+<IfModule mod_headers.c>
+  # Pas de cache sur la page : les mises à jour sont prises immédiatement
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+  </FilesMatch>
+  # Console interne : on interdit l'affichage en cadre (anti-clickjacking)
+  Header always set X-Frame-Options "DENY"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# (Optionnel) Liste blanche d'adresses IP — décommenter et ajuster pour
+# restreindre l'accès réseau à la console (bureau, VPN…). Apache 2.4.
+# <RequireAll>
+#   Require ip 203.0.113.0/24
+#   Require ip 198.51.100.42
+# </RequireAll>
