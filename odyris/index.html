@@ -126,6 +126,15 @@
   .btn-retirer{background:#fff;color:var(--rouge);border:1px solid #ecc;padding:7px 12px;border-radius:8px;font-weight:700;font-size:13px}
   .btn-retirer:hover{background:#fdecec} .btn-retirer:disabled{opacity:.4;cursor:not-allowed}
 
+  /* Écrans métier (dons, commandes, bénévoles, candidatures) */
+  .filtre{padding:8px 11px;border:1px solid var(--bord);border-radius:8px;background:#fff}
+  .statut-sel{padding:7px 10px;border:1px solid var(--bord);border-radius:8px;background:#fff;font-size:13px}
+  .av-ligne .corps{flex:1;min-width:180px}
+  .av-ligne .titre2{font-weight:700}
+  .av-ligne .ssx{color:var(--gris);font-size:13px;margin-top:2px}
+  .tag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--vert-clair);color:var(--vert);margin:2px 4px 0 0;display:inline-block}
+  .typ.ambassadeur{background:#e8ddfb;color:#5a2e8a} .typ.partenaire{background:#fdeccd;color:#8a5a00} .typ.projet{background:#dce9fb;color:#1c4e8a}
+
   /* Fiche (panneau) */
   .overlay{position:fixed;inset:0;background:rgba(10,20,15,.45);display:flex;justify-content:flex-end;z-index:50}
   .panneau{background:var(--fond);width:min(560px,100%);height:100%;overflow:auto;box-shadow:-10px 0 40px rgba(0,0,0,.25);animation:glisse .18s ease}
@@ -247,6 +256,10 @@
     <button data-vue="bord" class="actif">Tableau de bord</button>
     <button data-vue="avalider">À valider<span id="badge-avalider" class="tab-badge cache">0</span></button>
     <button data-vue="personnes">Personnes</button>
+    <button data-vue="dons">Dons</button>
+    <button data-vue="commandes">Commandes</button>
+    <button data-vue="benevoles">Bénévoles</button>
+    <button data-vue="candidatures">Candidatures</button>
     <button data-vue="journal" id="tab-journal">Journal</button>
     <button data-vue="personnel" id="tab-personnel">Personnel</button>
   </nav>
@@ -293,6 +306,49 @@
         <div class="pers-aide">La personne doit d'abord avoir créé son accès (écran de connexion → « Première connexion »). Vous l'ajoutez ensuite ici par son e-mail.</div>
       </div>
       <div id="personnel-contenu"></div>
+    </section>
+
+    <!-- Vue Dons -->
+    <section id="vue-dons" class="cache">
+      <div class="barre">
+        <strong>Dons</strong>
+        <select id="filtre-dons" class="filtre">
+          <option value="">Tous les statuts</option>
+          <option value="paiement_declare">À valider</option>
+          <option value="valide">Validés</option>
+          <option value="en_attente">En attente</option>
+          <option value="annule">Annulés</option>
+        </select>
+        <span class="compte" id="compte-dons"></span>
+      </div>
+      <div id="dons-contenu"></div>
+    </section>
+
+    <!-- Vue Commandes -->
+    <section id="vue-commandes" class="cache">
+      <div class="barre"><strong>Commandes boutique</strong><span class="compte" id="compte-commandes"></span></div>
+      <div id="commandes-contenu"></div>
+    </section>
+
+    <!-- Vue Bénévoles -->
+    <section id="vue-benevoles" class="cache">
+      <div class="barre"><strong>Bénévoles</strong><span class="compte" id="compte-benevoles"></span></div>
+      <div id="benevoles-contenu"></div>
+    </section>
+
+    <!-- Vue Candidatures -->
+    <section id="vue-candidatures" class="cache">
+      <div class="barre">
+        <strong>Candidatures</strong>
+        <select id="filtre-candidatures" class="filtre">
+          <option value="">Tous les types</option>
+          <option value="ambassadeur">Ambassadeurs</option>
+          <option value="partenaire">Partenaires / sponsors</option>
+          <option value="projet">Projets</option>
+        </select>
+        <span class="compte" id="compte-candidatures"></span>
+      </div>
+      <div id="candidatures-contenu"></div>
     </section>
 
     <!-- Vue Journal -->
@@ -479,7 +535,7 @@ function majPillMfa(){
 const peutAgir = ()=> MOI && MOI.aal==='aal2';
 
 /* ------------------- ONGLETS ------------------- */
-const VUES=['bord','avalider','personnes','journal','personnel'];
+const VUES=['bord','avalider','personnes','dons','commandes','benevoles','candidatures','journal','personnel'];
 function ouvrirVue(v){
   document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.toggle('actif', x.dataset.vue===v));
   VUES.forEach(x=> el('vue-'+x).classList.toggle('cache', x!==v));
@@ -488,6 +544,18 @@ function ouvrirVue(v){
   else if(v==='personnes'){ if(!PERSONNES.length) chargerPersonnes(); else rendrePersonnes(); }
   else if(v==='journal') chargerJournal();
   else if(v==='personnel') chargerPersonnel();
+  else if(v==='dons') chargerDons();
+  else if(v==='commandes') chargerCommandes();
+  else if(v==='benevoles') chargerBenevoles();
+  else if(v==='candidatures') chargerCandidatures();
+}
+// Action de statut simple (staff, sans MFA) : applique + rafraîchit.
+async function majStatut(appel, apres){
+  try{ await appel(); toast('Statut mis à jour'); if(apres) await apres(); }
+  catch(e){ toast('Échec : '+e.message, true); }
+}
+function selStatut(valeurs, courant, k){
+  return `<select class="statut-sel" data-k="${k}">`+valeurs.map(([v,l])=>`<option value="${v}" ${v===courant?'selected':''}>${l}</option>`).join('')+`</select>`;
 }
 document.querySelectorAll('nav.tabs button').forEach(b=> b.onclick=()=> ouvrirVue(b.dataset.vue));
 
@@ -745,6 +813,100 @@ async function chargerPersonnel(){
   });
 }
 
+/* ------------------- DONS (écran dédié) ------------------- */
+el('filtre-dons').onchange = chargerDons;
+async function chargerDons(){
+  const box=el('dons-contenu'); box.innerHTML='<div class="chargement"><div class="spin"></div>Chargement…</div>';
+  let liste; const f=el('filtre-dons').value;
+  try{ liste=await appelDons(f); }catch(e){ box.innerHTML='<div class="vide">Erreur : '+echap(e.message)+'</div>'; return; }
+  el('compte-dons').textContent=liste.length+' don'+(liste.length>1?'s':'');
+  if(!liste.length){ box.innerHTML='<div class="vide">Aucun don.</div>'; return; }
+  box.innerHTML=liste.map((o,k)=>`
+    <div class="av-ligne">
+      <div class="corps"><div class="titre2">${echap(o.nom||'(anonyme)')}</div>
+        <div class="ssx">${echap(o.telephone||'')}${o.operateur?' · '+echap(o.operateur):''}${o.transaction_id?' · '+echap(o.transaction_id):''}</div>
+        <div class="ref">${echap(o.reference)} · ${dateCourte(o.created_at)}</div></div>
+      ${statutRendu(o.statut)}
+      <span class="mt">${fcfa(o.montant)}</span>
+      ${o.statut==='paiement_declare'?`<button class="mini" ${peutAgir()?'':'disabled title="MFA requise"'} data-valdon="${k}">Valider</button>`:''}
+    </div>`).join('');
+  box.querySelectorAll('[data-valdon]').forEach(b=> b.onclick=()=>{
+    const o=liste[+b.dataset.valdon];
+    validerOp('don', o.reference, async ()=>{ await chargerDons(); });
+  });
+}
+
+/* ------------------- COMMANDES ------------------- */
+const STATUTS_CMD=[['nouvelle','Nouvelle'],['confirmee','Confirmée'],['payee','Payée'],['livree','Livrée'],['annulee','Annulée']];
+async function chargerCommandes(){
+  const box=el('commandes-contenu'); box.innerHTML='<div class="chargement"><div class="spin"></div>Chargement…</div>';
+  let liste;
+  try{ liste=await appelCommandes(); }catch(e){ box.innerHTML='<div class="vide">Erreur : '+echap(e.message)+'</div>'; return; }
+  el('compte-commandes').textContent=liste.length+' commande'+(liste.length>1?'s':'');
+  if(!liste.length){ box.innerHTML='<div class="vide">Aucune commande.</div>'; return; }
+  box.innerHTML=liste.map((o,k)=>`
+    <div class="av-ligne">
+      <div class="corps"><div class="titre2">${echap(o.nom||'')}</div>
+        <div class="ssx">${echap(o.telephone||'')} · ${echap(resumeArticles(o.articles))}</div>
+        <div class="ref">${echap(o.reference)} · ${dateCourte(o.created_at)}</div></div>
+      ${selStatut(STATUTS_CMD, o.statut, k)}
+    </div>`).join('');
+  box.querySelectorAll('.statut-sel').forEach(sel=> sel.onchange=()=>{
+    const o=liste[+sel.dataset.k];
+    majStatut(()=> appelCommandeStatut(o.reference, sel.value), chargerCommandes);
+  });
+}
+function resumeArticles(a){
+  try{ const arr=Array.isArray(a)?a:JSON.parse(a); return arr.map(x=>[x.article,x.taille].filter(Boolean).join(' ')).join(', ')||'—'; }
+  catch(e){ return '—'; }
+}
+
+/* ------------------- BÉNÉVOLES ------------------- */
+const STATUTS_BEN=[['nouveau','Nouveau'],['contacte','Contacté'],['retenu','Retenu'],['decline','Décliné']];
+async function chargerBenevoles(){
+  const box=el('benevoles-contenu'); box.innerHTML='<div class="chargement"><div class="spin"></div>Chargement…</div>';
+  let liste;
+  try{ liste=await appelBenevoles(); }catch(e){ box.innerHTML='<div class="vide">Erreur : '+echap(e.message)+'</div>'; return; }
+  el('compte-benevoles').textContent=liste.length+' bénévole'+(liste.length>1?'s':'');
+  if(!liste.length){ box.innerHTML='<div class="vide">Aucun bénévole.</div>'; return; }
+  box.innerHTML=liste.map((o,k)=>`
+    <div class="av-ligne">
+      <div class="corps"><div class="titre2">${echap((o.prenom?o.prenom+' ':'')+(o.nom||''))}</div>
+        <div class="ssx">${echap(o.telephone||'')}${o.ville?' · '+echap(o.ville):''}</div>
+        <div>${(o.missions||[]).map(m=>`<span class="tag">${echap(m)}</span>`).join('')}</div></div>
+      ${selStatut(STATUTS_BEN, o.statut, k)}
+    </div>`).join('');
+  box.querySelectorAll('.statut-sel').forEach(sel=> sel.onchange=()=>{
+    const o=liste[+sel.dataset.k];
+    majStatut(()=> appelBenevoleStatut(o.reference, sel.value), chargerBenevoles);
+  });
+}
+
+/* ------------------- CANDIDATURES ------------------- */
+const STATUTS_CAN=[['nouveau','Nouveau'],['en_cours','En cours'],['accepte','Accepté'],['refuse','Refusé']];
+const LIB_TYPE={ambassadeur:'Ambassadeur',partenaire:'Partenaire / sponsor',projet:'Projet'};
+el('filtre-candidatures').onchange = chargerCandidatures;
+async function chargerCandidatures(){
+  const box=el('candidatures-contenu'); box.innerHTML='<div class="chargement"><div class="spin"></div>Chargement…</div>';
+  let liste; const f=el('filtre-candidatures').value;
+  try{ liste=await appelCandidatures(f); }catch(e){ box.innerHTML='<div class="vide">Erreur : '+echap(e.message)+'</div>'; return; }
+  el('compte-candidatures').textContent=liste.length+' candidature'+(liste.length>1?'s':'');
+  if(!liste.length){ box.innerHTML='<div class="vide">Aucune candidature.</div>'; return; }
+  box.innerHTML=liste.map((o,k)=>`
+    <div class="av-ligne">
+      <span class="typ ${o.type}">${LIB_TYPE[o.type]||o.type}</span>
+      <div class="corps"><div class="titre2">${echap(o.nom||'')}${o.organisation?' — '+echap(o.organisation):''}</div>
+        <div class="ssx">${echap(o.telephone||'')}${o.email?' · '+echap(o.email):''}${o.ville?' · '+echap(o.ville):''}</div>
+        ${o.titre?`<div class="ssx"><b>${echap(o.titre)}</b></div>`:''}
+        <div class="ssx">${echap((o.message||'').slice(0,160))}${(o.message||'').length>160?'…':''}</div></div>
+      ${selStatut(STATUTS_CAN, o.statut, k)}
+    </div>`).join('');
+  box.querySelectorAll('.statut-sel').forEach(sel=> sel.onchange=()=>{
+    const o=liste[+sel.dataset.k];
+    majStatut(()=> appelCandidatureStatut(o.reference, sel.value), chargerCandidatures);
+  });
+}
+
 /* =================================================================
    COUCHE DONNÉES : réel (Supabase RPC) ou démo (en mémoire)
    ================================================================= */
@@ -793,6 +955,34 @@ async function appelPersonnelRetirer(uid){
   if(MODE==='demo') return DEMO.persRetirer(uid);
   const {error}=await sb.rpc('odyris_personnel_retirer',{p_user_id:uid}); if(error) throw error;
 }
+async function appelDons(statut){
+  if(MODE==='demo') return DEMO.dons(statut);
+  const {data,error}=await sb.rpc('odyris_dons',{p_statut:statut||null}); if(error) throw error; return data||[];
+}
+async function appelCommandes(){
+  if(MODE==='demo') return DEMO.commandes();
+  const {data,error}=await sb.rpc('odyris_commandes'); if(error) throw error; return data||[];
+}
+async function appelCommandeStatut(ref, statut){
+  if(MODE==='demo') return DEMO.cmdStatut(ref, statut);
+  const {error}=await sb.rpc('odyris_commande_statut',{p_reference:ref,p_statut:statut}); if(error) throw error;
+}
+async function appelBenevoles(){
+  if(MODE==='demo') return DEMO.benevoles();
+  const {data,error}=await sb.rpc('odyris_benevoles'); if(error) throw error; return data||[];
+}
+async function appelBenevoleStatut(ref, statut){
+  if(MODE==='demo') return DEMO.benStatut(ref, statut);
+  const {error}=await sb.rpc('odyris_benevole_statut',{p_reference:ref,p_statut:statut}); if(error) throw error;
+}
+async function appelCandidatures(type){
+  if(MODE==='demo') return DEMO.candidatures(type);
+  const {data,error}=await sb.rpc('odyris_candidatures',{p_type:type||null}); if(error) throw error; return data||[];
+}
+async function appelCandidatureStatut(ref, statut){
+  if(MODE==='demo') return DEMO.canStatut(ref, statut);
+  const {error}=await sb.rpc('odyris_candidature_statut',{p_reference:ref,p_statut:statut}); if(error) throw error;
+}
 
 /* ------------------- DONNÉES DE DÉMO ------------------- */
 const DEMO = (()=> {
@@ -832,6 +1022,23 @@ const DEMO = (()=> {
     {user_id:'u-moi', email:'gedeon.tchuisseu@odyssee-env.org', nom:'Gédéon (démo)', role:'admin', created_at:'2026-09-01', est_moi:true},
     {user_id:'u-1', email:'awa.ndongo@odyssee-env.org', nom:'Awa Ndongo', role:'agent', created_at:'2026-10-12', est_moi:false},
   ];
+  let dons=[
+    {reference:'DON-A1B2C3', nom:'Salla Mbarga', telephone:'+237 6 91 00 00 01', montant:5000, statut:'valide', operateur:'orange', transaction_id:'OM112233', created_at:'2026-11-20'},
+    {reference:'DON-CD12EF', nom:'Awa Ndongo', telephone:'+237 6 92 00 00 02', montant:3000, statut:'paiement_declare', operateur:'mtn', transaction_id:'MTN99881', created_at:'2026-11-10'},
+    {reference:'DON-9900BB', nom:'Anonyme', telephone:'+237 6 93 00 00 09', montant:2000, statut:'en_attente', operateur:null, transaction_id:null, created_at:'2026-10-02'},
+  ];
+  let commandes=[
+    {reference:'CMD-556677', nom:'Boris Kamga', telephone:'+237 6 95 00 00 05', articles:[{article:'T-shirt',taille:'L'}], statut:'nouvelle', created_at:'2026-11-22'},
+    {reference:'CMD-334455', nom:'Marie Fotso', telephone:'+237 6 94 00 00 04', articles:[{article:'Casquette'},{article:'Gourde'}], statut:'payee', created_at:'2026-11-18'},
+  ];
+  let benevoles=[
+    {reference:'BEN-220011', nom:'Fotso', prenom:'Marie', telephone:'+237 6 94 00 00 04', email:'marie.fotso@exemple.cm', ville:'Bafoussam', missions:['logistique','accueil'], statut:'retenu', created_at:'2026-11-05'},
+    {reference:'BEN-220012', nom:'Eboa', prenom:'Jean', telephone:'+237 6 96 00 00 06', email:null, ville:'Yaoundé', missions:['sécurité'], statut:'nouveau', created_at:'2026-11-21'},
+  ];
+  let candidatures=[
+    {reference:'CAN-770011', type:'partenaire', nom:'Brasseries SA', prenom:null, organisation:'Brasseries du Cameroun', telephone:'+237 6 97 00 00 07', email:'rse@brasseries.cm', ville:'Douala', titre:'Sponsoring maillots', message:'Nous proposons de financer les maillots de la course en échange de visibilité.', statut:'en_cours', created_at:'2026-11-15'},
+    {reference:'CAN-770012', type:'ambassadeur', nom:'Tchatchoua', prenom:'Ida', organisation:null, telephone:'+237 6 98 00 00 08', email:'ida@exemple.cm', ville:'Yaoundé', titre:null, message:'Je souhaite devenir ambassadrice environnement.', statut:'nouveau', created_at:'2026-11-19'},
+  ];
   return {
     personnes, journal,
     fiche:(cle)=> fiches[cle]||null,
@@ -839,6 +1046,13 @@ const DEMO = (()=> {
     persAjouter:(email,nom,role)=>{ if(!equipe.find(m=>m.email===email.toLowerCase())) equipe.push({user_id:'u-'+Date.now(), email:email.toLowerCase(), nom:nom||null, role:role||'agent', created_at:new Date().toISOString(), est_moi:false}); },
     persRole:(uid,role)=>{ const m=equipe.find(x=>x.user_id===uid); if(m){ if(m.role==='admin'&&role==='agent'&&equipe.filter(x=>x.role==='admin').length<=1) throw new Error('Il doit rester au moins un administrateur.'); m.role=role; } },
     persRetirer:(uid)=>{ const m=equipe.find(x=>x.user_id===uid); if(m&&m.est_moi) throw new Error('Vous ne pouvez pas vous retirer vous-même.'); if(m&&m.role==='admin'&&equipe.filter(x=>x.role==='admin').length<=1) throw new Error('Il doit rester au moins un administrateur.'); equipe=equipe.filter(x=>x.user_id!==uid); },
+    dons:(s)=> dons.filter(d=>!s||d.statut===s).map(d=>({...d})),
+    commandes:()=> commandes.map(c=>({...c})),
+    cmdStatut:(ref,st)=>{ const c=commandes.find(x=>x.reference===ref); if(c) c.statut=st; },
+    benevoles:()=> benevoles.map(b=>({...b})),
+    benStatut:(ref,st)=>{ const b=benevoles.find(x=>x.reference===ref); if(b) b.statut=st; },
+    candidatures:(t)=> candidatures.filter(c=>!t||c.type===t).map(c=>({...c})),
+    canStatut:(ref,st)=>{ const c=candidatures.find(x=>x.reference===ref); if(c) c.statut=st; },
     bord:()=>{
       const ops=toutesOps(), ins=ops.filter(o=>o.role==='coureur'), dn=ops.filter(o=>o.role==='donateur');
       const collecte=dn.filter(o=>o.statut==='valide').reduce((s,o)=>s+(o.montant||0),0);
