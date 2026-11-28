@@ -90,6 +90,27 @@
 
   .vide{text-align:center;color:var(--gris);padding:50px 20px}
 
+  /* Tableau de bord */
+  .tuiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px}
+  .tuile{background:var(--carte);border:1px solid var(--bord);border-radius:14px;padding:16px 18px}
+  .tuile .n{font-size:28px;font-weight:800;color:var(--vert);line-height:1.1}
+  .tuile .l{font-size:13px;color:var(--gris);margin-top:4px}
+  .tuile.alerte{border-color:#f0dca8;background:var(--ambre-fond)}
+  .tuile.alerte .n{color:var(--ambre)}
+  .tuile.accent .n{color:var(--vert)}
+  .grp-titre{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--gris);margin:6px 0 10px;font-weight:700}
+  .cta{display:inline-block;margin-top:6px;background:var(--vert);color:#fff;border:0;padding:7px 13px;border-radius:8px;font-weight:700;font-size:13px}
+  .cta:hover{background:var(--vert2)}
+
+  /* File à valider */
+  .av-ligne{background:var(--carte);border:1px solid var(--bord);border-radius:12px;padding:13px 16px;display:flex;align-items:center;gap:14px;margin-bottom:10px;flex-wrap:wrap}
+  .av-ligne .typ{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
+  .typ.inscription{background:#dce9fb;color:#1c4e8a} .typ.don{background:#fdeccd;color:#8a5a00}
+  .av-ligne .who{font-weight:700} .av-ligne .meta{color:var(--gris);font-size:13px}
+  .av-ligne .ref{font-family:ui-monospace,monospace;font-size:12px;color:var(--gris)}
+  .av-ligne .mt{font-weight:700;margin-left:auto}
+  .tab-badge{display:inline-block;min-width:18px;height:18px;padding:0 5px;margin-left:6px;border-radius:999px;background:var(--ambre);color:#fff;font-size:11px;font-weight:700;line-height:18px;text-align:center;vertical-align:middle}
+
   /* Fiche (panneau) */
   .overlay{position:fixed;inset:0;background:rgba(10,20,15,.45);display:flex;justify-content:flex-end;z-index:50}
   .panneau{background:var(--fond);width:min(560px,100%);height:100%;overflow:auto;box-shadow:-10px 0 40px rgba(0,0,0,.25);animation:glisse .18s ease}
@@ -197,13 +218,26 @@
   </header>
 
   <nav class="tabs">
-    <button data-vue="personnes" class="actif">Personnes</button>
+    <button data-vue="bord" class="actif">Tableau de bord</button>
+    <button data-vue="avalider">À valider<span id="badge-avalider" class="tab-badge cache">0</span></button>
+    <button data-vue="personnes">Personnes</button>
     <button data-vue="journal" id="tab-journal">Journal</button>
   </nav>
 
   <main>
+    <!-- Vue Tableau de bord -->
+    <section id="vue-bord">
+      <div id="bord-contenu"></div>
+    </section>
+
+    <!-- Vue À valider -->
+    <section id="vue-avalider" class="cache">
+      <div class="barre"><strong>Paiements à valider</strong><span class="compte" id="compte-avalider"></span></div>
+      <div id="avalider-contenu"></div>
+    </section>
+
     <!-- Vue Personnes -->
-    <section id="vue-personnes">
+    <section id="vue-personnes" class="cache">
       <div id="avert-mfa" class="avert cache">
         <span>⚠️ Vous êtes en lecture seule. Activez la double authentification pour valider des paiements.</span>
         <button id="btn-activer-mfa">Activer la MFA</button>
@@ -373,7 +407,7 @@ async function entrerApp(){
   majPillMfa();
   el('tab-journal').style.display = MOI.admin ? '' : 'none';
   el('avert-mfa').classList.toggle('cache', MOI.aal==='aal2');
-  await chargerPersonnes();
+  ouvrirVue('bord');
 }
 
 function majPillMfa(){
@@ -383,15 +417,17 @@ function majPillMfa(){
 }
 const peutAgir = ()=> MOI && MOI.aal==='aal2';
 
-/* ------------------- ONGLET ------------------- */
-document.querySelectorAll('nav.tabs button').forEach(b=> b.onclick=()=>{
-  document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.remove('actif'));
-  b.classList.add('actif');
-  const v=b.dataset.vue;
-  el('vue-personnes').classList.toggle('cache', v!=='personnes');
-  el('vue-journal').classList.toggle('cache', v!=='journal');
-  if(v==='journal') chargerJournal();
-});
+/* ------------------- ONGLETS ------------------- */
+const VUES=['bord','avalider','personnes','journal'];
+function ouvrirVue(v){
+  document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.toggle('actif', x.dataset.vue===v));
+  VUES.forEach(x=> el('vue-'+x).classList.toggle('cache', x!==v));
+  if(v==='bord') chargerBord();
+  else if(v==='avalider') chargerAValider();
+  else if(v==='personnes'){ if(!PERSONNES.length) chargerPersonnes(); else rendrePersonnes(); }
+  else if(v==='journal') chargerJournal();
+}
+document.querySelectorAll('nav.tabs button').forEach(b=> b.onclick=()=> ouvrirVue(b.dataset.vue));
 
 /* ------------------- PERSONNES ------------------- */
 async function chargerPersonnes(){
@@ -454,7 +490,10 @@ function rendreFiche(cle, f){
   const ov=el('pan').querySelector('.overlay');
   ov.onclick=e=>{ if(e.target.classList.contains('overlay')) el('pan').innerHTML=''; };
   el('pan').querySelector('.fermer').onclick=()=> el('pan').innerHTML='';
-  el('pan').querySelectorAll('[data-valider]').forEach(b=> b.onclick=()=> validerOp(b.dataset.type, b.dataset.ref, cle));
+  el('pan').querySelectorAll('[data-valider]').forEach(b=> b.onclick=()=> validerOp(b.dataset.type, b.dataset.ref, async ()=>{
+    const f2=await appelFiche(cle); rendreFiche(cle, f2);
+    PERSONNES=await appelPersonnes(); rendrePersonnes();
+  }));
 }
 
 function renduOp(o){
@@ -484,16 +523,16 @@ function statutRendu(s){
   return `<span class="statut ${cls}">${lib}</span>`;
 }
 
-async function validerOp(type, ref, cle){
+async function validerOp(type, ref, apres){
   if(!peutAgir()){ toast('Activez la double authentification pour valider.', true); return; }
   if(!(await confirmer('Confirmer la validation de '+ref+' ?'))) return;
   try{
-    await executerValidation(type, ref, cle);
+    await executerValidation(type, ref, apres);
   }catch(e){
     // Action financière refusée car le second facteur est trop ancien : on propose un step-up.
     if(MODE==='reel' && /Reconfirmez|trop ancienne|MFA/i.test(e.message||'')){
       if(await reauthMfa()){
-        try{ await executerValidation(type, ref, cle); }
+        try{ await executerValidation(type, ref, apres); }
         catch(e2){ toast('Échec : '+e2.message, true); }
       }
       return;
@@ -501,11 +540,11 @@ async function validerOp(type, ref, cle){
     toast('Échec : '+e.message, true);
   }
 }
-async function executerValidation(type, ref, cle){
+async function executerValidation(type, ref, apres){
   const r = await appelValider(type, ref);
   toast(type==='paiement' ? ('Paiement validé — dossard '+r) : 'Don validé');
-  const f = await appelFiche(cle); rendreFiche(cle, f);
-  PERSONNES = await appelPersonnes(); rendrePersonnes();
+  if(apres) await apres();
+  rafraichirBadge();
 }
 async function reauthMfa(){
   try{
@@ -543,6 +582,61 @@ async function chargerJournal(){
 
 function echap(s){ return (s==null?'':''+s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
+/* ------------------- TABLEAU DE BORD ------------------- */
+function rafraichirBadge(n){ if(n===undefined) return; const b=el('badge-avalider'); if(n>0){ b.textContent=n; b.classList.remove('cache'); } else b.classList.add('cache'); }
+
+async function chargerBord(){
+  el('bord-contenu').innerHTML='<div class="chargement"><div class="spin"></div>Chargement…</div>';
+  let b;
+  try{ b=await appelBord(); }catch(e){ el('bord-contenu').innerHTML='<div class="vide">Erreur : '+echap(e.message)+'</div>'; return; }
+  const i=b.inscriptions||{}, d=b.dons||{}, c=b.commandes||{}, f=b.fonds||{}, av=b.a_valider||0;
+  rafraichirBadge(av);
+  el('bord-contenu').innerHTML=`
+    ${av>0?`<div class="avert" style="margin-bottom:16px"><span>💳 ${av} paiement${av>1?'s':''} en attente de validation.</span><button onclick="ouvrirVue('avalider')">Traiter</button></div>`:''}
+    <div class="grp-titre">Inscriptions</div>
+    <div class="tuiles">
+      <div class="tuile accent"><div class="n">${i.total||0}</div><div class="l">au total</div></div>
+      <div class="tuile"><div class="n">${i.payes||0}</div><div class="l">payées</div></div>
+      <div class="tuile ${i.paiement_declare?'alerte':''}"><div class="n">${i.paiement_declare||0}</div><div class="l">à valider</div></div>
+      <div class="tuile"><div class="n">${i.en_attente||0}</div><div class="l">attente de paiement</div></div>
+    </div>
+    <div class="grp-titre">Fonds de solidarité</div>
+    <div class="tuiles">
+      <div class="tuile accent"><div class="n">${fcfa(f.collecte||0)}</div><div class="l">collectés</div></div>
+      <div class="tuile"><div class="n">${f.donateurs||0}</div><div class="l">donateurs</div></div>
+      <div class="tuile ${d.paiement_declare?'alerte':''}"><div class="n">${d.paiement_declare||0}</div><div class="l">dons à valider</div></div>
+    </div>
+    <div class="grp-titre">Boutique</div>
+    <div class="tuiles">
+      <div class="tuile"><div class="n">${c.nouvelle||0}</div><div class="l">nouvelles commandes</div></div>
+      <div class="tuile"><div class="n">${c.confirmee||0}</div><div class="l">confirmées</div></div>
+      <div class="tuile"><div class="n">${c.livree||0}</div><div class="l">livrées</div></div>
+    </div>`;
+}
+
+/* ------------------- FILE À VALIDER ------------------- */
+async function chargerAValider(){
+  el('avalider-contenu').innerHTML='<div class="chargement"><div class="spin"></div>Chargement…</div>';
+  let liste;
+  try{ liste=await appelAValider(); }catch(e){ el('avalider-contenu').innerHTML='<div class="vide">Erreur : '+echap(e.message)+'</div>'; return; }
+  rafraichirBadge(liste.length);
+  el('compte-avalider').textContent=liste.length+' paiement'+(liste.length>1?'s':'');
+  if(!liste.length){ el('avalider-contenu').innerHTML='<div class="vide">Aucun paiement en attente de validation. 🎉</div>'; return; }
+  el('avalider-contenu').innerHTML=liste.map((o,k)=>`
+    <div class="av-ligne">
+      <span class="typ ${o.type}">${o.type==='inscription'?'Inscription':'Don'}</span>
+      <div><div class="who">${echap(o.nom||'(sans nom)')}</div>
+        <div class="meta">${echap(o.telephone||'')} · ${echap(o.operateur||'')} · ${echap(o.transaction_id||'')}</div>
+        <div class="ref">${echap(o.reference)} · déclaré ${dateHeure(o.declare_at)}</div></div>
+      <span class="mt">${fcfa(o.montant)}</span>
+      <button class="mini" ${peutAgir()?'':'disabled title="Double authentification requise"'} data-vav="${k}">Valider</button>
+    </div>`).join('');
+  el('avalider-contenu').querySelectorAll('[data-vav]').forEach(b=> b.onclick=()=>{
+    const o=liste[+b.dataset.vav];
+    validerOp(o.type==='inscription'?'paiement':'don', o.reference, async ()=>{ await chargerAValider(); });
+  });
+}
+
 /* =================================================================
    COUCHE DONNÉES : réel (Supabase RPC) ou démo (en mémoire)
    ================================================================= */
@@ -566,6 +660,14 @@ async function appelValider(type, ref){
 async function appelJournal(){
   if(MODE==='demo') return DEMO.journal;
   const {data,error}=await sb.rpc('odyris_journal_lire',{p_limit:100}); if(error) throw error; return data||[];
+}
+async function appelBord(){
+  if(MODE==='demo') return DEMO.bord();
+  const {data,error}=await sb.rpc('odyris_tableau_bord'); if(error) throw error; return data;
+}
+async function appelAValider(){
+  if(MODE==='demo') return DEMO.aValider();
+  const {data,error}=await sb.rpc('odyris_a_valider'); if(error) throw error; return data||[];
 }
 
 /* ------------------- DONNÉES DE DÉMO ------------------- */
@@ -601,9 +703,23 @@ const DEMO = (()=> {
     {at:'2026-11-22T09:14:00Z',acteur_nom:'Gédéon (démo)',action:'valider_paiement',cible:'ODY-1122DD',aal:'aal2',details:{dossard:10234}},
     {at:'2026-11-20T16:40:00Z',acteur_nom:'Gédéon (démo)',action:'valider_don',cible:'DON-A1B2C3',aal:'aal2',details:{montant:5000}},
   ];
+  const toutesOps=()=>{ let r=[]; for(const k in fiches){ const p=fiches[k].personne; for(const o of fiches[k].operations) r.push({...o, nomP:p.nom, tel:p.telephone}); } return r; };
   return {
     personnes, journal,
     fiche:(cle)=> fiches[cle]||null,
+    bord:()=>{
+      const ops=toutesOps(), ins=ops.filter(o=>o.role==='coureur'), dn=ops.filter(o=>o.role==='donateur');
+      const collecte=dn.filter(o=>o.statut==='valide').reduce((s,o)=>s+(o.montant||0),0);
+      return {
+        inscriptions:{ total:ins.length, payes:ins.filter(o=>o.statut==='paye').length, paiement_declare:ins.filter(o=>o.statut==='paiement_declare').length, en_attente:ins.filter(o=>o.statut==='en_attente').length, annule:0 },
+        dons:{ valides_total:collecte, valides_count:dn.filter(o=>o.statut==='valide').length, paiement_declare:dn.filter(o=>o.statut==='paiement_declare').length },
+        commandes:{ nouvelle:ops.filter(o=>o.role==='boutique'&&o.statut==='nouvelle').length, confirmee:0, payee:0, livree:0 },
+        a_valider:ops.filter(o=>(o.role==='coureur'||o.role==='donateur')&&o.statut==='paiement_declare').length,
+        fonds:{ collecte, donateurs:dn.filter(o=>o.statut==='valide').length, objectif:5000000 }
+      };
+    },
+    aValider:()=> toutesOps().filter(o=>(o.role==='coureur'||o.role==='donateur')&&o.statut==='paiement_declare')
+      .map(o=>({ type:o.role==='coureur'?'inscription':'don', reference:o.reference, nom:o.nomP, telephone:o.tel, montant:o.montant, operateur:'orange', transaction_id:'OM-DEMO-'+o.reference.slice(-4), declare_at:o.date })),
     valider:(type,ref)=>{
       for(const k in fiches){ for(const o of fiches[k].operations){ if(o.reference===ref){
         if(type==='paiement'){ o.statut='paye'; const d=10000+Math.floor(Math.random()*5000); journal.unshift({at:new Date().toISOString(),acteur_nom:'Gédéon (démo)',action:'valider_paiement',cible:ref,aal:'aal2',details:{dossard:d}}); return d; }
