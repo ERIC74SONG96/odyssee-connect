@@ -99,7 +99,22 @@ begin
 end $t$;
 reset role;
 
--- 3 bis. Marquer « payée » AVEC MFA récente réussit --------------------
+-- 3 bis. « payée » avec MFA ANCIENNE (aal2 mais horodatage vieux) : refusée.
+set local role authenticated;
+set local request.jwt.uid = '00000000-0000-0000-0000-0000000012aa';
+set local request.jwt.aal = 'aal2';
+set local request.jwt.mfa_ts = '1700000000';   -- nov. 2023 : trop ancien
+do $t$ begin
+  begin perform public.odyris_commande_statut('CMD-120001','payee');
+    raise exception 'ÉCHEC : payée acceptée avec MFA ancienne';
+  exception when others then
+    if sqlerrm like 'ÉCHEC%' then raise; end if;
+    if sqlerrm not like '%Reconfirmez%' then raise exception 'ÉCHEC : message fraîcheur commande inattendu : %', sqlerrm; end if;
+  end;
+end $t$;
+reset role;
+
+-- 3 ter. Marquer « payée » AVEC MFA récente réussit (mfa_ts vide = maintenant).
 set local role authenticated;
 set local request.jwt.uid = '00000000-0000-0000-0000-0000000012aa';
 set local request.jwt.aal = 'aal2';
