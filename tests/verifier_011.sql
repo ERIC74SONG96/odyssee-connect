@@ -92,6 +92,13 @@ do $t$ begin
     if sqlerrm like 'ÉCHEC%' then raise; end if;
     if sqlerrm not like '%vous-même%' then raise exception 'ÉCHEC : message auto-retrait inattendu : %', sqlerrm; end if;
   end;
+  -- rétrograder le dernier admin via ajouter (ON CONFLICT) doit être refusé
+  begin perform public.odyris_personnel_ajouter('admin11@exemple.cm', null, 'agent');
+    raise exception 'ÉCHEC : dernier admin rétrogradé via ajouter';
+  exception when others then
+    if sqlerrm like 'ÉCHEC%' then raise; end if;
+    if sqlerrm not like '%au moins un administrateur%' then raise exception 'ÉCHEC : message ajouter/dernier admin inattendu : %', sqlerrm; end if;
+  end;
 end $t$;
 reset role;
 

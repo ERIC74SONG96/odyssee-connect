@@ -49,6 +49,14 @@ begin
   if v_uid is null then
     raise exception 'Aucun compte pour % : la personne doit d''abord créer son accès sur Odyris, puis vous l''ajoutez.', v_mail;
   end if;
+  -- Sérialise toute opération qui touche le nombre d'administrateurs.
+  perform pg_advisory_xact_lock(911011);
+  -- Empêche qu'un upsert (ON CONFLICT) rétrograde le dernier administrateur.
+  if v_role = 'agent'
+     and exists (select 1 from public.staff where user_id = v_uid and role = 'admin')
+     and (select count(*) from public.staff where role = 'admin') <= 1 then
+    raise exception 'Impossible : il doit rester au moins un administrateur.';
+  end if;
   insert into public.staff (user_id, nom, role)
        values (v_uid, nullif(btrim(coalesce(p_nom, '')), ''), v_role)
   on conflict (user_id) do update
@@ -68,6 +76,7 @@ begin
   if not public.est_admin() then raise exception 'Accès réservé aux administrateurs'; end if;
   perform public._odyris_exiger_mfa_fraiche(15);
   if v_role not in ('agent','admin') then raise exception 'Rôle invalide'; end if;
+  perform pg_advisory_xact_lock(911011);   -- sérialise les changements d'admin
   select role into v_actuel from public.staff where user_id = p_user_id;
   if v_actuel is null then raise exception 'Membre introuvable'; end if;
   if v_actuel = 'admin' and v_role = 'agent'
@@ -89,6 +98,7 @@ begin
   if not public.est_admin() then raise exception 'Accès réservé aux administrateurs'; end if;
   perform public._odyris_exiger_mfa_fraiche(15);
   if p_user_id = auth.uid() then raise exception 'Vous ne pouvez pas vous retirer vous-même.'; end if;
+  perform pg_advisory_xact_lock(911011);   -- sérialise les changements d'admin
   select role into v_role from public.staff where user_id = p_user_id;
   if v_role is null then raise exception 'Membre introuvable'; end if;
   if v_role = 'admin' and (select count(*) from public.staff where role = 'admin') <= 1 then
